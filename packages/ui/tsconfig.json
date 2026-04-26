@@ -1,0 +1,9 @@
+{
+  "extends": "@fleet-rewards/config/tsconfig.vue.json",
+  "include": ["src/**/*"],
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  }
+}

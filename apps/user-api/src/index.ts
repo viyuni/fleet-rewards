@@ -1,3 +1,3 @@
-import { createElysiaApp } from '@rewards-fleet/server-core';
+import { createElysiaApp } from '@fleet-rewards/server-core';
 
 export const app = createElysiaApp();

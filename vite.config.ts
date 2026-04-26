@@ -15,6 +15,7 @@ export default defineConfig({
     sortPackageJson: true,
     arrowParens: 'avoid',
     embeddedLanguageFormatting: 'auto',
+    ignorePatterns: ['**/node_modules/**', '**/dist/**', 'src/packages/ui/**'],
   },
   lint: {
     plugins: ['unicorn', 'typescript', 'oxc', 'vue', 'import', 'vitest', 'node'],

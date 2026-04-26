@@ -1,5 +1,5 @@
 {
-  "name": "@rewards-fleet/config",
+  "name": "@fleet-rewards/config",
   "version": "0.0.0",
   "private": true,
   "files": [
@@ -7,7 +7,11 @@
   ],
   "type": "module",
   "exports": {
-    "./tsconfig/base.json": "./tsconfig/base.json",
-    "./tsconfig/bun.json": "./tsconfig/bun.json"
+    "./tsconfig.base.json": "./tsconfig/base.json",
+    "./tsconfig.bun.json": "./tsconfig/bun.json",
+    "./tsconfig.vue.json": "./tsconfig/vue.json"
+  },
+  "dependencies": {
+    "@vue/tsconfig": "^0.9.1"
   }
 }

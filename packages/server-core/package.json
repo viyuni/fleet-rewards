@@ -1,5 +1,5 @@
 {
-  "name": "@rewards-fleet/server-core",
+  "name": "@fleet-rewards/server-core",
   "version": "0.0.0",
   "module": "src/index.ts",
   "exports": {

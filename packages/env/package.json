@@ -1,5 +1,5 @@
 {
-  "name": "@rewards-fleet/env",
+  "name": "@fleet-rewards/env",
   "version": "0.0.0",
   "module": "src/index.ts",
   "exports": {
