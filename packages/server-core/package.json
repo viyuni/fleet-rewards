@@ -1,0 +1,18 @@
+{
+  "name": "@rewards-fleet/server-core",
+  "version": "0.0.0",
+  "module": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "bun run --watch src/index.ts"
+  },
+  "dependencies": {
+    "elysia": "latest"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  }
+}

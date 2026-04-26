@@ -1,0 +1,11 @@
+{
+  "name": "@rewards-fleet/env",
+  "version": "0.0.0",
+  "module": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  }
+}
