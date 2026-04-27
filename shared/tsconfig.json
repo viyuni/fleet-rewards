@@ -1,14 +1,13 @@
 {
-  "$schema": "https://www.schemastore.org/tsconfig",
-  "docs": "https://bun.com/docs/typescript",
-
   "compilerOptions": {
     // Environment setup & latest features
     "lib": ["ESNext"],
     "target": "ESNext",
     "module": "Preserve",
     "moduleDetection": "force",
+    "jsx": "react-jsx",
     "allowJs": true,
+    "types": ["bun"],
 
     // Bundler mode
     "moduleResolution": "bundler",
@@ -28,13 +27,8 @@
     "noUnusedParameters": false,
     "noPropertyAccessFromIndexSignature": false,
 
-    "types": ["bun"],
-
     "paths": {
-      "#server/*": ["./src/*"],
-      "#shared/*": ["../shared/*"]
-    },
-
-    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.server.tsbuildinfo"
+      "#shared/*": ["./src/*"]
+    }
   }
 }

@@ -6,7 +6,6 @@ export default defineConfig({
   },
   run: {
     cache: true,
-    tasks: {},
   },
   fmt: {
     singleQuote: true,
