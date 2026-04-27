@@ -1,6 +1,6 @@
 ---
 name: backend-architecture
-description: Backend architecture rules for this repo's Elysia + Drizzle + lightweight Clean Architecture backend. Use when creating, reviewing, or refactoring code in apps/user-api, apps/admin-api, modules, or db, especially routes, use cases, domain rules, repositories, database transactions, and module boundaries.
+description: Backend architecture rules for this repo's Elysia + Drizzle + lightweight Clean Architecture backend. Use when creating, reviewing, or refactoring code in /server, especially routes, use cases, domain rules, repositories, database transactions, and module boundaries.
 ---
 
 # Backend Architecture
@@ -202,8 +202,5 @@ Route = entry point
 ## Scope
 
 ```txt
-apps/user-api/**
-apps/admin-api/**
-modules/**
-db/**
+server/**
 ```
