@@ -1,5 +1,5 @@
 {
-  "name": "@fleet-rewards/server",
+  "name": "@guard-rewards/server",
   "version": "1.0.50",
   "module": "src/index.ts",
   "exports": {
@@ -14,11 +14,15 @@
     "check": "vpr typecheck && vp lint && vp fmt"
   },
   "dependencies": {
+    "@elysia/bearer": "^1.4.4",
+    "@elysia/jwt": "^1.4.2",
     "@elysia/openapi": "^1.4.15",
+    "@guard-rewards/shared": "workspace:*",
     "arkenv": "^0.11.0",
     "arktype": "^2.2.0",
     "drizzle-orm": "^0.45.2",
     "elysia": "latest",
+    "jose": "^6.2.3",
     "pg": "^8.20.0",
     "pino": "^10.3.1"
   },

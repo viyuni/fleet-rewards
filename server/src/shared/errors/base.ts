@@ -1,4 +1,4 @@
-export abstract class HttpError extends Error {
+export abstract class AppError extends Error {
   abstract readonly status: number;
   abstract readonly code: string;
 
@@ -8,7 +8,7 @@ export abstract class HttpError extends Error {
   }
 }
 
-export class BadRequestError extends HttpError {
+export class BadRequestError extends AppError {
   status = 400;
   code = 'BAD_REQUEST';
 
@@ -17,7 +17,7 @@ export class BadRequestError extends HttpError {
   }
 }
 
-export class UnauthorizedError extends HttpError {
+export class UnauthorizedError extends AppError {
   status = 401;
   code = 'UNAUTHORIZED';
 
@@ -26,7 +26,7 @@ export class UnauthorizedError extends HttpError {
   }
 }
 
-export class ForbiddenError extends HttpError {
+export class ForbiddenError extends AppError {
   status = 403;
   code = 'FORBIDDEN';
 
@@ -35,7 +35,7 @@ export class ForbiddenError extends HttpError {
   }
 }
 
-export class NotFoundError extends HttpError {
+export class NotFoundError extends AppError {
   status = 404;
   code = 'NOT_FOUND';
 
@@ -44,20 +44,11 @@ export class NotFoundError extends HttpError {
   }
 }
 
-export class ConflictError extends HttpError {
+export class ConflictError extends AppError {
   status = 409;
   code = 'CONFLICT';
 
   constructor(message = '资源状态冲突') {
-    super(message);
-  }
-}
-
-export class ValidationError extends HttpError {
-  status = 422;
-  code = 'VALIDATION_ERROR';
-
-  constructor(message = '数据校验失败') {
     super(message);
   }
 }

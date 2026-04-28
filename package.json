@@ -1,12 +1,12 @@
 {
-  "name": "fleet-rewards",
+  "name": "guard-rewards",
   "version": "0.0.0",
   "private": true,
   "workspaces": [
     "packages/*",
     "webs/*",
     "server",
-    "shared/*"
+    "shared"
   ],
   "type": "module",
   "scripts": {
@@ -14,6 +14,9 @@
     "typecheck": "vpr -r typecheck",
     "test": "vpr -r test",
     "check": "vp fmt && vp lint && vpr typecheck"
+  },
+  "dependencies": {
+    "jose": "^6.2.3"
   },
   "devDependencies": {
     "@tsconfig/node24": "^24.0.4",

@@ -1,5 +1,5 @@
 {
-  "name": "@fleet-rewards/user",
+  "name": "@guard-rewards/user",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -13,7 +13,7 @@
     "check": "vpr typecheck && vp lint && vp fmt"
   },
   "dependencies": {
-    "@fleet-rewards/ui": "workspace:*",
+    "@guard-rewards/ui": "workspace:*",
     "pinia": "^3.0.4",
     "vue": "^3.5.32",
     "vue-router": "^5.0.4"
