@@ -1,5 +1,19 @@
 <script setup lang="ts">
-import { Button } from '@guard-rewards/ui';
+import { Button } from '@gr/ui';
+
+import { api } from '#web-admin/lib/api';
+
+api.auth.login
+  .post({
+    username: 'admin',
+    password: 'admin',
+    biliUid: '2131232',
+  })
+  .then(res => {
+    if (res) {
+      console.log(res);
+    }
+  });
 </script>
 
 <template>

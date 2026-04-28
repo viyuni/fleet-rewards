@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Button } from '@guard-rewards/ui';
+import { Button } from '@gr/ui';
 </script>
 
 <template>

@@ -1,5 +1,5 @@
 {
-  "name": "@guard-rewards/ui",
+  "name": "@gr/ui",
   "version": "0.0.0",
   "description": "A starter for creating a TypeScript package.",
   "files": [

@@ -1,5 +1,5 @@
 {
-  "name": "@guard-rewards/shared",
+  "name": "@gr/shared",
   "private": true,
   "type": "module",
   "module": "index.ts",

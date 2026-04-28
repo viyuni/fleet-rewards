@@ -1,206 +1,242 @@
 ---
 name: backend-architecture
-description: Backend architecture rules for this repo's Elysia + Drizzle + lightweight Clean Architecture backend. Use when creating, reviewing, or refactoring code in /server, especially routes, use cases, domain rules, repositories, database transactions, and module boundaries.
+description: Backend architecture rules for this repo's Elysia + Drizzle backend. Use when creating, reviewing, or refactoring code under server/**, especially module routes, context plugins, use cases, repositories, error classes, database transactions, JWT/auth macros, and module boundaries.
 ---
 
 # Backend Architecture
 
-Use these rules when working on backend code in this repo.
+Use these rules for backend work in this repo. Prefer the current lightweight module style over textbook Clean Architecture ceremony.
 
 ## Stack
 
 - Elysia
 - Drizzle ORM
-- Lightweight Clean Architecture
+- Bun runtime APIs where already used
+- Lightweight module architecture
 
 ## Core Flow
 
 ```txt
-Route -> UseCase -> Domain -> Repository -> DB
+Route(index.ts) -> Context(decorate deps) -> UseCase -> Repository -> DB
 ```
 
-## Layer Responsibilities
+Only add a separate domain layer when business rules become complex enough to justify it. Do not create `domain/`, `application/`, `infra/`, or `presentation/` folders for ordinary modules.
 
-```txt
-presentation/
-  HTTP concerns, parameter validation, auth
-  Do not write business logic
+## Module Shape
 
-application/
-  UseCase business actions
-  Own transactions
-  Orchestrate flow
-
-domain/
-  Business rules
-  No DB or HTTP dependencies
-
-infra/
-  Repository implementations
-  Database operations
-```
-
-## Directory Shape
+Use the flat module shape already present in `server/src/modules/*`:
 
 ```txt
 modules/{module}/
-  domain/
-  infra/
-  application/
-  presentation/
+  index.ts       route/plugin entry
+  context.ts     dependency wiring and Elysia decoration
+  usecase.ts     application flow and transactions
+  repository.ts  Drizzle queries and mutations
+  model.ts       Drizzle inferred types and local data types
+  errors.ts      module-specific AppError classes and error map
 ```
+
+Small capability modules may expose only the files they need, for example a context-only helper module.
+
+## Route Rules
+
+Routes live in `index.ts`.
+
+Routes should:
+
+- Define Elysia route paths and HTTP schemas.
+- Call decorated use cases, for example `({ body, admin }) => admin.login(body)`.
+- Use shared schemas from `#shared/schema`.
+- Use route metadata such as `details.summary` when useful.
+- Use auth macros such as `{ requiredAuth: true }`.
+
+Routes must not:
+
+- Access `db` directly.
+- Open transactions.
+- Hash passwords, sign tokens, or run multi-step business flow.
+- Contain business branching beyond simple request adaptation.
+
+## Context Rules
+
+Context files own dependency wiring.
+
+Use `context.ts` to:
+
+- Import shared infrastructure such as `db` and `config`.
+- Create module dependencies such as `JwtAuthenticator`.
+- Install helper plugins/macros with `.use(...)`.
+- Register module errors with `.error(ModuleErrors)`.
+- Decorate the module use case with `.decorate('moduleKey', new ModuleUseCase(...))`.
+
+Example shape:
+
+```ts
+const authenticator = new JwtAuthenticator(config.ADMIN_JWT_SECRET);
+
+export const adminContext = new Elysia({ name: 'AdminContext' })
+  .use(jwt({ authenticator }))
+  .error(AdminErrors)
+  .decorate('admin', new AdminUseCase(db, authenticator));
+```
+
+Keep the decoration key camelCase and aligned with route destructuring.
+
+## UseCase Rules
+
+Use one UseCase class per module by default, such as `AdminUseCase` or `UserUseCase`.
+
+UseCases should:
+
+- Accept `DbClient` plus required collaborators through the constructor.
+- Own transactions for business actions that write or require consistency.
+- Instantiate repositories inside the transaction with `tx`.
+- Coordinate repository calls and application services.
+- Throw shared or module-specific `AppError` subclasses.
+- Return API-ready plain objects when that keeps routes thin.
+
+UseCases may contain application-level operations such as password hashing, credential checks, and token signing when those operations are part of the business action.
+
+Transaction pattern:
+
+```ts
+export class AdminUseCase {
+  constructor(
+    private db: DbClient,
+    private authenticator: JwtAuthenticator,
+  ) {}
+
+  async login(input: AdminLoginInput) {
+    return this.db.transaction(async tx => {
+      const adminRepository = new AdminRepository(tx);
+      const admin = await adminRepository.findByUsername(input.username);
+
+      // validate, mutate, sign token, return DTO
+    });
+  }
+}
+```
+
+Avoid creating separate service classes unless a collaborator has a real independent responsibility, such as `JwtAuthenticator`.
+
+## Repository Rules
+
+Repositories wrap Drizzle access only.
+
+Repositories should:
+
+- Accept `Db` from `#server/db` so they work with both the root client and transaction clients.
+- Use Drizzle query builders and schema objects from `#server/db/schema`.
+- Encapsulate common persistence filters such as `isNull(deletedAt)`.
+- Return database records, `null`, or simple persistence results.
+
+Repositories must not:
+
+- Import Elysia, route schemas, config, or JWT/auth code.
+- Open transactions.
+- Make permission decisions.
+- Hash passwords or sign tokens.
+- Orchestrate business workflows.
+
+Use `DbClient` only for the root use case dependency. Use `Db` for repository constructors.
+
+## Model Rules
+
+Keep `model.ts` small and close to Drizzle:
+
+```ts
+export type Admin = InferSelectModel<typeof admins>;
+export type InsertAdmin = InferInsertModel<typeof admins>;
+export type UpdateAdmin = Partial<InsertAdmin>;
+```
+
+Do not duplicate shared request schemas in `model.ts`; import request input types from `#shared/schema`.
+
+## Error Rules
+
+Module errors live in `errors.ts`.
+
+Create specific errors by extending shared base errors from `#server/shared/errors`, override `code`, and provide a useful Chinese default message when the user-facing API needs one.
+
+```ts
+export class AdminDisabledError extends ForbiddenError {
+  override code = 'ADMIN_DISABLED';
+
+  constructor(message = '管理员账号已被禁用') {
+    super(message);
+  }
+}
+
+export const AdminErrors = {
+  AdminDisabledError,
+};
+```
+
+Register the error map in `context.ts` with `.error(ModuleErrors)`.
+
+Use shared errors directly for generic cases, for example `InvalidCredentialsError`.
+
+## Auth Rules
+
+Use the JWT module instead of implementing auth in routes.
+
+- Create `JwtAuthenticator` in context with the appropriate secret from `config`.
+- Install `jwt({ authenticator })` in the module context.
+- Protect routes with `{ requiredAuth: true }`.
+- Read the resolved `userId` from route context.
+
+## Transaction Rules
+
+Open transactions in UseCase methods, not routes or repositories.
+
+For multiple repository operations in one business action, create all repositories with the same `tx` inside the transaction callback.
+
+```ts
+return this.db.transaction(async tx => {
+  const repo = new AdminRepository(tx);
+  // all DB writes for this action use repo/tx here
+});
+```
+
+For cross-module workflows, prefer a higher-level use case that owns one transaction and passes `tx` to repositories. Do not call another use case that opens a nested transaction unless the behavior is intentional and verified.
+
+## Import Rules
+
+Use existing path aliases:
+
+- `#server/...` for server internals.
+- `#shared/...` for shared schemas and types.
+
+Prefer type-only imports for types. Keep local module imports relative.
 
 ## Naming
 
 ```txt
-Class: PascalCase
-Instance: camelCase
-Context key: camelCase
+Route/plugin export: camelCase module name, e.g. admin, user
+Context export: {module}Context
+UseCase class: {Module}UseCase
+Repository class: {Module}Repository
+Error class: Specific PascalCase + Error
+Decorate key: camelCase module name
+Elysia name: PascalCase descriptive name, e.g. AdminContext, UserRoute
 ```
 
-```ts
-class GrantPointsUseCase {}
+## Decision Heuristics
 
-.decorate('points', {
-  grant: new GrantPointsUseCase(db),
-})
-```
+- If code is HTTP-specific, keep it in `index.ts`.
+- If code wires dependencies or Elysia macros/errors, keep it in `context.ts`.
+- If code describes a business action, keep it in `usecase.ts`.
+- If code is a Drizzle read/write, keep it in `repository.ts`.
+- If code is a database record type, keep it in `model.ts`.
+- If code is a reusable business rule with no DB/HTTP dependency, consider a small domain helper only when the use case is becoming hard to read.
 
-## UseCase Rules
+## Validation
 
-Use a UseCase for one complete business action:
+After backend changes, run the repo's Vite+ commands from the project root:
 
 ```txt
-GrantPointsUseCase
-ConvertPointsUseCase
-HandleMemberEventUseCase
+vp check
+vp test
 ```
 
-UseCases must:
-
-- Control transactions.
-- Call repositories.
-- Call domain rules or services.
-
-```ts
-export class GrantPointsUseCase {
-  constructor(private db: DbClient) {}
-
-  async execute(input) {
-    return this.db.transaction(async tx => {
-      const repo = new PointRepository(tx)
-
-      await repo.increaseBalance(...)
-      await repo.createLedger(...)
-    })
-  }
-}
-```
-
-## Repository Rules
-
-Repositories only handle:
-
-- Query
-- Insert
-- Update
-- Delete
-
-Repositories must not handle:
-
-- Business logic
-- Permissions
-- Transactions
-
-## Domain Rules
-
-Domain code can include:
-
-- Policy
-- Calculator
-- Domain Service
-- Error
-
-```ts
-export class PointPolicy {
-  static assertPositiveAmount(amount: number) {
-    if (amount <= 0) throw new Error();
-  }
-}
-```
-
-## Route Rules
-
-Routes only handle:
-
-- HTTP
-- Parameter validation
-- Auth
-- UseCase calls
-
-Routes must not:
-
-- Write business logic
-- Access DB directly
-- Open transactions
-
-## Plugin Pattern
-
-```ts
-export function createPointPlugin(db: DbClient) {
-  return new Elysia().decorate('points', {
-    grant: new GrantPointsUseCase(db),
-    convert: new ConvertPointsUseCase(db),
-  });
-}
-```
-
-## Transaction Rules
-
-For a single UseCase:
-
-```txt
-Open the transaction inside the UseCase.
-```
-
-For cross-UseCase work:
-
-```txt
-Create a higher-level UseCase that owns one unified transaction.
-```
-
-Never use the global DB client inside a transaction. Pass and use the transaction client.
-
-## Service Rules
-
-UseCases replace traditional services.
-
-Only use a Domain Service for:
-
-- Complex business rules
-- Pure calculation logic
-
-## Logic Ownership
-
-```txt
-Parameter validation -> Route / UseCase
-Permission checks -> Route
-Business rules -> Domain
-Database operations -> Repository
-Transactions -> UseCase
-```
-
-## Final Principle
-
-```txt
-UseCase = flow
-Domain = rules
-Repository = data
-Route = entry point
-```
-
-## Scope
-
-```txt
-server/**
-```
+Use `vp` commands rather than calling package-manager tools directly.

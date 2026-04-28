@@ -8,5 +8,8 @@ export default defineConfig({
   plugins: [vize(), vueDevTools(), tailwindcss()],
   resolve: {
     tsconfigPaths: true,
+    alias: {
+      '#web-user': '/src',
+    },
   },
 });

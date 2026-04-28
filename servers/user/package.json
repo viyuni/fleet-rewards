@@ -1,0 +1,29 @@
+{
+  "name": "@gr/server-user",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "module": "src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/eden.ts",
+      "default": "./src/eden.ts"
+    }
+  },
+  "scripts": {
+    "dev": "bun run --watch src/app.ts",
+    "test": "bun test",
+    "typecheck": "tsgo --build",
+    "check": "vpr typecheck && vp lint && vp fmt"
+  },
+  "dependencies": {
+    "@gr/server-shared": "workspace:*",
+    "@gr/shared": "workspace:*",
+    "drizzle-orm": "^0.45.2",
+    "elysia": "latest"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.3.13",
+    "@typescript/native-preview": "^7.0.0-dev.20260427.1"
+  }
+}

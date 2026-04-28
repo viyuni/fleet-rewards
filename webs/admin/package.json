@@ -1,5 +1,5 @@
 {
-  "name": "@guard-rewards/admin",
+  "name": "@gr/web-admin",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -14,13 +14,13 @@
   },
   "dependencies": {
     "@elysia/eden": "^1.4.10",
-    "@guard-rewards/ui": "workspace:*",
+    "@gr/ui": "workspace:*",
     "pinia": "^3.0.4",
     "vue": "^3.5.32",
     "vue-router": "^5.0.4"
   },
   "devDependencies": {
-    "@guard-rewards/server": "workspace:*",
+    "@gr/server-admin": "workspace:*",
     "@tailwindcss/vite": "^4.2.4",
     "@tsconfig/node24": "^24.0.4",
     "@types/jsdom": "^28.0.1",

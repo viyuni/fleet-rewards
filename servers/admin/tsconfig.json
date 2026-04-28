@@ -1,0 +1,33 @@
+{
+  "$schema": "https://www.schemastore.org/tsconfig",
+  "extends": ["../../shared/tsconfig/common.json"],
+  "include": ["src/**/*"],
+  "compilerOptions": {
+    "lib": ["ESNext"],
+    "target": "ESNext",
+    "module": "Preserve",
+    "moduleDetection": "force",
+    "allowJs": true,
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "noEmit": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noPropertyAccessFromIndexSignature": false,
+    "types": ["bun"],
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.server-admin.tsbuildinfo",
+
+    "paths": {
+      "#server-admin/*": ["./src/*"],
+      "#server-user/*": ["../user/src/*"],
+      "#server-shared/*": ["../shared/src/*"],
+      "#shared/*": ["../../shared/src/*"]
+    }
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "$schema": "https://www.schemastore.org/tsconfig",
+  "compilerOptions": {
+    "paths": {
+      "#shared/*": ["../src/*"],
+      "#server-shared/*": ["../../servers/shared/src/*"],
+      "#server-admin/*": ["../../servers/admin/src/*"],
+      "#server-user/*": ["../../servers/user/src/*"],
+      "#web-admin/*": ["../../webs/admin/src/*"],
+      "#web-user/*": ["../../webs/user/src/*"],
+      "#ui/*": ["../../packages/ui/src/*"],
+      "elysia": ["../../servers/shared/node_modules/elysia"]
+    }
+  }
+}
