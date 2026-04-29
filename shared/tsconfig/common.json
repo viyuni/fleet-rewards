@@ -8,7 +8,7 @@
       "#server-user/*": ["../../servers/user/src/*"],
       "#web-admin/*": ["../../webs/admin/src/*"],
       "#web-user/*": ["../../webs/user/src/*"],
-      "#ui/*": ["../../packages/ui/src/*"],
+      "#ui/*": ["../../webs/ui/src/*"],
       "elysia": ["../../servers/shared/node_modules/elysia"]
     }
   }

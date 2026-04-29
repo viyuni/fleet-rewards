@@ -5,10 +5,7 @@
   "type": "module",
   "module": "src/index.ts",
   "exports": {
-    ".": {
-      "types": "./src/eden.ts",
-      "default": "./src/eden.ts"
-    }
+    ".": "./src/eden.ts"
   },
   "scripts": {
     "dev": "bun run --watch src/app.ts",

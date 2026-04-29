@@ -107,6 +107,12 @@ For GitHub Actions, consider using [`voidzero-dev/setup-vp`](https://github.com/
 
 `vpr typecheck`
 
+## Generate UI Component Metadata
+
+`vpr generate:component-meta`
+
+This command updates `webs/ui` component metadata: package exports, the component resolver map, and Vue global component types. Run it after adding, removing, or renaming components under `webs/ui/src/components`.
+
 ### Check
 
 `vpr check`

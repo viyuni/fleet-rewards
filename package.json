@@ -3,7 +3,6 @@
   "version": "0.0.0",
   "private": true,
   "workspaces": [
-    "packages/*",
     "webs/*",
     "servers/*",
     "shared"
@@ -13,7 +12,8 @@
     "prepare": "vp config",
     "typecheck": "vpr -r typecheck",
     "test": "vpr -r test",
-    "check": "vp fmt && vp lint && vpr typecheck"
+    "check": "vp fmt && vp lint && vpr typecheck",
+    "generate:component-meta": "vpr @gr/ui#generate:component-meta"
   },
   "dependencies": {
     "jose": "^6.2.3"

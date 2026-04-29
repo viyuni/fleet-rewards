@@ -6,6 +6,9 @@ export const userRegisterSchema = type({
   biliUid: biliUidSchema,
   username: usernameSchema,
   password: passwordSchema,
+  email: 'string.email?',
+  address: 'string?',
+  phone: 'string?',
 });
 
 export const userLoginSchema = type({
