@@ -3,9 +3,9 @@ import {
   CircleCheckIcon,
   InfoIcon,
   Loader2Icon,
-  OctagonXIcon,
   TriangleAlertIcon,
   XIcon,
+  XCircle,
 } from 'lucide-vue-next';
 import type { ToasterProps } from 'vue-sonner';
 import { Toaster as Sonner } from 'vue-sonner';
@@ -26,6 +26,7 @@ const props = defineProps<ToasterProps>();
     }"
     v-bind="{
       ...props,
+      position: 'top-center',
       toastOptions: {
         classes: {
           toast: 'rounded-2xl',
@@ -34,16 +35,16 @@ const props = defineProps<ToasterProps>();
     }"
   >
     <template #success-icon>
-      <CircleCheckIcon class="size-4" />
+      <CircleCheckIcon class="text-success size-4" />
     </template>
     <template #info-icon>
-      <InfoIcon class="size-4" />
+      <InfoIcon class="text-info size-4" />
     </template>
     <template #warning-icon>
-      <TriangleAlertIcon class="size-4" />
+      <TriangleAlertIcon class="text-warning size-4" />
     </template>
     <template #error-icon>
-      <OctagonXIcon class="size-4" />
+      <XCircle class="text-error size-4" />
     </template>
     <template #loading-icon>
       <div>

@@ -12,19 +12,29 @@ import vueRouter from 'vue-router/vite';
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
-    components({
-      dts: './.types/components.d.ts',
-      resolvers: [uiResolver()],
-    }),
     vueRouter({
       dts: './.types/typed-router.d.ts',
     }),
     vue(),
     vueDevTools(),
     tailwindcss(),
+    components({
+      dts: './.types/components.d.ts',
+      dirs: ['src/components', 'src/layouts'],
+      resolvers: [uiResolver()],
+    }),
     autoImport({
-      imports: ['vue', 'vue-router', 'pinia'],
+      imports: [
+        'vue',
+        'vue-router',
+        'pinia',
+        {
+          from: 'vue-sonner',
+          imports: ['toast'],
+        },
+      ],
       dts: './.types/auto-imports.d.ts',
+      vueTemplate: true,
     }),
   ],
   resolve: {

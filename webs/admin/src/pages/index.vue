@@ -1,27 +1,23 @@
-<script setup lang="ts">
-import { api } from '#web-admin/lib/api';
-
-api.auth.login
-  .post({
-    username: 'admin',
-    password: 'admin',
-    biliUid: '2131232',
-  })
-  .then(res => {
-    if (res) {
-      console.log(res);
-    }
-  });
-</script>
+<script setup lang="ts"></script>
 
 <template>
-  <div>
-    <h1>You did it!</h1>
-    <p>
-      Visit <a href="https://vuejs.org/" target="_blank" rel="noopener">vuejs.org</a> to read the
-      documentation
-    </p>
-    <Button>123123</Button>
+  <div class="grid h-dvh w-full grid-rows-[auto_1fr] overflow-hidden">
+    <div
+      class="border-base-300 container mx-auto flex items-center justify-between border-x border-b p-5"
+    >
+      <div class="flex gap-2 select-none">
+        <ViyuniIcon width="26" height="26" />
+        <h1 class="text-xl font-bold uppercase">Guard Rewards</h1>
+      </div>
+    </div>
+    <div class="border-base-300 container mx-auto border-x">
+      <div class="flex size-full flex-col items-center justify-center gap-2 select-none">
+        <ViyuniIcon width="38" height="38" class="animate-[spin_2s_linear_infinite]" />
+        <h1 class="text-4xl font-bold">Coming soon</h1>
+      </div>
+    </div>
+
+    <FluidCursor class="z-[-1] opacity-50" />
   </div>
 </template>
 

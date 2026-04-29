@@ -1,4 +1,5 @@
 {
+  "extends": ["../../shared/tsconfig/common.json"],
   "files": [],
   "references": [
     {

@@ -28,6 +28,107 @@ declare module 'vue-router/auto-routes' {
    */
   export interface RouteNamedMap {
     '/': RouteRecordInfo<'/', '/', Record<never, never>, Record<never, never>, never>;
+    '/app': RouteRecordInfo<
+      '/app',
+      '/app',
+      Record<never, never>,
+      Record<never, never>,
+      | '/app/admins'
+      | '/app/dashboard/'
+      | '/app/guard-events'
+      | '/app/orders'
+      | '/app/points/accounts'
+      | '/app/points/conversions'
+      | '/app/points/rules'
+      | '/app/points/transactions'
+      | '/app/products/'
+      | '/app/products/stock-movements'
+      | '/app/users'
+    >;
+    '/app/admins': RouteRecordInfo<
+      '/app/admins',
+      '/app/admins',
+      Record<never, never>,
+      Record<never, never>,
+      never
+    >;
+    '/app/dashboard/': RouteRecordInfo<
+      '/app/dashboard/',
+      '/app/dashboard',
+      Record<never, never>,
+      Record<never, never>,
+      never
+    >;
+    '/app/guard-events': RouteRecordInfo<
+      '/app/guard-events',
+      '/app/guard-events',
+      Record<never, never>,
+      Record<never, never>,
+      never
+    >;
+    '/app/orders': RouteRecordInfo<
+      '/app/orders',
+      '/app/orders',
+      Record<never, never>,
+      Record<never, never>,
+      never
+    >;
+    '/app/points/accounts': RouteRecordInfo<
+      '/app/points/accounts',
+      '/app/points/accounts',
+      Record<never, never>,
+      Record<never, never>,
+      never
+    >;
+    '/app/points/conversions': RouteRecordInfo<
+      '/app/points/conversions',
+      '/app/points/conversions',
+      Record<never, never>,
+      Record<never, never>,
+      never
+    >;
+    '/app/points/rules': RouteRecordInfo<
+      '/app/points/rules',
+      '/app/points/rules',
+      Record<never, never>,
+      Record<never, never>,
+      never
+    >;
+    '/app/points/transactions': RouteRecordInfo<
+      '/app/points/transactions',
+      '/app/points/transactions',
+      Record<never, never>,
+      Record<never, never>,
+      never
+    >;
+    '/app/products/': RouteRecordInfo<
+      '/app/products/',
+      '/app/products',
+      Record<never, never>,
+      Record<never, never>,
+      never
+    >;
+    '/app/products/stock-movements': RouteRecordInfo<
+      '/app/products/stock-movements',
+      '/app/products/stock-movements',
+      Record<never, never>,
+      Record<never, never>,
+      never
+    >;
+    '/app/users': RouteRecordInfo<
+      '/app/users',
+      '/app/users',
+      Record<never, never>,
+      Record<never, never>,
+      never
+    >;
+    '/login/': RouteRecordInfo<
+      '/login/',
+      '/login',
+      Record<never, never>,
+      Record<never, never>,
+      never
+    >;
   }
 
   /**
@@ -43,6 +144,70 @@ declare module 'vue-router/auto-routes' {
   export interface _RouteFileInfoMap {
     'src/pages/index.vue': {
       routes: '/';
+      views: never;
+    };
+    'src/pages/app.vue': {
+      routes:
+        | '/app'
+        | '/app/admins'
+        | '/app/dashboard/'
+        | '/app/guard-events'
+        | '/app/orders'
+        | '/app/points/accounts'
+        | '/app/points/conversions'
+        | '/app/points/rules'
+        | '/app/points/transactions'
+        | '/app/products/'
+        | '/app/products/stock-movements'
+        | '/app/users';
+      views: 'default';
+    };
+    'src/pages/app/admins.vue': {
+      routes: '/app/admins';
+      views: never;
+    };
+    'src/pages/app/dashboard/index.vue': {
+      routes: '/app/dashboard/';
+      views: never;
+    };
+    'src/pages/app/guard-events.vue': {
+      routes: '/app/guard-events';
+      views: never;
+    };
+    'src/pages/app/orders.vue': {
+      routes: '/app/orders';
+      views: never;
+    };
+    'src/pages/app/points/accounts.vue': {
+      routes: '/app/points/accounts';
+      views: never;
+    };
+    'src/pages/app/points/conversions.vue': {
+      routes: '/app/points/conversions';
+      views: never;
+    };
+    'src/pages/app/points/rules.vue': {
+      routes: '/app/points/rules';
+      views: never;
+    };
+    'src/pages/app/points/transactions.vue': {
+      routes: '/app/points/transactions';
+      views: never;
+    };
+    'src/pages/app/products/index.vue': {
+      routes: '/app/products/';
+      views: never;
+    };
+    'src/pages/app/products/stock-movements.vue': {
+      routes: '/app/products/stock-movements';
+      views: never;
+    };
+    'src/pages/app/users.vue': {
+      routes: '/app/users';
+      views: never;
+    };
+    'src/pages/login/index.vue': {
+      routes: '/login/';
       views: never;
     };
   }

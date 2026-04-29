@@ -35,7 +35,16 @@
     "./spinner": "./src/components/ui/spinner/index.ts",
     "./table": "./src/components/ui/table/index.ts",
     "./textarea": "./src/components/ui/textarea/index.ts",
-    "./tooltip": "./src/components/ui/tooltip/index.ts"
+    "./tooltip": "./src/components/ui/tooltip/index.ts",
+    "./fluid-cursor": "./src/components/ui/fluid-cursor/index.ts",
+    "./icons": "./src/components/ui/icons/index.ts",
+    "./sheet": "./src/components/ui/sheet/index.ts",
+    "./sidebar": "./src/components/ui/sidebar/index.ts",
+    "./skeleton": "./src/components/ui/skeleton/index.ts",
+    "./dropdown-menu": "./src/components/ui/dropdown-menu/index.ts",
+    "./breadcrumb": "./src/components/ui/breadcrumb/index.ts",
+    "./collapsible": "./src/components/ui/collapsible/index.ts",
+    "./theme-toggle": "./src/components/ui/theme-toggle/index.ts"
   },
   "scripts": {
     "build": "vp pack",
