@@ -20,13 +20,4 @@ export const auth = new Elysia({
     {
       body: adminLoginSchema,
     },
-  )
-  .post(
-    '/register',
-    ({ body, auth }) => {
-      return auth.register(body);
-    },
-    {
-      body: adminLoginSchema,
-    },
   );

@@ -41,6 +41,7 @@ declare module 'vue-router/auto-routes' {
       | '/app/points/conversions'
       | '/app/points/rules'
       | '/app/points/transactions'
+      | '/app/points/types'
       | '/app/products/'
       | '/app/products/stock-movements'
       | '/app/users'
@@ -101,6 +102,13 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       never
     >;
+    '/app/points/types': RouteRecordInfo<
+      '/app/points/types',
+      '/app/points/types',
+      Record<never, never>,
+      Record<never, never>,
+      never
+    >;
     '/app/products/': RouteRecordInfo<
       '/app/products/',
       '/app/products',
@@ -157,6 +165,7 @@ declare module 'vue-router/auto-routes' {
         | '/app/points/conversions'
         | '/app/points/rules'
         | '/app/points/transactions'
+        | '/app/points/types'
         | '/app/products/'
         | '/app/products/stock-movements'
         | '/app/users';
@@ -192,6 +201,10 @@ declare module 'vue-router/auto-routes' {
     };
     'src/pages/app/points/transactions.vue': {
       routes: '/app/points/transactions';
+      views: never;
+    };
+    'src/pages/app/points/types.vue': {
+      routes: '/app/points/types';
       views: never;
     };
     'src/pages/app/products/index.vue': {

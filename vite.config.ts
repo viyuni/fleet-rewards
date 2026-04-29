@@ -6,6 +6,27 @@ export default defineConfig({
   },
   run: {
     cache: true,
+    tasks: {
+      'dev:server/admin': {
+        command: 'vpr @gr/server-admin#dev',
+      },
+      'dev:server/user': {
+        command: 'vpr @gr/server-server#dev',
+      },
+      'dev:web/admin': {
+        command: 'vpr @gr/web-admin#dev',
+      },
+      'dev:web/user': {
+        command: 'vpr @gr/web-user#dev',
+      },
+      'gen:meta': {
+        command: 'vpr @gr/ui#gen:meta',
+      },
+      'build:all': {
+        command: 'vpr -r build',
+        dependsOn: ['gen:meta'],
+      },
+    },
   },
   fmt: {
     singleQuote: true,
@@ -14,7 +35,7 @@ export default defineConfig({
     sortPackageJson: true,
     arrowParens: 'avoid',
     embeddedLanguageFormatting: 'auto',
-    ignorePatterns: ['**/node_modules/**', '**/dist/**', 'src/packages/ui/**'],
+    ignorePatterns: ['**/node_modules/**', '**/dist/**', '**/webs/ui/**'],
   },
   lint: {
     plugins: ['unicorn', 'typescript', 'oxc', 'vue', 'import', 'vitest', 'node'],
@@ -149,6 +170,6 @@ export default defineConfig({
       builtin: true,
     },
     globals: {},
-    ignorePatterns: ['**/node_modules/**', '**/dist/**'],
+    ignorePatterns: ['**/node_modules/**', '**/dist/**', '**/webs/ui/**'],
   },
 });

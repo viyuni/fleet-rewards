@@ -13,7 +13,6 @@ export const adminRegisterSchema = type({
 
 export const adminLoginSchema = type({
   biliUid: biliUidSchema,
-  username: usernameSchema,
   password: 'string',
 });
 

@@ -5,6 +5,7 @@ import type { JwtAuthenticator } from './authenticator';
 
 export const jwt = ({ authenticator }: { authenticator: JwtAuthenticator }) => {
   return new Elysia({ name: 'JwtModule' }).macro('requiredAuth', {
+    // OpenAPI
     detail: {
       security: [{ requiredAuth: [] }],
       parameters: [

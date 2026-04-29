@@ -1,18 +1,40 @@
 import pino from 'pino';
+import pretty from 'pino-pretty';
 
-import { config } from './config';
+import type { SharedConfig } from './config';
 
-export const logger = pino({
-  level: config.LOG_LEVEL ?? 'info',
-  transport:
+export function createLogger(config: SharedConfig) {
+  const stream =
     config.NODE_ENV === 'development'
-      ? {
-          target: 'pino-pretty',
-          options: {
-            colorize: true,
-            translateTime: 'SYS:standard',
-            ignore: 'pid,hostname',
-          },
-        }
-      : undefined,
-});
+      ? pretty({
+          colorize: true,
+          translateTime: 'HH:MM:ss.l',
+          ignore: 'pid,hostname',
+        })
+      : undefined;
+
+  const logger = pino(
+    {
+      level: config.LOG_LEVEL ?? 'info',
+    },
+    stream,
+  );
+
+  function printUrls(server: Bun.Server<unknown>) {
+    const protocol = 'http';
+    const host = server.hostname === '0.0.0.0' ? 'localhost' : server.hostname;
+    const baseUrl = `${protocol}://${host}:${server.port}`;
+
+    logger.info(`➜  Local:   ${baseUrl}/`);
+    logger.info(`➜  Docs:    ${baseUrl}/openapi`);
+  }
+
+  function scope(name: string) {
+    return logger.child({ scope: name });
+  }
+
+  return Object.assign(logger, {
+    printUrls,
+    scope,
+  });
+}

@@ -65,7 +65,7 @@ export const pointTypes = pgTable(
     /**
      * 状态。
      *
-     * disabled 后历史数据仍可查询，但不允许继续发放。
+     * disabled 后历史数据仍可查询，但不允许继续发放、兑换、转换。
      */
     status: pointTypeStatusEnum('status').notNull().default('active'),
 

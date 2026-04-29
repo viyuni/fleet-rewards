@@ -4,12 +4,13 @@ import path from 'node:path';
 
 import sharp from 'sharp';
 
-import { config } from '../../config';
 import { InvalidImageSizeError } from './errors';
 
 export class ImageUseCase {
+  constructor(private imageSavePath: string) {}
+
   async ensureImageDir() {
-    await mkdir(config.IMAGE_SAVE_PATH, { recursive: true });
+    await mkdir(this.imageSavePath, { recursive: true });
   }
 
   async upload(file: File) {
@@ -47,7 +48,7 @@ export class ImageUseCase {
     const hashPrefix = hash.slice(0, 32);
 
     const filename = `${hashPrefix}.webp`;
-    const filePath = path.join(config.IMAGE_SAVE_PATH, filename);
+    const filePath = path.join(this.imageSavePath, filename);
 
     // 避免重复上传
     if (!(await this.exists(filePath))) {

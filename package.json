@@ -12,8 +12,7 @@
     "prepare": "vp config",
     "typecheck": "vpr -r typecheck",
     "test": "vpr -r test",
-    "check": "vp fmt && vp lint && vpr typecheck",
-    "generate:component-meta": "vpr @gr/ui#generate:component-meta"
+    "check": "vp fmt && vp lint && vpr typecheck"
   },
   "dependencies": {
     "jose": "^6.2.3"

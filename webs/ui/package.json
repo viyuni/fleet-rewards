@@ -47,11 +47,10 @@
     "./theme-toggle": "./src/components/ui/theme-toggle/index.ts"
   },
   "scripts": {
-    "build": "vp pack",
     "test": "vp test",
     "check": "vp check",
     "typecheck": "vue-tsgo --build",
-    "generate:component-meta": "bun resolver/generate.ts"
+    "gen:meta": "bun resolver/generate.ts"
   },
   "dependencies": {
     "@tanstack/vue-form": "^1.29.1",

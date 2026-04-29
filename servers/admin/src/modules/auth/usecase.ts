@@ -15,7 +15,7 @@ export class AuthUseCase {
   async login(input: AdminLoginInput) {
     return this.db.transaction(async tx => {
       const adminRepository = new AdminRepository(tx);
-      const user = await adminRepository.findByUsername(input.username);
+      const user = await adminRepository.findByBiliUid(input.biliUid);
 
       if (!user) {
         throw new InvalidCredentialsError();

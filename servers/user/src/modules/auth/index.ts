@@ -1,5 +1,5 @@
 import { jwt } from '@gr/server-shared';
-import { adminLoginSchema } from '@gr/shared';
+import { userLoginSchema, userRegisterSchema } from '@gr/shared';
 import Elysia from 'elysia';
 
 import { authenticator } from './authenticator';
@@ -18,7 +18,7 @@ export const auth = new Elysia({
       return auth.login(body);
     },
     {
-      body: adminLoginSchema,
+      body: userLoginSchema,
     },
   )
   .post(
@@ -27,6 +27,6 @@ export const auth = new Elysia({
       return auth.register(body);
     },
     {
-      body: adminLoginSchema,
+      body: userRegisterSchema,
     },
   );

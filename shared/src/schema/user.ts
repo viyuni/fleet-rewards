@@ -12,7 +12,7 @@ export const userRegisterSchema = type({
 });
 
 export const userLoginSchema = type({
-  username: usernameSchema,
+  biliUid: biliUidSchema,
   password: 'string',
 });
 

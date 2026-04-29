@@ -1,3 +1,5 @@
-import { JwtAuthenticator, config } from '@gr/server-shared';
+import { JwtAuthenticator } from '@gr/server-shared';
 
-export const authenticator = new JwtAuthenticator(config.ADMIN_JWT_SECRET);
+import { config } from '../../config';
+
+export const authenticator = new JwtAuthenticator(config.JWT_SECRET);

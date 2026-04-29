@@ -1,6 +1,6 @@
-import { db } from '@gr/server-shared/db';
 import Elysia from 'elysia';
 
+import { db } from '../../db';
 import { authGuard } from '../auth';
 import { authenticator } from '../auth/authenticator';
 import { UserErrors } from './errors';

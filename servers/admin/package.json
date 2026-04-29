@@ -8,7 +8,7 @@
     ".": "./src/eden.ts"
   },
   "scripts": {
-    "dev": "bun run --watch src/app.ts",
+    "dev": "bun --cwd .. --env-file=servers/admin/.env --watch servers/admin/src/app.ts",
     "test": "bun test",
     "typecheck": "tsgo --build",
     "check": "vpr typecheck && vp lint && vp fmt"
