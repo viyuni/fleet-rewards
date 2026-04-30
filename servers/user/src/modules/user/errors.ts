@@ -1,4 +1,4 @@
-import { BaseErrors } from '@gr/server-shared/errors';
+import { BaseErrors } from '@server/shared/errors';
 
 export class UserAlreadyExistsError extends BaseErrors.ConflictError {
   override code = 'USER_ALREADY_EXISTS';

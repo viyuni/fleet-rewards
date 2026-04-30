@@ -1,5 +1,5 @@
 {
-  "name": "@gr/server-admin",
+  "name": "@server/admin",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -17,8 +17,8 @@
     "@elysia/cors": "^1.4.2",
     "@elysia/html": "^1.4.1",
     "@elysia/static": "^1.4.10",
-    "@gr/server-shared": "workspace:*",
-    "@gr/shared": "workspace:*",
+    "@internal/shared": "workspace:*",
+    "@server/shared": "workspace:*",
     "drizzle-orm": "^0.45.2",
     "elysia": "latest"
   },

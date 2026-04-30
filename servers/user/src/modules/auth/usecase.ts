@@ -1,7 +1,6 @@
-import type { DbClient } from '@gr/server-shared/db';
-import type { JwtAuthenticator } from '@gr/server-shared/jwt';
-
-import type { UserLoginInput, UserRegisterInput } from '#shared/schema';
+import type { UserLoginInput, UserRegisterInput } from '@internal/shared';
+import type { DbClient } from '@server/shared/db';
+import type { JwtAuthenticator } from '@server/shared/jwt';
 
 export class AuthUseCase {
   constructor(

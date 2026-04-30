@@ -1,4 +1,4 @@
-import type { admins } from '@gr/server-shared';
+import type { admins } from '@server/shared';
 import type { InferSelectModel, InferInsertModel } from 'drizzle-orm';
 
 export type Admin = InferSelectModel<typeof admins>;

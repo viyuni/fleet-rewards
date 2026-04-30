@@ -87,7 +87,7 @@ function generateType(items: ComponentExport[]) {
     .map(item =>
       item.componentNames.map(
         componentName =>
-          `    ${componentName}: typeof import('@gr/ui/${item.exportName}')['${componentName}']`,
+          `    ${componentName}: typeof import('${pkg.name}/${item.exportName}')['${componentName}']`,
       ),
     )
     .flat()

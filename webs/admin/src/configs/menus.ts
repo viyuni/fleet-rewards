@@ -7,7 +7,7 @@ import {
   UserRound,
 } from 'lucide-vue-next';
 
-import type { MenuItem } from '#web-admin/types';
+import type { MenuItem } from '#web/admin/types';
 
 export const menus = [
   {

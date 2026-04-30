@@ -1,4 +1,4 @@
-import { pointTypes, type Db } from '@gr/server-shared';
+import { pointTypes, type Db } from '@server/shared';
 import { eq } from 'drizzle-orm';
 
 import type { InsertPointType, PointType, UpdatePointType } from './model';

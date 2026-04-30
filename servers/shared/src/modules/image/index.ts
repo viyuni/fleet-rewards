@@ -1,7 +1,7 @@
 import { staticPlugin } from '@elysia/static';
 import Elysia from 'elysia';
 
-import type { SharedConfig } from '#server-shared/config';
+import type { SharedConfig } from '#server/shared/config';
 
 import { ImageUseCase } from './usecase';
 

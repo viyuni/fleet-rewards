@@ -21,6 +21,11 @@
     "noUnusedParameters": false,
     "noPropertyAccessFromIndexSignature": false,
     "types": ["bun"],
-    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.server-user.tsbuildinfo"
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.server-user.tsbuildinfo",
+    "paths": {
+      "#servers/user/*": ["../user/src/*"],
+      "#server/shared/*": ["../shared/src/*"],
+      "#shared/*": ["../../shared/src/*"]
+    }
   }
 }

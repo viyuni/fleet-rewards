@@ -29,9 +29,8 @@
     "plugins": [{ "name": "@kitajs/ts-html-plugin" }],
 
     "paths": {
-      "#server-admin/*": ["./src/*"],
-      "#server-user/*": ["../user/src/*"],
-      "#server-shared/*": ["../shared/src/*"],
+      "#server/admin/*": ["./src/*"],
+      "#server/shared/*": ["../shared/src/*"],
       "#shared/*": ["../../shared/src/*"]
     }
   }

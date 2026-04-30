@@ -1,4 +1,4 @@
-import { ConflictError, ForbiddenError } from '@gr/server-shared';
+import { ConflictError, ForbiddenError } from '@server/shared';
 
 export class AlreadyExistsError extends ConflictError {
   override code = 'ADMIN_ALREADY_EXISTS';

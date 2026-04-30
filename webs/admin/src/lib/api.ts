@@ -1,5 +1,5 @@
 import { treaty } from '@elysia/eden';
-import type { App } from '@gr/server-admin';
+import type { App } from '@server/admin';
 
 if (!import.meta.env.VITE_SERVER_BASE_URL)
   throw new Error('VITE_SERVER_BASE_URL is required to create a treaty.');

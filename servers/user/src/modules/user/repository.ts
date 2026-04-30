@@ -1,6 +1,6 @@
-import type { Db } from '@gr/server-shared/db';
-import { users } from '@gr/server-shared/db/schema';
-import { BaseErrors } from '@gr/server-shared/errors';
+import type { Db } from '@server/shared/db';
+import { users } from '@server/shared/db/schemas';
+import { BaseErrors } from '@server/shared/errors';
 import { and, eq, isNull } from 'drizzle-orm';
 
 export type User = typeof users.$inferSelect;

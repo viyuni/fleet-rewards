@@ -14,6 +14,20 @@ Docs are local at `node_modules/vite-plus/docs` or online at https://viteplus.de
 
 <!--VITE PLUS END-->
 
+<!-- PROJECT IMPORTS START -->
+
+# Import Conventions
+
+For imports that cross workspace package boundaries, prefer real package names:
+
+- `@server/admin`, `@server/user`, `@server/shared`
+- `@web/admin`, `@web/user`, `@web/ui`
+- `@internal/shared`
+
+Use `#...` imports only as TypeScript path aliases for code inside the current project/package, for example local server internals such as `#server/shared/...`.
+
+<!-- PROJECT IMPORTS END -->
+
 <!-- PROJECT SCRIPT START -->
 
 # Project Scripts

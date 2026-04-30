@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Button } from '@gr/ui';
+import { Button } from '@web/ui';
 </script>
 
 <template>

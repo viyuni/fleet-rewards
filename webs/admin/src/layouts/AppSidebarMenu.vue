@@ -3,7 +3,7 @@ import { ChevronRight } from 'lucide-vue-next';
 import type { RouteLocationRaw } from 'vue-router';
 
 import { useSidebar } from '#ui/components/ui/sidebar';
-import type { MenuItem } from '#web-admin/types';
+import type { MenuItem } from '#web/admin/types';
 
 defineProps<{
   items: MenuItem[];

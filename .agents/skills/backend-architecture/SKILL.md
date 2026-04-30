@@ -45,6 +45,7 @@ Modules under `servers/shared/src/modules/*` are reusable backend building block
 Shared modules should:
 
 - Export context factories, use cases, repositories, models, errors, and helpers that can be reused by app servers.
+- Add a dedicated package export in `servers/shared/package.json` for each reusable shared module, for example `"./point-type": "./src/modules/point-type/index.ts"`.
 - Follow the same lightweight module wrapping style as existing shared modules such as `image`, `jwt`, and `point-type`.
 - Accept dependency instances from the caller through function parameters or constructors, for example `pointTypePlugin({ db })` or `imagePlugin({ useCase })`.
 - Keep environment-specific choices in the caller, such as `servers/admin` or `servers/user`.
@@ -73,7 +74,7 @@ Routes should:
 
 - Define Elysia route paths and HTTP schemas.
 - Call decorated use cases, for example `({ body, admin }) => admin.login(body)`.
-- Use shared schemas from `#shared/schema`.
+- Use shared request/response schemas from `@internal/shared`.
 - Use route metadata such as `details.summary` when useful.
 - Use auth macros such as `{ requiredAuth: true }`.
 
@@ -83,6 +84,16 @@ Routes must not:
 - Open transactions.
 - Hash passwords, sign tokens, or run multi-step business flow.
 - Contain business branching beyond simple request adaptation.
+
+## Shared Schema Rules
+
+Request/response schemas that are used by routes or use cases must live in the shared schema package and be imported from `@internal/shared`.
+
+Routes should import schema values such as `userLoginSchema` from `@internal/shared` and attach them to Elysia route options.
+
+Use cases should import the corresponding input/output types such as `UserLoginInput` from `@internal/shared`.
+
+Repositories should not import shared schemas or shared input types. Convert or pass use case inputs into repository methods whose parameters are typed with local Drizzle-inferred model types.
 
 ## Context Rules
 
@@ -119,6 +130,7 @@ UseCases should:
 - Own transactions for business actions that write or require consistency.
 - Instantiate repositories inside the transaction with `tx`.
 - Coordinate repository calls and application services.
+- Accept route input types from shared schemas in `@internal/shared`.
 - Throw shared or module-specific `AppError` subclasses.
 - Return API-ready plain objects when that keeps routes thin.
 
@@ -152,20 +164,40 @@ Repositories wrap Drizzle access only.
 
 Repositories should:
 
-- Accept `Db` from `#server/db` so they work with both the root client and transaction clients.
-- Use Drizzle query builders and schema objects from `#server/db/schema`.
+- Accept `Db` from `@server/shared/db` when importing from app server packages, so they work with both the root client and transaction clients.
+- Use Drizzle query builders and schema objects from `@server/shared/db/schemas` when importing from app server packages.
+- Use repository parameter types imported from local `model.ts`, where those types are derived with Drizzle `InferSelectModel` and `InferInsertModel`.
 - Encapsulate common persistence filters such as `isNull(deletedAt)`.
 - Return database records, `null`, or simple persistence results.
 
 Repositories must not:
 
 - Import Elysia, route schemas, config, or JWT/auth code.
+- Import request input types from `@internal/shared`; shared schemas are for routes and use cases, not persistence APIs.
 - Open transactions.
 - Make permission decisions.
 - Hash passwords or sign tokens.
 - Orchestrate business workflows.
 
 Use `DbClient` only for the root use case dependency. Use `Db` for repository constructors.
+
+Repository write methods should take inferred model types, not hand-written request shapes:
+
+```ts
+import type { InsertAdmin, UpdateAdmin } from './model';
+
+export class AdminRepository {
+  constructor(private db: Db) {}
+
+  async create(input: InsertAdmin) {
+    return this.db.insert(admins).values(input).returning();
+  }
+
+  async update(id: string, input: UpdateAdmin) {
+    return this.db.update(admins).set(input).where(eq(admins.id, id)).returning();
+  }
+}
+```
 
 ## Model Rules
 
@@ -177,13 +209,15 @@ export type InsertAdmin = InferInsertModel<typeof admins>;
 export type UpdateAdmin = Partial<InsertAdmin>;
 ```
 
-Do not duplicate shared request schemas in `model.ts`; import request input types from `#shared/schema`.
+Use these inferred model types for repository parameters and return annotations when explicit annotations are useful.
+
+Do not duplicate shared request schemas in `model.ts`; import request input types from `@internal/shared` in routes and use cases instead.
 
 ## Error Rules
 
 Module errors live in `errors.ts`.
 
-Create specific errors by extending shared base errors from `#server/shared/errors`, override `code`, and provide a useful Chinese default message when the user-facing API needs one.
+Create specific errors by extending shared base errors from `@server/shared/errors` when importing from app server packages, override `code`, and provide a useful Chinese default message when the user-facing API needs one.
 
 ```ts
 export class AdminDisabledError extends ForbiddenError {
@@ -229,10 +263,30 @@ For cross-module workflows, prefer a higher-level use case that owns one transac
 
 ## Import Rules
 
-Use existing path aliases:
+For imports that cross workspace package boundaries, prefer real package names:
 
-- `#server/...` for server internals.
-- `#shared/...` for shared schemas and types.
+- `@server/admin`, `@server/user`, and `@server/shared` for server packages.
+- `@web/admin`, `@web/user`, and `@web/ui` for web packages.
+- `@internal/shared` for shared route schemas and input/output types.
+
+When importing from `@server/shared`, prefer the most specific package export for that module or capability, such as `@server/shared/image`, `@server/shared/jwt`, `@server/shared/point-type`, `@server/shared/db`, or `@server/shared/errors`. Add a new dedicated export before consuming a new reusable shared module from another package.
+
+Use `#...` imports only as TypeScript path aliases for code inside the current project/package, for example `#server/admin/...` inside `@server/admin`, `#server/user/...` inside `@server/user`, or `#server/shared/...` inside `@server/shared`.
+
+Backend examples:
+
+```ts
+// Cross-package imports use package names.
+import { setupApp } from '@server/shared/setup-app';
+import { imagePlugin } from '@server/shared/image';
+import { userLoginSchema } from '@internal/shared';
+import type { Db } from '@server/shared/db';
+
+// In-package aliases are for local source internals.
+import { config } from '#server/admin/config';
+```
+
+Do not use `#...` aliases to reach another workspace package when that package has an `@...` package export. Do not use deep relative paths such as `../../shared/src/...` across package boundaries.
 
 Prefer type-only imports for types. Keep local module imports relative.
 
@@ -263,6 +317,7 @@ After backend changes, run the repo's Vite+ commands from the project root:
 
 ```txt
 vp check
+vpr typecheck
 vp test
 ```
 

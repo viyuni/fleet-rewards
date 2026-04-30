@@ -1,5 +1,5 @@
-import type { Db } from '@gr/server-shared';
-import { admins, BaseErrors } from '@gr/server-shared';
+import type { Db } from '@server/shared';
+import { admins, BaseErrors } from '@server/shared';
 import { and, eq, isNull } from 'drizzle-orm';
 
 import type { InsertAdmin } from './model';

@@ -9,7 +9,7 @@ export default defineConfig({
   resolve: {
     tsconfigPaths: true,
     alias: {
-      '#web-user': '/src',
+      '#web/user': '/src',
     },
   },
 });

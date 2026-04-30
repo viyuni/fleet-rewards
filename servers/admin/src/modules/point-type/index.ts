@@ -1,7 +1,11 @@
-import { createPointTypeSchema, pointTypeIdParamsSchema, updatePointTypeSchema } from '@gr/shared';
+import {
+  createPointTypeSchema,
+  pointTypeIdParamsSchema,
+  updatePointTypeSchema,
+} from '@internal/shared/schemas';
 import Elysia from 'elysia';
 
-import { pointTypePlugin } from '#server-shared/modules/point-type';
+import { pointTypePlugin } from '#server/shared/modules/point-type';
 
 import { db } from '../../db';
 import { authGuard } from '../auth';

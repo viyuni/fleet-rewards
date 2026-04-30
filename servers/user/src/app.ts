@@ -1,4 +1,4 @@
-import { setupApp } from '@gr/server-shared/setup-app';
+import { setupApp } from '@server/shared/setup-app';
 import { Elysia } from 'elysia';
 
 import { config } from './config';

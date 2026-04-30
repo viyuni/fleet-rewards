@@ -1,8 +1,8 @@
 import { fileURLToPath } from 'node:url';
 
-import uiResolver from '@gr/ui/resolver';
 import tailwindcss from '@tailwindcss/vite';
 import vue from '@vitejs/plugin-vue';
+import uiResolver from '@web/ui/resolver';
 import autoImport from 'unplugin-auto-import/vite';
 import components from 'unplugin-vue-components/vite';
 import vueDevTools from 'vite-plugin-vue-devtools';
@@ -31,6 +31,10 @@ export default defineConfig({
         {
           from: 'vue-sonner',
           imports: ['toast'],
+        },
+        {
+          from: './src/lib/api.ts',
+          imports: ['api'],
         },
       ],
       dts: './.types/auto-imports.d.ts',

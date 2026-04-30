@@ -1,7 +1,7 @@
-import { imagePlugin } from '@gr/server-shared/image';
+import { imagePlugin } from '@server/shared/image';
 import Elysia from 'elysia';
 
-import { config } from '#server-user/config';
+import { config } from '#servers/user/config';
 
 export const image = new Elysia({
   name: 'ImageRoute',

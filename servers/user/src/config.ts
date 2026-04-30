@@ -1,6 +1,6 @@
 import path from 'node:path';
 
-import { sharedConfigShape } from '@gr/server-shared/config';
+import { sharedConfigShape } from '@server/shared/config';
 import arkenv, { type } from 'arkenv';
 
 export const config = arkenv({

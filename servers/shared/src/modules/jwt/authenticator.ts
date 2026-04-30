@@ -1,4 +1,4 @@
-import { UnauthorizedError } from '@gr/server-shared';
+import { UnauthorizedError } from '@server/shared';
 import { SignJWT, jwtVerify } from 'jose';
 
 export class JwtAuthenticator {

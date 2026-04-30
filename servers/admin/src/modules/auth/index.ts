@@ -1,5 +1,5 @@
-import { jwt } from '@gr/server-shared';
-import { adminLoginSchema } from '@gr/shared';
+import { adminLoginSchema } from '@internal/shared/schemas';
+import { jwt } from '@server/shared/jwt';
 import Elysia from 'elysia';
 
 import { authenticator } from './authenticator';

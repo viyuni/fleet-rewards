@@ -11,4 +11,10 @@ export const admin = new Elysia({
   prefix: '/admin',
 })
   .use(adminContext)
-  .get('/me', ({ userId }) => ({ name: 'Viyuni', userId }), { requiredAuth: true });
+  .get('/me', ({ userId }) => ({ name: 'Viyuni', userId }), {
+    requiredAuth: true,
+    detail: {
+      tags: ['Admin'],
+      description: '获取当前管理员信息',
+    },
+  });

@@ -1,7 +1,6 @@
-import { setupApp } from '@gr/server-shared/setup-app';
+import { userLoginSchema, userRegisterSchema } from '@internal/shared';
+import { setupApp } from '@server/shared/setup-app';
 import Elysia from 'elysia';
-
-import { userLoginSchema, userRegisterSchema } from '#shared/schema';
 
 import { userContext } from './context';
 

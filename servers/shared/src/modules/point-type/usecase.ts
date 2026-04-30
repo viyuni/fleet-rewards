@@ -1,5 +1,4 @@
-import type { UpdatePointTypeInput, CreatePointTypeInput } from '#shared/schema';
-
+import type { UpdatePointTypeInput, CreatePointTypeInput } from '../../../../../shared/schemas';
 import { PointTypeCodeExistsError, PointTypeNotFoundError } from './errors';
 import type { PointTypeRepository } from './repository';
 

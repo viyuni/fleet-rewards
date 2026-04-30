@@ -1,5 +1,5 @@
 {
-  "name": "@gr/server-user",
+  "name": "@server/user",
   "version": "1.0.0",
   "private": true,
   "type": "module",
@@ -15,8 +15,8 @@
   },
   "dependencies": {
     "@elysia/static": "^1.4.10",
-    "@gr/server-shared": "workspace:*",
-    "@gr/shared": "workspace:*",
+    "@internal/shared": "workspace:*",
+    "@server/shared": "workspace:*",
     "drizzle-orm": "^0.45.2",
     "elysia": "latest"
   },

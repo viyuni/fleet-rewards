@@ -1,6 +1,6 @@
 import Elysia from 'elysia';
 
-import type { Db } from '#server-shared/db';
+import type { Db } from '#server/shared/db';
 
 import { PointTypeErrors } from './errors';
 import { PointTypeRepository } from './repository';

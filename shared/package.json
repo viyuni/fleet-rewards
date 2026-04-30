@@ -1,8 +1,13 @@
 {
-  "name": "@gr/shared",
+  "name": "@internal/shared",
   "private": true,
   "type": "module",
-  "module": "index.ts",
+  "module": "schema/index.ts",
+  "exports": {
+    ".": "./index.ts",
+    "./schemas": "./schemas/index.ts",
+    "./tsconfig/common": "./tsconfig/common.json"
+  },
   "dependencies": {
     "arktype": "^2.2.0"
   },

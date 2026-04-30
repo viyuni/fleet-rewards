@@ -1,4 +1,4 @@
-import { createLogger } from '@gr/server-shared';
+import { createLogger } from '@server/shared/logger';
 
 import { config } from './config';
 

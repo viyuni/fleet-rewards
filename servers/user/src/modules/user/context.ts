@@ -1,6 +1,7 @@
 import Elysia from 'elysia';
 
-import { db } from '../../db';
+import { db } from '#servers/user/db';
+
 import { authGuard } from '../auth';
 import { authenticator } from '../auth/authenticator';
 import { UserErrors } from './errors';

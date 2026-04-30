@@ -1,18 +1,22 @@
 {
-  "name": "@gr/server-shared",
-  "version": "1.0.0",
+  "name": "@server/shared",
+  "version": "0.0.0",
   "private": true,
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
     "./config": "./src/config.ts",
     "./db": "./src/db/index.ts",
-    "./db/schema": "./src/db/schema/index.ts",
+    "./db/schemas": "./src/db/schemas/index.ts",
+    "./db/models": "./src/db/models/index.ts",
     "./errors": "./src/errors/index.ts",
+    "./logger": "./src/logger.ts",
+    "./setup-app": "./src/setup-app.ts",
+    "./utils": "./src/utils/index.ts",
     "./image": "./src/modules/image/index.ts",
     "./jwt": "./src/modules/jwt/index.ts",
-    "./setup-app": "./src/setup-app.ts",
-    "./utils": "./src/utils/index.ts"
+    "./point-type": "./src/modules/point-type/index.ts",
+    "./health": "./src/modules/health/index.ts"
   },
   "scripts": {
     "typecheck": "tsgo --build",
@@ -21,7 +25,7 @@
   "dependencies": {
     "@elysia/openapi": "^1.4.15",
     "@elysia/static": "^1.4.10",
-    "@gr/shared": "workspace:*",
+    "@internal/shared": "workspace:*",
     "arkenv": "^0.11.0",
     "arktype": "^2.2.0",
     "drizzle-orm": "^0.45.2",

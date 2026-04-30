@@ -1,4 +1,4 @@
-import { JwtAuthenticator } from '@gr/server-shared';
+import { JwtAuthenticator } from '@server/shared/jwt';
 
 import { config } from '../../config';
 

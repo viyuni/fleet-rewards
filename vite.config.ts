@@ -8,19 +8,19 @@ export default defineConfig({
     cache: true,
     tasks: {
       'dev:server/admin': {
-        command: 'vpr @gr/server-admin#dev',
+        command: 'vpr @server/admin#dev',
       },
       'dev:server/user': {
-        command: 'vpr @gr/server-server#dev',
+        command: 'vpr @server/user#dev',
       },
       'dev:web/admin': {
-        command: 'vpr @gr/web-admin#dev',
+        command: 'vpr @web/admin#dev',
       },
       'dev:web/user': {
-        command: 'vpr @gr/web-user#dev',
+        command: 'vpr @web/user#dev',
       },
       'gen:meta': {
-        command: 'vpr @gr/ui#gen:meta',
+        command: 'vpr @web/ui#gen:meta',
       },
       'build:all': {
         command: 'vpr -r build',

@@ -1,4 +1,4 @@
-import { ConflictError, NotFoundError } from '#server-shared/errors';
+import { ConflictError, NotFoundError } from '#server/shared/errors';
 
 export class PointTypeNotFoundError extends NotFoundError {
   override code = 'POINT_TYPE_NOT_FOUND';

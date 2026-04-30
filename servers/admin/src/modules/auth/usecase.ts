@@ -1,14 +1,15 @@
-import type { DbClient, JwtAuthenticator } from '@gr/server-shared';
-import { InvalidCredentialsError } from '@gr/server-shared';
+import type { AdminLoginInput, AdminRegisterInput } from '@internal/shared/schemas';
+import type { Db } from '@server/shared';
+import { InvalidCredentialsError } from '@server/shared';
 
-import type { AdminLoginInput, AdminRegisterInput } from '#shared/schema';
+import type { JwtAuthenticator } from '#server/shared/modules/jwt';
 
 import { AdminRepository } from '../admin/repository';
 import { AuthErrors } from './errors';
 
 export class AuthUseCase {
   constructor(
-    private db: DbClient,
+    private db: Db,
     private authenticator: JwtAuthenticator,
   ) {}
 

@@ -1,5 +1,5 @@
 {
-  "name": "@gr/web-admin",
+  "name": "@web/admin",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -14,11 +14,11 @@
   },
   "dependencies": {
     "@elysia/eden": "^1.4.10",
-    "@gr/ui": "workspace:*",
     "@pinia/colada": "^1.2.1",
     "@tanstack/vue-form": "^1.29.1",
     "@tanstack/vue-table": "^8.21.3",
     "@vueuse/core": "^14.2.1",
+    "@web/ui": "workspace:*",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-vue-next": "^1.0.0",
@@ -35,7 +35,7 @@
     "vue-sonner": "^2.0.9"
   },
   "devDependencies": {
-    "@gr/server-admin": "workspace:*",
+    "@server/admin": "workspace:*",
     "@tailwindcss/vite": "^4.2.4",
     "@tsconfig/node24": "^24.0.4",
     "@types/jsdom": "^28.0.1",

@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import type { SidebarProps } from '@gr/ui/sidebar';
+import type { SidebarProps } from '@web/ui/sidebar';
 
-import { menus } from '#web-admin/configs/menus';
+import { menus } from '#web/admin/configs/menus';
 
 import { version } from '../../package.json';
 
