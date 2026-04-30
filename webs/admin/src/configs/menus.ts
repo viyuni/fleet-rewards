@@ -44,13 +44,13 @@ export const menus = [
     icon: ShoppingBag,
     items: [
       { title: '商品列表', to: '/app/products' },
-      { title: '库存记录', to: '/app/products/stock-movements' },
+      { title: '库存记录', to: '/app/products/stockMovements' },
     ],
   },
 
   {
     title: '大航海事件',
-    to: '/app/guard-events',
+    to: '/app/guardEvents',
     icon: Radio,
   },
 ] satisfies MenuItem[];

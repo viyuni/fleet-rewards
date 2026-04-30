@@ -124,6 +124,7 @@ declare module 'vue' {
     PaginationLink: typeof import('@gr/ui/pagination')['PaginationLink']
     PaginationNext: typeof import('@gr/ui/pagination')['PaginationNext']
     PaginationPrevious: typeof import('@gr/ui/pagination')['PaginationPrevious']
+    Plasma: typeof import('@gr/ui/plasma')['Plasma']
     Progress: typeof import('@gr/ui/progress')['Progress']
     RangeCalendar: typeof import('@gr/ui/range-calendar')['RangeCalendar']
     RangeCalendarCell: typeof import('@gr/ui/range-calendar')['RangeCalendarCell']

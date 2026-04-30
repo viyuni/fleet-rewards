@@ -7,10 +7,19 @@ import sharp from 'sharp';
 import { InvalidImageSizeError } from './errors';
 
 export class ImageUseCase {
-  constructor(private imageSavePath: string) {}
+  constructor(readonly imageSavePath: string) {}
 
-  async ensureImageDir() {
+  private async ensureImageDir() {
     await mkdir(this.imageSavePath, { recursive: true });
+  }
+
+  private async exists(filePath: string) {
+    try {
+      await access(filePath);
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   async upload(file: File) {
@@ -61,14 +70,5 @@ export class ImageUseCase {
       width: metadata.width,
       height: metadata.height,
     };
-  }
-
-  private async exists(filePath: string) {
-    try {
-      await access(filePath);
-      return true;
-    } catch {
-      return false;
-    }
   }
 }

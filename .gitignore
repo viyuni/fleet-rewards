@@ -27,3 +27,6 @@ dist-ssr
 .claude/worktrees/
 
 .env
+
+/public/images/*
+!/public/images/viyuni.svg

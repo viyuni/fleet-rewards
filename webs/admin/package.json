@@ -15,6 +15,7 @@
   "dependencies": {
     "@elysia/eden": "^1.4.10",
     "@gr/ui": "workspace:*",
+    "@pinia/colada": "^1.2.1",
     "@tanstack/vue-form": "^1.29.1",
     "@tanstack/vue-table": "^8.21.3",
     "@vueuse/core": "^14.2.1",

@@ -26,7 +26,7 @@
     "paths": {
       "#server-admin/*": ["./src/*"],
       "#server-user/*": ["../user/src/*"],
-      "#server-shared/*": ["../shared/src/*"],
+      "#server-shared/*": ["./src/*"],
       "#shared/*": ["../../shared/src/*"]
     }
   }

@@ -8,6 +8,7 @@ export * from './model';
 
 export const admin = new Elysia({
   name: 'AdminRoute',
+  prefix: '/admin',
 })
   .use(adminContext)
   .get('/me', ({ userId }) => ({ name: 'Viyuni', userId }), { requiredAuth: true });

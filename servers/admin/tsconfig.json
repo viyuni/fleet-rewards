@@ -23,6 +23,11 @@
     "types": ["bun"],
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.server-admin.tsbuildinfo",
 
+    "jsx": "react",
+    "jsxFactory": "Html.createElement",
+    "jsxFragmentFactory": "Html.Fragment",
+    "plugins": [{ "name": "@kitajs/ts-html-plugin" }],
+
     "paths": {
       "#server-admin/*": ["./src/*"],
       "#server-user/*": ["../user/src/*"],

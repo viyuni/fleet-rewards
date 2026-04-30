@@ -38,6 +38,8 @@ declare module 'vue' {
     FluidCursor: typeof import('@gr/ui/fluid-cursor')['FluidCursor']
     Input: typeof import('@gr/ui/input')['Input']
     LoginForm: typeof import('./../src/components/LoginForm.vue')['default']
+    Plasma: typeof import('@gr/ui/plasma')['Plasma']
+    Prism: typeof import('@gr/ui/prism')['Prism']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     Separator: typeof import('@gr/ui/separator')['Separator']

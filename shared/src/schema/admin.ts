@@ -1,6 +1,6 @@
 import { type } from 'arktype';
 
-import { biliUidSchema, passwordSchema, usernameSchema } from './common';
+import { biliUidSchema, loginPasswordSchema, passwordSchema, usernameSchema } from './common';
 
 const adminRemarkSchema = type('string.trim').to('string <= 500');
 
@@ -13,7 +13,7 @@ export const adminRegisterSchema = type({
 
 export const adminLoginSchema = type({
   biliUid: biliUidSchema,
-  password: 'string',
+  password: loginPasswordSchema,
 });
 
 export type AdminRegisterInput = typeof adminRegisterSchema.infer;

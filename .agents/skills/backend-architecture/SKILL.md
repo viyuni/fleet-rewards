@@ -24,7 +24,7 @@ Only add a separate domain layer when business rules become complex enough to ju
 
 ## Module Shape
 
-Use the flat module shape already present in `server/src/modules/*`:
+Use the flat module shape already present in `servers/*/src/modules/*`:
 
 ```txt
 modules/{module}/
@@ -37,6 +37,33 @@ modules/{module}/
 ```
 
 Small capability modules may expose only the files they need, for example a context-only helper module.
+
+## Shared Server Module Rules
+
+Modules under `servers/shared/src/modules/*` are reusable backend building blocks, not HTTP entrypoints.
+
+Shared modules should:
+
+- Export context factories, use cases, repositories, models, errors, and helpers that can be reused by app servers.
+- Follow the same lightweight module wrapping style as existing shared modules such as `image`, `jwt`, and `point-type`.
+- Accept dependency instances from the caller through function parameters or constructors, for example `pointTypePlugin({ db })` or `imagePlugin({ useCase })`.
+- Keep environment-specific choices in the caller, such as `servers/admin` or `servers/user`.
+
+Shared modules must not:
+
+- Create or expose business routes for admin/user apps.
+- Import app-specific infrastructure such as `servers/admin/src/db`, `servers/user/src/config`, or app auth guards.
+- Decide URL prefixes, route metadata, or app-specific auth policy.
+- Instantiate app-specific dependencies when those instances can be passed in by the consuming server.
+
+App servers should wrap shared modules in their own route plugins when an HTTP API is needed:
+
+```ts
+export const pointType = new Elysia({ prefix: '/point-types' })
+  .use(authGuard)
+  .use(pointTypePlugin({ db }))
+  .get('/', ({ pointType }) => pointType.list(), { requiredAuth: true });
+```
 
 ## Route Rules
 

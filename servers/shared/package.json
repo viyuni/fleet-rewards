@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "@elysia/openapi": "^1.4.15",
+    "@elysia/static": "^1.4.10",
     "@gr/shared": "workspace:*",
     "arkenv": "^0.11.0",
     "arktype": "^2.2.0",

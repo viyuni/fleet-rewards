@@ -10,6 +10,9 @@ export const authGuard = jwt({ authenticator });
 export const auth = new Elysia({
   name: 'AuthRoute',
   prefix: '/auth',
+  detail: {
+    tags: ['Auth'],
+  },
 })
   .use(authContext)
   .post(
@@ -19,5 +22,8 @@ export const auth = new Elysia({
     },
     {
       body: adminLoginSchema,
+      detail: {
+        description: '管理员登录',
+      },
     },
   );

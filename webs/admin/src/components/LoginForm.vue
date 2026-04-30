@@ -1,4 +1,8 @@
 <script setup lang="ts">
+defineEmits<{
+  submit: [data: { biliUid: string; password: string }];
+}>();
+
 function handleNotImplemented(e: Event) {
   toast.error('Not implemented 🤣');
 }
@@ -12,7 +16,7 @@ function handleNotImplemented(e: Event) {
         <CardDescription> Login with your Bilibili account </CardDescription>
       </CardHeader>
       <CardContent>
-        <form>
+        <form @submit.prevent="$emit('submit', { biliUid: '1', password: '123456' })">
           <FieldGroup>
             <Field>
               <Button variant="outline" type="button" @click="handleNotImplemented">
@@ -47,9 +51,5 @@ function handleNotImplemented(e: Event) {
         </form>
       </CardContent>
     </Card>
-    <FieldDescription class="px-6 text-center">
-      By clicking continue, you agree to our <a href="#">Terms of Service</a> and
-      <a href="#">Privacy Policy</a>.
-    </FieldDescription>
   </div>
 </template>

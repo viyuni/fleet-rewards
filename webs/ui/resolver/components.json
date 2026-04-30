@@ -112,6 +112,7 @@
   "PaginationLink": "@gr/ui/pagination",
   "PaginationNext": "@gr/ui/pagination",
   "PaginationPrevious": "@gr/ui/pagination",
+  "Plasma": "@gr/ui/plasma",
   "Progress": "@gr/ui/progress",
   "RangeCalendar": "@gr/ui/range-calendar",
   "RangeCalendarCell": "@gr/ui/range-calendar",

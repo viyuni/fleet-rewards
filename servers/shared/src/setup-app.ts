@@ -1,5 +1,5 @@
 import { openapi } from '@elysia/openapi';
-import { type Elysia } from 'elysia';
+import { ValidationError, type Elysia } from 'elysia';
 
 import { BaseErrors } from './errors';
 
@@ -22,12 +22,13 @@ export function setupApp<T extends Elysia>(app: T) {
       }),
     )
     .error(BaseErrors)
-    .onError(({ code, error }) => {
-      if (code === 'VALIDATION') {
-        return {
-          message: error.valueError?.message,
-          errors: error.all.map(({ value: _value, message: _message, ...rest }) => rest),
-        };
+    .onError(({ error, status }) => {
+      if (error instanceof ValidationError) {
+        return status(422, {
+          code: 'REQUEST_VALIDATION_ERROR',
+          message: error.valueError?.message ?? '参数错误',
+          details: error.all.map(({ value: _value, message: _message, ...rest }) => rest),
+        });
       }
     });
 }

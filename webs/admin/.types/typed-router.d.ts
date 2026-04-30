@@ -35,7 +35,7 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | '/app/admins'
       | '/app/dashboard/'
-      | '/app/guard-events'
+      | '/app/guardEvents'
       | '/app/orders'
       | '/app/points/accounts'
       | '/app/points/conversions'
@@ -43,7 +43,7 @@ declare module 'vue-router/auto-routes' {
       | '/app/points/transactions'
       | '/app/points/types'
       | '/app/products/'
-      | '/app/products/stock-movements'
+      | '/app/products/stockMovements'
       | '/app/users'
     >;
     '/app/admins': RouteRecordInfo<
@@ -60,9 +60,9 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       never
     >;
-    '/app/guard-events': RouteRecordInfo<
-      '/app/guard-events',
-      '/app/guard-events',
+    '/app/guardEvents': RouteRecordInfo<
+      '/app/guardEvents',
+      '/app/guardEvents',
       Record<never, never>,
       Record<never, never>,
       never
@@ -116,9 +116,9 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       never
     >;
-    '/app/products/stock-movements': RouteRecordInfo<
-      '/app/products/stock-movements',
-      '/app/products/stock-movements',
+    '/app/products/stockMovements': RouteRecordInfo<
+      '/app/products/stockMovements',
+      '/app/products/stockMovements',
       Record<never, never>,
       Record<never, never>,
       never
@@ -159,7 +159,7 @@ declare module 'vue-router/auto-routes' {
         | '/app'
         | '/app/admins'
         | '/app/dashboard/'
-        | '/app/guard-events'
+        | '/app/guardEvents'
         | '/app/orders'
         | '/app/points/accounts'
         | '/app/points/conversions'
@@ -167,7 +167,7 @@ declare module 'vue-router/auto-routes' {
         | '/app/points/transactions'
         | '/app/points/types'
         | '/app/products/'
-        | '/app/products/stock-movements'
+        | '/app/products/stockMovements'
         | '/app/users';
       views: 'default';
     };
@@ -179,8 +179,8 @@ declare module 'vue-router/auto-routes' {
       routes: '/app/dashboard/';
       views: never;
     };
-    'src/pages/app/guard-events.vue': {
-      routes: '/app/guard-events';
+    'src/pages/app/guardEvents.vue': {
+      routes: '/app/guardEvents';
       views: never;
     };
     'src/pages/app/orders.vue': {
@@ -211,8 +211,8 @@ declare module 'vue-router/auto-routes' {
       routes: '/app/products/';
       views: never;
     };
-    'src/pages/app/products/stock-movements.vue': {
-      routes: '/app/products/stock-movements';
+    'src/pages/app/products/stockMovements.vue': {
+      routes: '/app/products/stockMovements';
       views: never;
     };
     'src/pages/app/users.vue': {
