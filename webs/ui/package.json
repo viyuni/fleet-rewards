@@ -52,7 +52,7 @@
     "test": "vp test",
     "check": "vp check",
     "typecheck": "vue-tsgo --build",
-    "gen:meta": "bun resolver/generate.ts"
+    "generate:meta": "bun resolver/generate.ts"
   },
   "dependencies": {
     "@tanstack/vue-form": "^1.29.1",

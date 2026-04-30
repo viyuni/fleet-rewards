@@ -3,9 +3,8 @@ import {
   pointTypeIdParamsSchema,
   updatePointTypeSchema,
 } from '@internal/shared/schemas';
+import { pointTypePlugin } from '@server/shared/point';
 import Elysia from 'elysia';
-
-import { pointTypePlugin } from '#server/shared/modules/point-type';
 
 import { db } from '../../db';
 import { authGuard } from '../auth';

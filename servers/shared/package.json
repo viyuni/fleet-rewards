@@ -8,14 +8,14 @@
     "./config": "./src/config.ts",
     "./db": "./src/db/index.ts",
     "./db/schemas": "./src/db/schemas/index.ts",
-    "./db/models": "./src/db/models/index.ts",
     "./errors": "./src/errors/index.ts",
     "./logger": "./src/logger.ts",
     "./setup-app": "./src/setup-app.ts",
     "./utils": "./src/utils/index.ts",
     "./image": "./src/modules/image/index.ts",
     "./jwt": "./src/modules/jwt/index.ts",
-    "./point-type": "./src/modules/point-type/index.ts",
+    "./point": "./src/modules/point/index.ts",
+    "./point-type": "./src/modules/point/index.ts",
     "./health": "./src/modules/health/index.ts"
   },
   "scripts": {

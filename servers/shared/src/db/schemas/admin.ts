@@ -1,8 +1,9 @@
+import type { InferEnum, InferInsertModel, InferSelectModel } from 'drizzle-orm';
 import { index, pgEnum, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 
 import { timestamps } from './column-helpers';
 
-const adminStatusEnum = pgEnum('admin_status', ['active', 'disabled']);
+export const adminStatusEnum = pgEnum('admin_status', ['active', 'disabled']);
 
 /** 管理员表 */
 export const admins = pgTable(
@@ -19,3 +20,8 @@ export const admins = pgTable(
   },
   t => [index('admins_status_idx').on(t.status), index('admins_created_at_idx').on(t.createdAt)],
 );
+
+export type AdminStatus = InferEnum<typeof adminStatusEnum>;
+export type Admin = InferSelectModel<typeof admins>;
+export type InsertAdmin = InferInsertModel<typeof admins>;
+export type UpdateAdmin = Partial<InsertAdmin>;

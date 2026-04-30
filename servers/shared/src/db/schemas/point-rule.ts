@@ -1,3 +1,4 @@
+import type { InferEnum, InferInsertModel, InferSelectModel } from 'drizzle-orm';
 import {
   boolean,
   index,
@@ -12,7 +13,7 @@ import {
 } from 'drizzle-orm/pg-core';
 
 import { timestamps } from './column-helpers';
-import { pointTypes } from './point';
+import { pointTypes } from './point-type';
 
 /**
  * 积分规则效果类型
@@ -158,3 +159,8 @@ export const pointRules = pgTable(
     index('point_rules_sort_idx').on(t.priority),
   ],
 );
+
+export type PointRuleEffect = InferEnum<typeof pointRuleEffectEnum>;
+export type PointRule = InferSelectModel<typeof pointRules>;
+export type InsertPointRule = InferInsertModel<typeof pointRules>;
+export type UpdatePointRule = Partial<InsertPointRule>;

@@ -1,3 +1,4 @@
+import type { InferEnum, InferInsertModel, InferSelectModel } from 'drizzle-orm';
 import {
   boolean,
   index,
@@ -12,7 +13,7 @@ import {
 } from 'drizzle-orm/pg-core';
 
 import { timestamps } from './column-helpers';
-import { pointTypes } from './point';
+import { pointTypes } from './point-type';
 import { productDeliveryTypeEnum, products } from './product';
 
 /**
@@ -208,3 +209,8 @@ export const orders = pgTable(
     index('reward_orders_created_at_idx').on(t.createdAt),
   ],
 );
+
+export type OrderStatus = InferEnum<typeof orderStatusEnum>;
+export type Order = InferSelectModel<typeof orders>;
+export type InsertOrder = InferInsertModel<typeof orders>;
+export type UpdateOrder = Partial<InsertOrder>;

@@ -1,8 +1,8 @@
 import type { Db } from '@server/shared';
-import { admins, BaseErrors } from '@server/shared';
+import { BaseErrors } from '@server/shared';
 import { and, eq, isNull } from 'drizzle-orm';
 
-import type { InsertAdmin } from './model';
+import { admins, type InsertAdmin } from '#server/shared/db/schemas';
 
 export class AdminRepository {
   constructor(private db: Db) {}

@@ -1,3 +1,6 @@
+/**
+ * 错误基类
+ */
 export abstract class AppError extends Error {
   abstract readonly status: number;
   abstract readonly code: string;
@@ -8,6 +11,9 @@ export abstract class AppError extends Error {
   }
 }
 
+/**
+ * 请求参数错误
+ */
 export class BadRequestError extends AppError {
   status = 400;
   code = 'BAD_REQUEST';
@@ -17,6 +23,9 @@ export class BadRequestError extends AppError {
   }
 }
 
+/**
+ * 未登录或登录已过期
+ */
 export class UnauthorizedError extends AppError {
   status = 401;
   code = 'UNAUTHORIZED';
@@ -26,6 +35,9 @@ export class UnauthorizedError extends AppError {
   }
 }
 
+/**
+ * 没有权限执行该操作
+ */
 export class ForbiddenError extends AppError {
   status = 403;
   code = 'FORBIDDEN';
@@ -35,6 +47,9 @@ export class ForbiddenError extends AppError {
   }
 }
 
+/**
+ * 资源不存在
+ */
 export class NotFoundError extends AppError {
   status = 404;
   code = 'NOT_FOUND';
@@ -44,6 +59,9 @@ export class NotFoundError extends AppError {
   }
 }
 
+/**
+ * 资源状态冲突
+ */
 export class ConflictError extends AppError {
   status = 409;
   code = 'CONFLICT';
@@ -53,8 +71,35 @@ export class ConflictError extends AppError {
   }
 }
 
+/**
+ * 服务器内部错误
+ */
+export class InternalServerError extends AppError {
+  status = 500;
+  code = 'INTERNAL_SERVER_ERROR';
+
+  constructor(message = '服务器内部错误') {
+    super(message);
+  }
+}
+
+/**
+ * 账号或密码错误
+ */
 export class InvalidCredentialsError extends UnauthorizedError {
   constructor(message = '用户名或密码错误') {
+    super(message);
+  }
+}
+
+/**
+ * 用户不可用
+ */
+export class UserUnavailableError extends AppError {
+  status = 400;
+  code = 'USER_UNAVAILABLE';
+
+  constructor(message = '用户不可用') {
     super(message);
   }
 }
@@ -65,4 +110,7 @@ export const BaseErrors = {
   ForbiddenError,
   NotFoundError,
   ConflictError,
+  InvalidCredentialsError,
+  UserUnavailableError,
+  InternalServerError,
 };

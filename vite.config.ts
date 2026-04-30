@@ -19,12 +19,15 @@ export default defineConfig({
       'dev:web/user': {
         command: 'vpr @web/user#dev',
       },
-      'gen:meta': {
-        command: 'vpr @web/ui#gen:meta',
+      'generate:meta': {
+        command: 'vpr @web/ui#generate:meta',
       },
       'build:all': {
         command: 'vpr -r build',
         dependsOn: ['gen:meta'],
+      },
+      'db:generate': {
+        command: 'vpr @db#gen',
       },
     },
   },

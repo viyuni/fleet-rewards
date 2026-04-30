@@ -4,7 +4,6 @@ import { adminContext } from './context';
 
 export * from './repository';
 export * from './errors';
-export * from './model';
 
 export const admin = new Elysia({
   name: 'AdminRoute',

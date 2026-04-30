@@ -1,7 +1,8 @@
+import type { InferEnum, InferInsertModel, InferSelectModel } from 'drizzle-orm';
 import { boolean, index, integer, jsonb, pgEnum, pgTable, text, uuid } from 'drizzle-orm/pg-core';
 
 import { timestamps } from './column-helpers';
-import { pointTypes } from './point';
+import { pointTypes } from './point-type';
 
 /**
  * 商品状态
@@ -28,6 +29,9 @@ export const productStatusEnum = pgEnum('reward_product_status', [
   'archived',
 ]);
 
+/**
+ * 商品发货方式
+ */
 export const productDeliveryTypeEnum = pgEnum('product_delivery_type', [
   /**
    * 手动发货 / 人工处理
@@ -133,88 +137,8 @@ export const products = pgTable(
   ],
 );
 
-/**
- * 库存流水状态
- */
-export const productStockTransactionTypeEnum = pgEnum('product_stock_transaction_type', [
-  /**
-   * 用户兑换扣减库存
-   */
-  'consume',
-
-  /**
-   * 取消/退款后恢复库存
-   */
-  'restore',
-
-  /**
-   * 管理员手动调整库存
-   */
-  'adjust',
-]);
-
-export const productStockTransactions = pgTable(
-  'product_stock_transactions',
-  {
-    id: uuid('id').primaryKey().defaultRandom(),
-
-    productId: uuid('product_id')
-      .notNull()
-      .references(() => products.id),
-
-    type: productStockTransactionTypeEnum('type').notNull(),
-
-    /**
-     * 变动数量
-     *
-     * consume: -1
-     * restore: +1
-     * adjust: 可正可负
-     */
-    amount: integer('amount').notNull(),
-
-    /**
-     * 变动前库存
-     */
-    stockBefore: integer('stock_before'),
-
-    /**
-     * 变动后库存
-     */
-    stockAfter: integer('stock_after'),
-
-    /**
-     * 来源类型
-     *
-     * 示例：
-     * reward_order
-     * admin_adjustment
-     */
-    sourceType: text('source_type'),
-
-    /**
-     * 来源 ID
-     *
-     * 示例：
-     * 订单 ID、管理员操作 ID。
-     */
-    sourceId: text('source_id'),
-
-    /**
-     * 幂等键
-     */
-    idempotencyKey: text('idempotency_key').unique(),
-
-    remark: text('remark'),
-
-    metadata: jsonb('metadata'),
-
-    ...timestamps,
-  },
-  t => [
-    index('product_stock_transactions_product_id_idx').on(t.productId),
-    index('product_stock_transactions_type_idx').on(t.type),
-    index('product_stock_transactions_source_idx').on(t.sourceType, t.sourceId),
-    index('product_stock_transactions_created_at_idx').on(t.createdAt),
-  ],
-);
+export type ProductStatus = InferEnum<typeof productStatusEnum>;
+export type ProductDeliveryType = InferEnum<typeof productDeliveryTypeEnum>;
+export type Product = InferSelectModel<typeof products>;
+export type InsertProduct = InferInsertModel<typeof products>;
+export type UpdateProduct = Partial<InsertProduct>;

@@ -1,3 +1,4 @@
+import type { InferInsertModel, InferSelectModel } from 'drizzle-orm';
 import {
   boolean,
   index,
@@ -11,7 +12,7 @@ import {
 } from 'drizzle-orm/pg-core';
 
 import { timestamps } from './column-helpers';
-import { pointTypes } from './point';
+import { pointTypes } from './point-type';
 
 /**
  * 积分转换规则表
@@ -125,3 +126,7 @@ export const pointConversionRules = pgTable(
     index('point_conversion_rules_time_range_idx').on(t.startsAt, t.endsAt),
   ],
 );
+
+export type PointConversionRule = InferSelectModel<typeof pointConversionRules>;
+export type InsertPointConversionRule = InferInsertModel<typeof pointConversionRules>;
+export type UpdatePointConversionRule = Partial<InsertPointConversionRule>;

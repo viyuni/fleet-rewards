@@ -1,8 +1,9 @@
+import type { InferEnum, InferInsertModel, InferSelectModel } from 'drizzle-orm';
 import { index, pgEnum, pgTable, text, uuid } from 'drizzle-orm/pg-core';
 
 import { timestamps } from './column-helpers';
 
-const userStatusEnum = pgEnum('user_status', ['normal', 'banned']);
+export const userStatusEnum = pgEnum('user_status', ['normal', 'banned']);
 
 /** 用户表 */
 export const users = pgTable(
@@ -22,3 +23,8 @@ export const users = pgTable(
   },
   t => [index('users_status_idx').on(t.status), index('users_created_at_idx').on(t.createdAt)],
 );
+
+export type UserStatus = InferEnum<typeof userStatusEnum>;
+export type User = InferSelectModel<typeof users>;
+export type InsertUser = InferInsertModel<typeof users>;
+export type UpdateUser = Partial<InsertUser>;
