@@ -1,11 +1,10 @@
-import type { Db } from '@server/shared';
+import type { DbExecutor } from '@server/db';
+import { admins, type InsertAdmin } from '@server/db/schemas';
 import { BaseErrors } from '@server/shared';
 import { and, eq, isNull } from 'drizzle-orm';
 
-import { admins, type InsertAdmin } from '#server/shared/db/schemas';
-
 export class AdminRepository {
-  constructor(private db: Db) {}
+  constructor(private db: DbExecutor) {}
 
   async findById(id: string) {
     return this.db.query.admins.findFirst({

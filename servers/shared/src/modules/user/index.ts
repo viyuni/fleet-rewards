@@ -1,7 +1,6 @@
+import type { DbExecutor } from '@server/db';
+import { users } from '@server/db/schemas';
 import { and, eq, isNull } from 'drizzle-orm';
-
-import type { DbExecutor } from '#server/shared/db';
-import { users } from '#server/shared/db/schemas';
 
 export class UserRepository {
   constructor(private db: DbExecutor) {}

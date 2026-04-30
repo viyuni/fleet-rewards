@@ -1,5 +1,5 @@
 import type { UserLoginInput, UserRegisterInput } from '@internal/shared';
-import type { DbClient } from '@server/shared/db';
+import type { DbClient } from '@server/db';
 import type { JwtAuthenticator } from '@server/shared/jwt';
 
 export class AuthUseCase {

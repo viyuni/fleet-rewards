@@ -1,5 +1,6 @@
-import type { DbTransaction } from '#server/shared/db';
-import { pointTransactions } from '#server/shared/db/schemas';
+import type { DbTransaction } from '@server/db';
+import { pointTransactions } from '@server/db/schemas';
+
 import { UserUnavailableError } from '#server/shared/errors';
 
 import { UserRepository } from '../../user';

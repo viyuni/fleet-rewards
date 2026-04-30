@@ -1,5 +1,5 @@
-import type { Db } from '@server/shared/db';
-import { users } from '@server/shared/db/schemas';
+import type { DbExecutor } from '@server/db';
+import { users } from '@server/db/schemas';
 import { BaseErrors } from '@server/shared/errors';
 import { and, eq, isNull } from 'drizzle-orm';
 
@@ -12,7 +12,7 @@ export type CreateUserInput = {
 };
 
 export class UserRepository {
-  constructor(private db: Db) {}
+  constructor(private db: DbExecutor) {}
 
   async findById(id: string) {
     return this.db.query.users.findFirst({

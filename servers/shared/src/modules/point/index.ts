@@ -1,6 +1,5 @@
+import type { DbExecutor } from '@server/db';
 import Elysia from 'elysia';
-
-import type { DbExecutor } from '#server/shared/db';
 
 import { PointErrors } from './domain/errors';
 import { PointTypeUseCase } from './usecase';

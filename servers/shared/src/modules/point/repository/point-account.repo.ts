@@ -1,7 +1,6 @@
+import type { DbTransaction } from '@server/db';
+import { pointAccounts } from '@server/db/schemas';
 import { and, eq, gte, inArray, sql } from 'drizzle-orm';
-
-import type { DbTransaction } from '#server/shared/db';
-import { pointAccounts } from '#server/shared/db/schemas';
 
 import {
   PointAccountEnsureFailedError,

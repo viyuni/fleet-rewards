@@ -1,5 +1,5 @@
 import type { AdminLoginInput, AdminRegisterInput } from '@internal/shared/schemas';
-import type { Db } from '@server/shared';
+import type { DbExecutor } from '@server/db';
 import { InvalidCredentialsError } from '@server/shared';
 
 import type { JwtAuthenticator } from '#server/shared/modules/jwt';
@@ -9,7 +9,7 @@ import { AuthErrors } from './errors';
 
 export class AuthUseCase {
   constructor(
-    private db: Db,
+    private db: DbExecutor,
     private authenticator: JwtAuthenticator,
   ) {}
 

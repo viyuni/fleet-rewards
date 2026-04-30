@@ -1,7 +1,7 @@
 import type { InferEnum, InferInsertModel, InferSelectModel } from 'drizzle-orm';
 import { index, pgEnum, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 
-import { timestamps } from './column-helpers';
+import { timestamps } from './column-helpers.ts';
 
 export const adminStatusEnum = pgEnum('admin_status', ['active', 'disabled']);
 

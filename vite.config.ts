@@ -24,7 +24,7 @@ export default defineConfig({
       },
       'build:all': {
         command: 'vpr -r build',
-        dependsOn: ['gen:meta'],
+        dependsOn: ['generate:meta'],
       },
       'db:generate': {
         command: 'vpr @db#gen',

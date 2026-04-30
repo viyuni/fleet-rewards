@@ -18,9 +18,9 @@
     "@elysia/html": "^1.4.1",
     "@elysia/static": "^1.4.10",
     "@internal/shared": "workspace:*",
+    "@server/db": "workspace:*",
     "@server/shared": "workspace:*",
-    "drizzle-orm": "^0.45.2",
-    "elysia": "latest"
+    "elysia": "^1.4.28"
   },
   "devDependencies": {
     "@types/bun": "^1.3.13",

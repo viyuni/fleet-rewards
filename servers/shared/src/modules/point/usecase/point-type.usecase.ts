@@ -1,6 +1,5 @@
 import type { CreatePointTypeInput, UpdatePointTypeInput } from '@internal/shared/schemas';
-
-import type { DbExecutor } from '#server/shared/db';
+import type { DbExecutor } from '@server/db';
 
 import { PointTypeCodeExistsError, PointTypeNotFoundError } from '../domain';
 import { PointTypeRepository } from '../repository';

@@ -1,4 +1,4 @@
-import type { users } from '@server/shared/db/schemas';
+import type { users } from '@server/db/schemas';
 import type { InferInsertModel, InferSelectModel } from 'drizzle-orm';
 
 export type Users = InferSelectModel<typeof users>;

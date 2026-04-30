@@ -17,7 +17,7 @@ export type {
   UpdatePointRule,
   UpdatePointTransaction,
   UpdatePointType,
-} from '#server/shared/db/schemas';
+} from '@server/db/schemas';
 
 export type PointTransactionListFilter = {
   userId?: string;

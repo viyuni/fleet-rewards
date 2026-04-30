@@ -1,4 +1,4 @@
-import { createDb } from '@server/shared/db';
+import { createDb } from '@server/db';
 
 import { config } from './config';
 

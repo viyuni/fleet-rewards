@@ -1,7 +1,6 @@
+import type { DbExecutor } from '@server/db';
+import { pointTypes } from '@server/db/schemas';
 import { eq } from 'drizzle-orm';
-
-import type { DbExecutor } from '#server/shared/db';
-import { pointTypes } from '#server/shared/db/schemas';
 
 import type { InsertPointType, PointType, UpdatePointType } from '../model';
 

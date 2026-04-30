@@ -1,4 +1,4 @@
-import type { PointTransactionType } from '#server/shared/db/schemas';
+import type { PointTransactionType } from '@server/db/schemas';
 export type PointMetadata = Record<string, unknown>;
 
 /**

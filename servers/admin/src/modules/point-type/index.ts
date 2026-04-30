@@ -3,7 +3,7 @@ import {
   pointTypeIdParamsSchema,
   updatePointTypeSchema,
 } from '@internal/shared/schemas';
-import { pointTypePlugin } from '@server/shared/point';
+import { pointPlugin } from '@server/shared/point';
 import Elysia from 'elysia';
 
 import { db } from '../../db';
@@ -17,7 +17,7 @@ export const pointType = new Elysia({
   },
 })
   .use(authGuard)
-  .use(pointTypePlugin({ db }))
+  .use(pointPlugin({ db }))
   .get(
     '/',
     ({ pointType }) => {

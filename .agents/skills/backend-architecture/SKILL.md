@@ -11,6 +11,7 @@ Use these rules for backend work in this repo. Prefer the current lightweight mo
 
 - Elysia
 - Drizzle ORM
+- `@server/db` as the dedicated database workspace package
 - Bun runtime APIs where already used
 - Lightweight module architecture
 
@@ -66,6 +67,20 @@ export const pointType = new Elysia({ prefix: '/point-types' })
   .get('/', ({ pointType }) => pointType.list(), { requiredAuth: true });
 ```
 
+## Database Package Rules
+
+Database client creation, Drizzle schema definitions, and Drizzle inferred table types live in the dedicated `@server/db` package under `servers/db`.
+
+Use the package exports instead of app-local database internals:
+
+- Import `createDb`, `DbClient`, `DbTransaction`, and `DbExecutor` from `@server/db`.
+- Import table objects and Drizzle inferred table types from `@server/db/schemas`.
+- App packages such as `servers/admin` and `servers/user` may keep a tiny local `db.ts` that calls `createDb(config.DATABASE_URL)`.
+- Shared backend modules should accept `DbExecutor`, `DbClient`, or `DbTransaction` from callers instead of importing an app package's `db` singleton.
+- Add new tables, enums, relations, and inferred table types in `servers/db/src/schemas/*`, and export them from `servers/db/src/schemas/index.ts`.
+
+Do not define Drizzle schemas, database clients, or table model types inside `servers/admin`, `servers/user`, or `servers/shared` when they belong to the shared database schema.
+
 ## Route Rules
 
 Routes live in `index.ts`.
@@ -101,7 +116,7 @@ Context files own dependency wiring.
 
 Use `context.ts` to:
 
-- Import shared infrastructure such as `db` and `config`.
+- Import app-local infrastructure such as `db` and `config`.
 - Create module dependencies such as `JwtAuthenticator`.
 - Install helper plugins/macros with `.use(...)`.
 - Register module errors with `.error(ModuleErrors)`.
@@ -164,9 +179,11 @@ Repositories wrap Drizzle access only.
 
 Repositories should:
 
-- Accept `Db` from `@server/shared/db` when importing from app server packages, so they work with both the root client and transaction clients.
-- Use Drizzle query builders and schema objects from `@server/shared/db/schemas` when importing from app server packages.
-- Use repository parameter types imported from local `model.ts`, where those types are derived with Drizzle `InferSelectModel` and `InferInsertModel`.
+- Accept `DbExecutor` from `@server/db` when the repository can run against either the root client or a transaction client.
+- Accept `DbTransaction` from `@server/db` when the repository must only be used inside a transaction.
+- Use Drizzle query builders and schema objects from `@server/db/schemas`.
+- Use repository parameter types from `@server/db/schemas` when those types directly describe table insert/update/select shapes.
+- Keep local `model.ts` only for module-specific DTOs, derived domain types, or aliases that are not already exported by `@server/db/schemas`.
 - Encapsulate common persistence filters such as `isNull(deletedAt)`.
 - Return database records, `null`, or simple persistence results.
 
@@ -179,15 +196,16 @@ Repositories must not:
 - Hash passwords or sign tokens.
 - Orchestrate business workflows.
 
-Use `DbClient` only for the root use case dependency. Use `Db` for repository constructors.
+Use `DbClient` for root use case dependencies that need to open transactions. Use `DbExecutor` for repository constructors that can accept either `DbClient` or `DbTransaction`.
 
 Repository write methods should take inferred model types, not hand-written request shapes:
 
 ```ts
-import type { InsertAdmin, UpdateAdmin } from './model';
+import type { DbExecutor } from '@server/db';
+import { admins, type InsertAdmin, type UpdateAdmin } from '@server/db/schemas';
 
 export class AdminRepository {
-  constructor(private db: Db) {}
+  constructor(private db: DbExecutor) {}
 
   async create(input: InsertAdmin) {
     return this.db.insert(admins).values(input).returning();
@@ -201,15 +219,13 @@ export class AdminRepository {
 
 ## Model Rules
 
-Keep `model.ts` small and close to Drizzle:
+Prefer Drizzle inferred table types exported from `@server/db/schemas`:
 
 ```ts
-export type Admin = InferSelectModel<typeof admins>;
-export type InsertAdmin = InferInsertModel<typeof admins>;
-export type UpdateAdmin = Partial<InsertAdmin>;
+import type { Admin, InsertAdmin, UpdateAdmin } from '@server/db/schemas';
 ```
 
-Use these inferred model types for repository parameters and return annotations when explicit annotations are useful.
+Only add a module-local `model.ts` when the module needs types that are not pure database table shapes, such as composed read models, API-ready DTOs owned by the module, or domain aliases.
 
 Do not duplicate shared request schemas in `model.ts`; import request input types from `@internal/shared` in routes and use cases instead.
 
@@ -266,10 +282,12 @@ For cross-module workflows, prefer a higher-level use case that owns one transac
 For imports that cross workspace package boundaries, prefer real package names:
 
 - `@server/admin`, `@server/user`, and `@server/shared` for server packages.
+- `@server/db` for database client types and client factory.
+- `@server/db/schemas` for Drizzle tables, enums, relations, and inferred table types.
 - `@web/admin`, `@web/user`, and `@web/ui` for web packages.
 - `@internal/shared` for shared route schemas and input/output types.
 
-When importing from `@server/shared`, prefer the most specific package export for that module or capability, such as `@server/shared/image`, `@server/shared/jwt`, `@server/shared/point-type`, `@server/shared/db`, or `@server/shared/errors`. Add a new dedicated export before consuming a new reusable shared module from another package.
+When importing from `@server/shared`, prefer the most specific package export for that module or capability, such as `@server/shared/image`, `@server/shared/jwt`, `@server/shared/point-type`, or `@server/shared/errors`. Add a new dedicated export before consuming a new reusable shared module from another package.
 
 Use `#...` imports only as TypeScript path aliases for code inside the current project/package, for example `#server/admin/...` inside `@server/admin`, `#server/user/...` inside `@server/user`, or `#server/shared/...` inside `@server/shared`.
 
@@ -280,7 +298,8 @@ Backend examples:
 import { setupApp } from '@server/shared/setup-app';
 import { imagePlugin } from '@server/shared/image';
 import { userLoginSchema } from '@internal/shared';
-import type { Db } from '@server/shared/db';
+import type { DbExecutor } from '@server/db';
+import { users, type InsertUser } from '@server/db/schemas';
 
 // In-package aliases are for local source internals.
 import { config } from '#server/admin/config';
