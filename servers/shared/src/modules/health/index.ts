@@ -1,7 +1,7 @@
 import Elysia from 'elysia';
 
-export const health = () =>
-  new Elysia({ name: 'HealthPlugin', prefix: '/health' })
+export const healthModule = () =>
+  new Elysia({ name: 'HealthModule', prefix: '/health' })
     .get('/', () => 'ok', {
       detail: {
         tags: ['Health'],

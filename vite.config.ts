@@ -1,11 +1,15 @@
 import { defineConfig } from 'vite-plus';
 
+function batchCommands(...commands: string[]) {
+  return commands.map(command => `vpr ${command}`).join(' & ');
+}
+
 export default defineConfig({
   staged: {
     '*': 'vp check --fix',
   },
   run: {
-    cache: true,
+    cache: false,
     tasks: {
       'dev:server/admin': {
         command: 'vpr @server/admin#dev',
@@ -26,8 +30,27 @@ export default defineConfig({
         command: 'vpr -r build',
         dependsOn: ['generate:meta'],
       },
-      'db:generate': {
-        command: 'vpr @db#gen',
+      typecheck: {
+        command: batchCommands(
+          '@server/shared#typecheck',
+          '@server/admin#typecheck',
+          '@server/db#typecheck',
+          '@server/user#typecheck',
+          '@web/admin#typecheck',
+          '@web/user#typecheck',
+          '@web/ui#typecheck',
+          '@internal/shared#typecheck',
+        ),
+      },
+      test: {
+        cache: false,
+        command: batchCommands(
+          '@web/admin#test',
+          '@web/user#test',
+          '@server/admin#test',
+          '@server/user#test',
+          '@server/shared#test',
+        ),
       },
     },
   },
@@ -42,7 +65,6 @@ export default defineConfig({
   },
   lint: {
     plugins: ['unicorn', 'typescript', 'oxc', 'vue', 'import', 'vitest', 'node'],
-    categories: {},
     rules: {
       'constructor-super': 'warn',
       'for-direction': 'warn',
@@ -150,11 +172,6 @@ export default defineConfig({
       'unicorn/prefer-string-starts-ends-with': 'warn',
     },
     settings: {
-      'jsx-a11y': {
-        polymorphicPropName: 'as',
-        components: {},
-        attributes: {},
-      },
       jsdoc: {
         ignorePrivate: false,
         ignoreInternal: false,

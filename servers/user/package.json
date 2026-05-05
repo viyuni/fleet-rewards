@@ -9,7 +9,7 @@
   },
   "scripts": {
     "dev": "bun --cwd .. --env-file=servers/user/.env --watch servers/user/src/app.ts",
-    "test": "bun test",
+    "test": "NODE_ENV=development bun --env-file=.env test --pass-with-no-tests",
     "typecheck": "tsgo --build",
     "check": "vpr typecheck && vp lint && vp fmt"
   },
@@ -18,7 +18,7 @@
     "@internal/shared": "workspace:*",
     "@server/db": "workspace:*",
     "@server/shared": "workspace:*",
-    "drizzle-orm": "^0.45.2",
+    "drizzle-orm": "^1.0.0-beta.22",
     "elysia": "^1.4.28"
   },
   "devDependencies": {

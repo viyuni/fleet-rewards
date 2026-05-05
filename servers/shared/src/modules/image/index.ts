@@ -6,10 +6,10 @@ import type { SharedConfig } from '#server/shared/config';
 import { ImageUseCase } from './usecase';
 
 export * from './usecase';
-export * from './errors';
+export * from './domain';
 
-export const imagePlugin = (config: SharedConfig) =>
-  new Elysia({ name: 'ImagePlugin' })
+export const imageModule = (config: SharedConfig) =>
+  new Elysia({ name: 'ImageModule' })
     .decorate('image', new ImageUseCase(config.IMAGE_SAVE_PATH))
     .use(
       staticPlugin({

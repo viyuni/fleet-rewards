@@ -1,10 +1,9 @@
-import type { PointTransactionType } from '@server/db/schemas';
-export type PointMetadata = Record<string, unknown>;
+import type { PointTransactionType } from '@server/db/schema';
 
 /**
  * 积分流水类型
  */
-export const POINT_SOURCE_TYPE = {
+export const POINT_CHANGE_SOURCE_TYPE = {
   /**
    * 订单消费
    */
@@ -29,8 +28,16 @@ export const POINT_SOURCE_TYPE = {
    * 大航海事件
    */
   GuardEvent: 'guard_event',
+
+  /**
+   * 积分转换
+   */
+  Conversion: 'point_conversion',
 } as const;
 
+/**
+ * 余额变更基础输入参数
+ */
 export interface ChangeBalanceBase<TType extends PointTransactionType> {
   /**
    * 积分流水类型
@@ -47,6 +54,7 @@ export interface ChangeBalanceBase<TType extends PointTransactionType> {
    * @example
    */
   pointTypeId: string;
+
   /**
    * 增加或减少的积分数量
    * @example -1
@@ -56,7 +64,7 @@ export interface ChangeBalanceBase<TType extends PointTransactionType> {
 
   /**
    * 积分流水来源类型
-   * 可以使用内建的一些值 `POINT_SOURCE_TYPE`
+   * 可以使用内建的一些值 `POINT_CHANGE_SOURCE_TYPE`
    * @example 'order_consume'
    */
   sourceType: string;
@@ -81,45 +89,42 @@ export interface ChangeBalanceBase<TType extends PointTransactionType> {
   /**
    * 积分流水扩展信息
    */
-  metadata?: PointMetadata;
+  metadata?: Record<string, unknown>;
 }
 
 /**
- * 发放
+ * 余额变更, 发放
  */
-export interface GrantChangeInput extends ChangeBalanceBase<'grant'> {}
+export interface GrantChangeBalanceInput extends ChangeBalanceBase<'grant'> {}
 
 /**
- * 消费
+ * 余额变更, 消费
  */
-export interface ConsumeChangeInput extends ChangeBalanceBase<'consume'> {}
+export interface ConsumeChangeBalanceInput extends ChangeBalanceBase<'consume'> {}
 
 /**
- * 退款
+ * 余额变更, 退款
  */
-export interface RefundChangeInput extends ChangeBalanceBase<'refund'> {}
+export interface RefundChangeBalanceInput extends ChangeBalanceBase<'refund'> {}
 
 /**
- * 管理员调整
+ * 余额变更, 管理员调整
  */
-export interface AdjustChangeInput extends ChangeBalanceBase<'adjust'> {
-  sourceType: 'admin_adjustment';
-  metadata: PointMetadata & {
-    adminUserId: string;
-  };
-}
+export interface AdjustChangeBalanceInput extends ChangeBalanceBase<'adjust'> {}
 
 /**
- * 冲正流水
+ * 余额变更, 冲正流水
  */
-export interface ReversalChangeInput extends ChangeBalanceBase<'reversal'> {
-  sourceType: 'reversal';
+export interface ReversalChangeBalanceInput extends ChangeBalanceBase<'reversal'> {
   reversalOfTransactionId: string;
 }
 
+/**
+ * 余额变更输入参数
+ */
 export type ChangeBalanceInput =
-  | GrantChangeInput
-  | ConsumeChangeInput
-  | RefundChangeInput
-  | AdjustChangeInput
-  | ReversalChangeInput;
+  | GrantChangeBalanceInput
+  | ConsumeChangeBalanceInput
+  | RefundChangeBalanceInput
+  | AdjustChangeBalanceInput
+  | ReversalChangeBalanceInput;

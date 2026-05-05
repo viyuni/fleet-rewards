@@ -25,7 +25,7 @@ function handleNotImplemented(e: Event) {
               </Button>
             </Field>
             <FieldSeparator class="*:data-[slot=field-separator-content]:bg-card">
-              Or continue with
+              OR
             </FieldSeparator>
             <Field>
               <FieldLabel for="uid"> UID </FieldLabel>

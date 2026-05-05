@@ -1,29 +1,40 @@
 import type { DbExecutor } from '@server/db';
-import { pointTypes } from '@server/db/schemas';
-import { eq } from 'drizzle-orm';
+import { eqIfDefined, keywordLike, PageBuilder } from '@server/db/helper';
+import {
+  pointTypes,
+  type InsertPointType,
+  type PointType,
+  type UpdatePointType,
+} from '@server/db/schema';
+import { and, desc, eq } from 'drizzle-orm';
 
-import type { InsertPointType, PointType, UpdatePointType } from '../model';
+import type { PointTypePageFilter } from './types';
 
 export class PointTypeRepository {
   constructor(private readonly db: DbExecutor) {}
 
+  static async findById(db: DbExecutor, id: string) {
+    return await db.query.pointTypes.findFirst({
+      where: {
+        id,
+      },
+    });
+  }
+
   async findById(id: string) {
-    return await this.db.query.pointTypes.findFirst({ where: eq(pointTypes.id, id) });
+    return PointTypeRepository.findById(this.db, id);
   }
 
-  async findByCode(code: string) {
-    return await this.db.query.pointTypes.findFirst({ where: eq(pointTypes.code, code) });
-  }
-
-  async list(): Promise<PointType[]> {
-    return await this.db.query.pointTypes.findMany({
-      orderBy: (pointTypes, { asc }) => [asc(pointTypes.sort), asc(pointTypes.createdAt)],
+  async findByName(name: string) {
+    return await this.db.query.pointTypes.findFirst({
+      where: {
+        name,
+      },
     });
   }
 
   async create(input: InsertPointType) {
     const [row] = await this.db.insert(pointTypes).values(input).returning();
-
     return row ?? null;
   }
 
@@ -40,7 +51,7 @@ export class PointTypeRepository {
     return row ?? null;
   }
 
-  async updateStatus(id: string, status: 'active' | 'disabled') {
+  async updateStatus(id: string, status: PointType['status']) {
     const [row] = await this.db
       .update(pointTypes)
       .set({
@@ -51,5 +62,18 @@ export class PointTypeRepository {
       .returning();
 
     return row ?? null;
+  }
+
+  pageBuilder(filter: PointTypePageFilter) {
+    return new PageBuilder(this.db, pointTypes)
+      .where(
+        and(
+          eqIfDefined(pointTypes.status, filter.status),
+          keywordLike([pointTypes.name], filter.keyword),
+        ),
+      )
+      .orderBy(desc(pointTypes.createdAt))
+      .page(filter.page)
+      .pageSize(filter.pageSize);
   }
 }

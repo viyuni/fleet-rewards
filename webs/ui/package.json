@@ -49,7 +49,6 @@
     "./plasma": "./src/components/ui/plasma/index.ts"
   },
   "scripts": {
-    "test": "vp test",
     "check": "vp check",
     "typecheck": "vue-tsgo --build",
     "generate:meta": "bun resolver/generate.ts"

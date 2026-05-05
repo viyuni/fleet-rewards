@@ -6,6 +6,7 @@ import { toast } from 'vue-sonner';
 
 import App from './App.vue';
 
+import 'vue-sonner/style.css';
 import './style.css';
 import router from './router';
 

@@ -1,16 +1,23 @@
 import type { DbExecutor } from '@server/db';
 import Elysia from 'elysia';
 
-import { PointErrors } from './domain/errors';
-import { PointTypeUseCase } from './usecase';
+import {
+  PointAccountUseCase,
+  PointConversionUseCase,
+  PointTransactionUseCase,
+  PointTypeUseCase,
+} from './usecase';
 
 export * from './domain/errors';
-export * from './model';
 export * from './repository';
 export * from './usecase';
+export * from './domain';
+export * from './repository/types';
 
-export const pointPlugin = ({ db }: { db: DbExecutor }) => {
-  return new Elysia({ name: 'PointPlugin' })
+export const pointModule = ({ db }: { db: DbExecutor }) => {
+  return new Elysia({ name: 'PointModule' })
     .decorate('pointType', new PointTypeUseCase(db))
-    .error(PointErrors);
+    .decorate('pointAccount', new PointAccountUseCase(db))
+    .decorate('pointTransaction', new PointTransactionUseCase(db))
+    .decorate('pointConversion', new PointConversionUseCase(db));
 };

@@ -1,0 +1,37 @@
+import type { InferEnum, InferInsertModel, InferSelectModel } from 'drizzle-orm';
+import { index, pgEnum, pgTable, text, uuid } from 'drizzle-orm/pg-core';
+
+import { timestamps } from './column-helpers';
+
+export const userStatusEnum = pgEnum('user_status', ['normal', 'banned']);
+
+/**
+ * 用户表
+ * - 仅支持软删除
+ */
+export const users = pgTable(
+  'users',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    biliUid: text('bili_uid').notNull().unique(),
+    username: text('username').notNull().unique(),
+    status: userStatusEnum('status').notNull().default('normal'),
+    passwordHash: text('password_hash').notNull(),
+    phoneEncrypted: text('phone_encrypted'),
+    emailEncrypted: text('email_encrypted'),
+    phoneHash: text('phone_hash').unique(),
+    addressEncrypted: text('address_encrypted'),
+    remark: text('remark'),
+    ...timestamps,
+  },
+  t => [
+    index('users_status_idx').on(t.status),
+    index('users_bili_uid_idx').on(t.biliUid),
+    index('users_phone_hash_idx').on(t.phoneHash),
+  ],
+);
+
+export type UserStatus = InferEnum<typeof userStatusEnum>;
+export type User = InferSelectModel<typeof users>;
+export type InsertUser = InferInsertModel<typeof users>;
+export type UpdateUser = Partial<InsertUser>;

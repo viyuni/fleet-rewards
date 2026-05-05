@@ -1,16 +1,22 @@
 import { cors } from '@elysia/cors';
 import { setupApp } from '@server/shared';
-import { health } from '@server/shared/health';
+import { healthModule } from '@server/shared/health';
 import { Elysia } from 'elysia';
 
 import { version } from '../package.json' with { type: 'json' };
 import { config } from './config';
 import { logger } from './logger';
 import { admin } from './modules/admin';
-import { auth } from './modules/auth';
+import { auth, authGuard } from './modules/auth';
 import { email } from './modules/email/index';
 import { image } from './modules/image';
-import { pointType } from './modules/point-type';
+import { order } from './modules/order';
+import { point } from './modules/point';
+import { product } from './modules/product';
+import { reward } from './modules/reward';
+import { users } from './modules/users';
+
+logger.info(config);
 
 export const app = setupApp(
   new Elysia({
@@ -22,11 +28,16 @@ export const app = setupApp(
   },
 )
   .use(cors({ origin: '*', allowedHeaders: ['Content-Type', 'Authorization'] }))
+  .use(authGuard)
   .use(auth)
   .use(admin)
-  .use(pointType)
+  .use(point)
+  .use(reward)
+  .use(product)
+  .use(order)
+  .use(users)
   .use(image)
   .use(email)
+  .use(healthModule())
   .get('/', () => 'Viyuni guard rewards server running... :)', { tags: ['Index'] })
-  .use(health())
-  .listen({ port: config.SERVER_PORT }, logger.printUrls);
+  .listen({ port: config.PORT }, logger.printUrls);

@@ -1,9 +1,10 @@
 import type { DbTransaction } from '@server/db';
-import { pointAccounts } from '@server/db/schemas';
+import { pointAccounts } from '@server/db/schema';
 import { and, eq, gte, inArray, sql } from 'drizzle-orm';
 
 import {
   PointAccountEnsureFailedError,
+  PointAccountNotFoundError,
   PointAccountUpdateFailedError,
   PointAmountPolicy,
   PointBalanceInsufficientError,
@@ -11,9 +12,12 @@ import {
 
 export class PointAccountRepository {
   /**
-   * 确保积分账户存在
+   * 确保积分账户存在, 并行锁
    */
-  async ensureAccount(tx: DbTransaction, input: { userId: string; pointTypeId: string }) {
+  static async ensureAccountAndLock(
+    tx: DbTransaction,
+    input: { userId: string; pointTypeId: string },
+  ) {
     await tx
       .insert(pointAccounts)
       .values({
@@ -44,12 +48,29 @@ export class PointAccountRepository {
   }
 
   /**
+   * 查询积分账户并行锁
+   */
+  static async requireByIdForUpdate(tx: DbTransaction, accountId: string) {
+    const [account] = await tx
+      .select()
+      .from(pointAccounts)
+      .where(eq(pointAccounts.id, accountId))
+      .for('update');
+
+    if (!account) {
+      throw new PointAccountNotFoundError();
+    }
+
+    return account;
+  }
+
+  /**
    * 积分账户余额增加
    * @param input.accountId 积分账户ID
    * @param input.amount 增加的积分数量, 必须大于0
    */
-  async increaseBalance(tx: DbTransaction, input: { accountId: string; amount: number }) {
-    PointAmountPolicy.assertPositive(input.amount);
+  static async increaseBalance(tx: DbTransaction, input: { accountId: string; amount: number }) {
+    PointAmountPolicy.assertPositiveInteger(input.amount);
 
     const [updatedAccount] = await tx
       .update(pointAccounts)
@@ -77,8 +98,8 @@ export class PointAccountRepository {
    * @param input.accountId 积分账户ID
    * @param input.amount 扣除的积分数量, 必须大于0
    */
-  async decreaseBalance(tx: DbTransaction, input: { accountId: string; amount: number }) {
-    PointAmountPolicy.assertPositive(input.amount);
+  static async decreaseBalance(tx: DbTransaction, input: { accountId: string; amount: number }) {
+    PointAmountPolicy.assertPositiveInteger(input.amount);
 
     const [updatedAccount] = await tx
       .update(pointAccounts)

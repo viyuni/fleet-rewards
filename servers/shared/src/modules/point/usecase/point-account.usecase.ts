@@ -1,63 +1,32 @@
-import type { DbTransaction } from '@server/db';
-import { pointTransactions } from '@server/db/schemas';
+import type { AdjustBalanceInput } from '@internal/shared/schema';
+import type { DbExecutor } from '@server/db';
 
-import { UserUnavailableError } from '#server/shared/errors';
-
-import { UserRepository } from '../../user';
-import type { ChangeBalanceInput } from '../domain/index';
-import { PointAmountPolicy } from '../domain/index';
+import { POINT_CHANGE_SOURCE_TYPE } from '../domain';
 import { PointAccountRepository } from '../repository/point-account.repo';
+import { PointBalanceUseCase } from './point-balance.usecase';
 
-export class PointUseCase {
-  private pointAccountRepo = new PointAccountRepository();
+export class PointAccountUseCase {
+  constructor(private readonly db: DbExecutor) {}
 
-  async changeBalance(tx: DbTransaction, input: ChangeBalanceInput) {
-    const userRepo = new UserRepository(tx);
+  async adjustBalance(adminId: string, input: AdjustBalanceInput) {
+    return this.db.transaction(async tx => {
+      // 确保账户存在并锁行
+      const account = await PointAccountRepository.requireByIdForUpdate(tx, input.accountId);
 
-    const user = await userRepo.findAvailableById(input.userId);
-
-    // 确保用户存在且没被封禁
-    if (!user) {
-      throw new UserUnavailableError();
-    }
-
-    // 确保变动金额不为0
-    PointAmountPolicy.assertNonZero(input.delta);
-
-    // 确保账户存在并锁行
-    const account = await this.pointAccountRepo.ensureAccount(tx, input);
-
-    // 积分账户余额更新
-    const updatedAccount =
-      input.delta > 0
-        ? await this.pointAccountRepo.increaseBalance(tx, {
-            accountId: account.id,
-            amount: input.delta,
-          })
-        : await this.pointAccountRepo.decreaseBalance(tx, {
-            accountId: account.id,
-            // 确保 delta 为正, 扣除时只能为正数
-            amount: Math.abs(input.delta),
-          });
-
-    // 积分交易记录
-    await tx.insert(pointTransactions).values({
-      userId: input.userId,
-      pointAccountId: account.id,
-      pointTypeId: input.pointTypeId,
-      type: input.type,
-      delta: input.delta,
-      balanceBefore: account.balance,
-      balanceAfter: updatedAccount.balance,
-      sourceType: input.sourceType,
-      sourceId: input.sourceId,
-      idempotencyKey: input.idempotencyKey,
-      remark: input.remark,
-      metadata: input.metadata,
-      reversalOfTransactionId:
-        input.type === 'reversal' ? input.reversalOfTransactionId : undefined,
+      return PointBalanceUseCase.changeBalance(tx, account, {
+        type: 'adjust',
+        userId: account.userId,
+        pointTypeId: account.pointTypeId,
+        delta: input.delta,
+        sourceType: POINT_CHANGE_SOURCE_TYPE.AdminAdjustment,
+        sourceId: adminId,
+        idempotencyKey: `admin:points:adjust:${adminId}:${input.requestId}`,
+        remark: input.remark ?? '管理员调整积分',
+        metadata: {
+          adminId,
+          requestId: input.requestId,
+        },
+      });
     });
-
-    return updatedAccount;
   }
 }

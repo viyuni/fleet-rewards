@@ -1,24 +1,13 @@
 import type { DbExecutor } from '@server/db';
-import { users } from '@server/db/schemas';
-import { and, eq, isNull } from 'drizzle-orm';
+import Elysia from 'elysia';
 
-export class UserRepository {
-  constructor(private db: DbExecutor) {}
+import { UserUseCase } from './usecase';
 
-  async findById(userId: string) {
-    const user = await this.db.query.users.findFirst({
-      where: and(eq(users.id, userId), isNull(users.deletedAt)),
-    });
+export * from './domain';
+export * from './repository';
+export * from './repository/types';
+export * from './usecase';
 
-    return user ?? null;
-  }
-
-  /**
-   * 查询活动的用户
-   */
-  async findAvailableById(userId: string) {
-    return this.db.query.users.findFirst({
-      where: and(eq(users.id, userId), isNull(users.deletedAt), eq(users.status, 'normal')),
-    });
-  }
-}
+export const userModule = ({ db }: { db: DbExecutor }) => {
+  return new Elysia({ name: 'UserModule' }).decorate('user', new UserUseCase(db));
+};

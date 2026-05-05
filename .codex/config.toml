@@ -1,0 +1,4 @@
+[commands]
+# 白名单模式
+whitelist_enabled = true
+allowed_commands = ["git", "vp", "vpr", "vpx", "bun"]

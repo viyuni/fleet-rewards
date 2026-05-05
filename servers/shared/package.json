@@ -5,20 +5,27 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
+    "./env": "./src/env.ts",
     "./config": "./src/config.ts",
     "./errors": "./src/errors/index.ts",
     "./logger": "./src/logger.ts",
     "./setup-app": "./src/setup-app.ts",
     "./utils": "./src/utils/index.ts",
     "./image": "./src/modules/image/index.ts",
-    "./jwt": "./src/modules/jwt/index.ts",
+    "./auth": "./src/modules/auth/index.ts",
     "./point": "./src/modules/point/index.ts",
     "./point-type": "./src/modules/point/index.ts",
+    "./user": "./src/modules/user/index.ts",
+    "./reward": "./src/modules/reward/index.ts",
+    "./product": "./src/modules/product/index.ts",
+    "./order": "./src/modules/order/index.ts",
+    "./inventory": "./src/modules/inventory/index.ts",
     "./health": "./src/modules/health/index.ts"
   },
   "scripts": {
-    "typecheck": "tsgo --build",
-    "check": "vpr typecheck && vp lint && vp fmt"
+    "check": "vpr typecheck && vp lint && vp fmt",
+    "test": "NODE_ENV=development bun --env-file=.env test --pass-with-no-tests",
+    "typecheck": "tsgo --build"
   },
   "dependencies": {
     "@elysia/openapi": "^1.4.15",
@@ -27,6 +34,7 @@
     "@server/db": "workspace:*",
     "arkenv": "^0.11.0",
     "arktype": "^2.2.0",
+    "drizzle-orm": "^1.0.0-beta.22",
     "elysia": "^1.4.28",
     "jose": "^6.2.3",
     "pino": "^10.3.1",

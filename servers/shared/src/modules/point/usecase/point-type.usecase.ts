@@ -1,17 +1,13 @@
-import type { CreatePointTypeInput, UpdatePointTypeInput } from '@internal/shared/schemas';
+import type { CreatePointTypeInput, UpdatePointTypeInput } from '@internal/shared/schema';
 import type { DbExecutor } from '@server/db';
 
-import { PointTypeCodeExistsError, PointTypeNotFoundError } from '../domain';
+import { PointTypeNameExistsError, PointTypeNotFoundError, PointTypePolicy } from '../domain';
 import { PointTypeRepository } from '../repository';
 
 export class PointTypeUseCase {
   private pointTypeRepo: PointTypeRepository;
   constructor(private readonly db: DbExecutor) {
     this.pointTypeRepo = new PointTypeRepository(db);
-  }
-
-  async list() {
-    return this.pointTypeRepo.list();
   }
 
   async get(id: string) {
@@ -24,11 +20,26 @@ export class PointTypeUseCase {
     return pointType;
   }
 
+  static async requireAvailableById(tx: DbExecutor, id: string) {
+    const pointTypeRepo = new PointTypeRepository(tx);
+    const pointType = await pointTypeRepo.findById(id);
+
+    PointTypePolicy.assertAvailable(pointType);
+
+    return pointType;
+  }
+
+  async requireAvailableById(id: string) {
+    const pointType = await PointTypeUseCase.requireAvailableById(this.db, id);
+
+    return pointType;
+  }
+
   async create(input: CreatePointTypeInput) {
-    const exists = await this.pointTypeRepo.findByCode(input.code);
+    const exists = await this.pointTypeRepo.findByName(input.name);
 
     if (exists) {
-      throw new PointTypeCodeExistsError();
+      throw new PointTypeNameExistsError();
     }
 
     return this.pointTypeRepo.create(input);

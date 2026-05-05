@@ -6,7 +6,7 @@ export const config = arkenv({
   /**
    * 管理员服务端口
    */
-  SERVER_PORT: type('number.port').default(3001),
+  PORT: type('number.port').default(3000),
 
   /**
    * 管理员数据密钥

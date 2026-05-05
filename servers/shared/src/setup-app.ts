@@ -1,7 +1,5 @@
 import { openapi } from '@elysia/openapi';
-import { ValidationError, type Elysia } from 'elysia';
-
-import { BaseErrors } from './errors';
+import { ValidationError, type AnyElysia } from 'elysia';
 
 interface ContactObject {
   name?: string;
@@ -23,7 +21,7 @@ interface InfoObject {
   version: string;
 }
 
-export function setupApp<T extends Elysia>(app: T, documentationInfo?: InfoObject) {
+export function setupApp<T extends AnyElysia>(app: T, documentationInfo?: InfoObject) {
   return app
     .use(
       openapi({
@@ -42,8 +40,9 @@ export function setupApp<T extends Elysia>(app: T, documentationInfo?: InfoObjec
           tags: [
             { name: 'Health', description: '健康检查' },
             { name: 'Auth', description: '认证相关' },
-            { name: 'Point', description: '积分系统' },
             { name: 'PointType', description: '积分系统' },
+            { name: 'PointAccount', description: '积分账户' },
+            { name: 'PointTransaction', description: '积分流水' },
             { name: 'Order', description: '订单系统' },
             { name: 'User', description: '用户系统' },
             { name: 'Admin', description: '管理员系统' },
@@ -53,7 +52,6 @@ export function setupApp<T extends Elysia>(app: T, documentationInfo?: InfoObjec
         },
       }),
     )
-    .error(BaseErrors)
     .onError(({ error, status }) => {
       if (error instanceof ValidationError) {
         return status(422, {

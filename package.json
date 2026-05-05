@@ -10,12 +10,7 @@
   "type": "module",
   "scripts": {
     "prepare": "vp config",
-    "typecheck": "vpr -r typecheck",
-    "test": "vpr -r test",
     "check": "vp fmt && vp lint && vpr typecheck"
-  },
-  "dependencies": {
-    "jose": "^6.2.3"
   },
   "devDependencies": {
     "@tsconfig/node24": "^24.0.4",

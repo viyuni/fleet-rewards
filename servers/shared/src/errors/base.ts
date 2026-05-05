@@ -92,18 +92,6 @@ export class InvalidCredentialsError extends UnauthorizedError {
   }
 }
 
-/**
- * 用户不可用
- */
-export class UserUnavailableError extends AppError {
-  status = 400;
-  code = 'USER_UNAVAILABLE';
-
-  constructor(message = '用户不可用') {
-    super(message);
-  }
-}
-
 export const BaseErrors = {
   BadRequestError,
   UnauthorizedError,
@@ -111,6 +99,5 @@ export const BaseErrors = {
   NotFoundError,
   ConflictError,
   InvalidCredentialsError,
-  UserUnavailableError,
   InternalServerError,
 };

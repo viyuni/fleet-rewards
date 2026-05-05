@@ -9,9 +9,9 @@ export const sharedConfigShape = {
   DATABASE_URL: type('string'),
 
   /**
-   * "development" | "production"
+   * "development" | "production" | "test"
    */
-  NODE_ENV: type('"development" | "production" ').default('development'),
+  NODE_ENV: type('"development" | "production" | "test"').default('development'),
 
   /**
    * 日志等级
