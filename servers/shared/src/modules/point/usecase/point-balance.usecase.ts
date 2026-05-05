@@ -17,11 +17,13 @@ export class PointBalanceUseCase {
     PointAmountPolicy.assertNonZeroInteger(input.delta);
     PointTransactionPolicy.assertDeltaMatchesType(input.type, input.delta);
 
+    // 获取用户
     const user = await UserUseCase.requireAvailableById(tx, input.userId);
 
     let updatedAccount: PointAccount;
 
     if (input.delta > 0) {
+      // 添加积分
       PointAccountPolicy.assertCanIncrease(account);
 
       updatedAccount = await PointAccountRepository.increaseBalance(tx, {
@@ -29,6 +31,7 @@ export class PointBalanceUseCase {
         amount: input.delta,
       });
     } else {
+      // 扣除积分
       const amount = Math.abs(input.delta);
 
       PointAccountPolicy.assertCanConsume(account);
@@ -40,6 +43,7 @@ export class PointBalanceUseCase {
       });
     }
 
+    // 创建积分流水
     const [transaction] = await tx
       .insert(pointTransactions)
       .values({
@@ -55,6 +59,7 @@ export class PointBalanceUseCase {
         idempotencyKey: input.idempotencyKey,
         remark: input.remark,
         metadata: input.metadata,
+        // 仅当流水类型为 reversal 时，才记录 reversalOfTransactionId
         reversalOfTransactionId:
           input.type === 'reversal' ? input.reversalOfTransactionId : undefined,
       })

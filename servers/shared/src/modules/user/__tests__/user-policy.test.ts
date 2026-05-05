@@ -19,7 +19,6 @@ function user(input: Partial<User> = {}): User {
     remark: null,
     createdAt: new Date(),
     updatedAt: new Date(),
-    deletedAt: null,
     ...input,
   };
 }

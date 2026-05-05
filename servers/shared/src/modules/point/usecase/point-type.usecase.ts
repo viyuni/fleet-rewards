@@ -6,6 +6,7 @@ import { PointTypeRepository } from '../repository';
 
 export class PointTypeUseCase {
   private pointTypeRepo: PointTypeRepository;
+
   constructor(private readonly db: DbExecutor) {
     this.pointTypeRepo = new PointTypeRepository(db);
   }
