@@ -180,4 +180,8 @@ export class ProductUseCase {
       });
     });
   }
+
+  list() {
+    return this.deps.productRepo;
+  }
 }

@@ -186,6 +186,13 @@ export const pointTransactions = pgTable(
     index('point_transactions_type_idx').on(t.type),
     index('point_transactions_source_idx').on(t.sourceType, t.sourceId),
     index('point_transactions_created_at_idx').on(t.createdAt),
+    index('point_transactions_user_created_at_idx').on(t.userId, t.createdAt),
+    index('point_transactions_user_type_created_at_idx').on(t.userId, t.type, t.createdAt),
+    index('point_transactions_user_point_type_created_at_idx').on(
+      t.userId,
+      t.pointTypeId,
+      t.createdAt,
+    ),
   ],
 );
 

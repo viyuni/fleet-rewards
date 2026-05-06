@@ -125,6 +125,8 @@ export const rewardRules = pgTable(
     index('reward_rules_group_idx').on(t.group),
     index('reward_rules_time_range_idx').on(t.startsAt, t.endsAt),
     index('reward_rules_priority_idx').on(t.priority),
+    index('reward_rules_enabled_priority_created_at_idx').on(t.enabled, t.priority, t.createdAt),
+    index('reward_rules_priority_created_at_idx').on(t.priority, t.createdAt),
   ],
 );
 

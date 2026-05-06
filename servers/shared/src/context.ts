@@ -114,31 +114,30 @@ export function createAppInstances({ db, secret }: CreateContextOptions) {
   });
 
   return {
-    repo: {
-      user: userRepo,
-      pointAccount: pointAccountRepo,
-      pointConversionRule: pointConversionRuleRepo,
-      pointTransaction: pointTransactionRepo,
-      pointType: pointTypeRepo,
-      order: orderRepo,
-      product: productRepo,
-      rewardRule: rewardRuleRepo,
-      stockMovement: stockMovementRepo,
+    repositories: {
+      userRepo,
+      pointAccountRepo,
+      pointConversionRuleRepo,
+      pointTransactionRepo,
+      pointTypeRepo,
+      orderRepo,
+      productRepo,
+      rewardRuleRepo,
+      stockMovementRepo,
     },
-
-    usecase: {
-      auth: authUseCase,
-      user: userUseCase,
-      pointType: pointTypeUseCase,
-      pointAccount: pointAccountUseCase,
-      pointBalance: pointBalanceUseCase,
-      pointTransaction: pointTransactionUseCase,
-      pointConversion: pointConversionUseCase,
-      product: productUseCase,
-      stockMovement: stockMovementUseCase,
-      order: orderUseCase,
-      reward: rewardUseCase,
-      rewardRule: rewardRuleUseCase,
+    useCases: {
+      authUseCase,
+      userUseCase,
+      pointTypeUseCase,
+      pointAccountUseCase,
+      pointBalanceUseCase,
+      pointTransactionUseCase,
+      pointConversionUseCase,
+      productUseCase,
+      stockMovementUseCase,
+      orderUseCase,
+      rewardUseCase,
+      rewardRuleUseCase,
     },
   };
 }
@@ -146,24 +145,10 @@ export function createAppInstances({ db, secret }: CreateContextOptions) {
 export type AppInstances = ReturnType<typeof createAppInstances>;
 
 export function createAppContextPlugin(instances: AppInstances) {
-  const { usecase } = instances;
-
   return new Elysia({ name: 'SharedAppContext' })
-    .use(createAuthGuard(usecase.auth))
-    .decorate('authUseCase', usecase.auth)
-    .decorate('userUseCase', usecase.user)
-    .decorate('pointTypeUseCase', usecase.pointType)
-    .decorate('pointAccountUseCase', usecase.pointAccount)
-    .decorate('pointBalanceUseCase', usecase.pointBalance)
-    .decorate('pointTransactionUseCase', usecase.pointTransaction)
-    .decorate('pointConversionUseCase', usecase.pointConversion)
-    .decorate('productUseCase', usecase.product)
-    .decorate('stockMovementUseCase', usecase.stockMovement)
-    .decorate('orderUseCase', usecase.order)
-    .decorate('rewardUseCase', usecase.reward)
-    .decorate('rewardRuleUseCase', usecase.rewardRule);
+    .use(createAuthGuard(instances.useCases.authUseCase))
+    .decorate(instances.useCases);
 }
-
 export function createAppContext(options: CreateContextOptions) {
   const instances = createAppInstances(options);
   const appContext = createAppContextPlugin(instances);

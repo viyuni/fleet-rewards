@@ -1,6 +1,12 @@
-import type { ProductPageQuery } from '@internal/shared';
+import type { PageQuery, ProductPageQuery } from '@internal/shared';
 import type { DbExecutor, DbTransaction } from '@server/db';
-import { deletedAtIsNull, eqIfDefined, keywordLike, PageBuilder } from '@server/db/helper';
+import {
+  deletedAtIsNull,
+  eqIfDefined,
+  keywordLike,
+  PageBuilder,
+  QueryPageBuilder,
+} from '@server/db/helper';
 import {
   products,
   type InsertProduct,
@@ -26,25 +32,6 @@ export class ProductRepository {
         },
       },
     });
-  }
-
-  /**
-   * 获取商品列表
-   */
-  pageBuilder(query: ProductPageQuery) {
-    return new PageBuilder(this.db, products)
-      .where(
-        and(
-          deletedAtIsNull(products),
-          eqIfDefined(products.status, query.status),
-          eqIfDefined(products.pointTypeId, query.pointTypeId),
-          eqIfDefined(products.deliveryType, query.deliveryType),
-          keywordLike([products.name, products.description], query.keyword),
-        ),
-      )
-      .orderBy(desc(products.sort), desc(products.createdAt))
-      .pageSize(query.pageSize)
-      .page(query.page);
   }
 
   /**
@@ -151,5 +138,82 @@ export class ProductRepository {
     }
 
     return product;
+  }
+
+  /**
+   * 分页查询商品
+   */
+  async page(query: ProductPageQuery) {
+    new PageBuilder(this.db, products)
+      .where(
+        and(
+          deletedAtIsNull(products),
+          eqIfDefined(products.status, query.status),
+          eqIfDefined(products.pointTypeId, query.pointTypeId),
+          eqIfDefined(products.deliveryType, query.deliveryType),
+          keywordLike([products.name, products.description], query.keyword),
+        ),
+      )
+      .orderBy(desc(products.sort), desc(products.createdAt))
+      .pageSize(query.pageSize)
+      .page(query.page)
+      .paginate();
+
+    // return new QueryPageBuilder(this.db, products, this.db.query.products)
+    //   .columns({
+    //     id: true,
+    //     name: true,
+    //     description: true,
+    //     cover: true,
+    //     price: true,
+    //     stock: true,
+    //     deliveryType: true,
+    //   })
+    //   .where(
+    //     {
+    //       deletedAt: {
+    //         isNull: true,
+    //       },
+    //     },
+    //     deletedAtIsNull(products),
+    //   )
+    //   .with({
+    //     pointType: {
+    //       columns: {
+    //         name: true,
+    //       },
+    //     },
+    //   })
+    //   .page(query.page)
+    //   .pageSize(query.pageSize)
+    //   .paginate();
+  }
+
+  async list(query: PageQuery) {
+    return new QueryPageBuilder(this.db, products, this.db.query.products)
+      .columns({
+        id: true,
+        name: true,
+        description: true,
+        cover: true,
+        price: true,
+        stock: true,
+        deliveryType: true,
+      })
+      .where({
+        deletedAt: {
+          isNull: true,
+        },
+      })
+      .with({
+        pointType: {
+          columns: {
+            name: true,
+          },
+        },
+      })
+      .page(query.page)
+      .pageSize(query.pageSize)
+      .paginate();
   }
 }

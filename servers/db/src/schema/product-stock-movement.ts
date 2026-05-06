@@ -113,6 +113,12 @@ export const productStockMovements = pgTable(
     index('product_stock_transactions_type_idx').on(t.type),
     index('product_stock_transactions_source_idx').on(t.sourceType, t.sourceId),
     index('product_stock_transactions_created_at_idx').on(t.createdAt),
+    index('product_stock_transactions_product_created_at_idx').on(t.productId, t.createdAt),
+    index('product_stock_transactions_product_type_created_at_idx').on(
+      t.productId,
+      t.type,
+      t.createdAt,
+    ),
   ],
 );
 

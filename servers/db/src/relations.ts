@@ -15,4 +15,10 @@ export const relations = defineRelations(schema, r => ({
       to: r.pointTypes.id,
     }),
   },
+  products: {
+    pointType: r.one.pointTypes({
+      from: r.products.pointTypeId,
+      to: r.pointTypes.id,
+    }),
+  },
 }));

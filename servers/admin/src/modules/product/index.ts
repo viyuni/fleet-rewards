@@ -8,11 +8,7 @@ import {
 } from '@internal/shared/schema';
 import Elysia from 'elysia';
 
-import { db } from '#server/admin/db';
-
 import { appContext } from '../../context';
-import { AdminProductUseCase } from './usecase';
-import { AdminStockMovementUseCase } from './usecase/admin-stock-movement.usecase';
 
 export const product = new Elysia({
   name: 'ProductRoute',
@@ -22,12 +18,11 @@ export const product = new Elysia({
   },
 })
   .use(appContext)
-  .decorate('adminProductUseCase', new AdminProductUseCase(db))
-  .decorate('adminStockMovementUseCase', new AdminStockMovementUseCase(db))
+
   .get(
     '/',
-    ({ query, adminProductUseCase }) => {
-      return adminProductUseCase.page(query);
+    ({ query, productUseCase }) => {
+      return productUseCase.page(query);
     },
     {
       query: productPageQuerySchema,

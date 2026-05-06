@@ -164,6 +164,9 @@ export const orders = pgTable(
     index('reward_orders_point_type_id_idx').on(t.pointTypeId),
     index('reward_orders_status_idx').on(t.status),
     index('reward_orders_created_at_idx').on(t.createdAt),
+    index('reward_orders_user_created_at_idx').on(t.userId, t.createdAt),
+    index('reward_orders_status_created_at_idx').on(t.status, t.createdAt),
+    index('reward_orders_user_status_created_at_idx').on(t.userId, t.status, t.createdAt),
   ],
 );
 

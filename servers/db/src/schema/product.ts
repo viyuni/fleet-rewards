@@ -124,6 +124,13 @@ export const products = pgTable(
     index('products_status_idx').on(t.status),
     index('products_sort_idx').on(t.sort),
     index('products_deleted_at_idx').on(t.deletedAt),
+    index('products_active_list_idx').on(t.status, t.sort, t.createdAt).where(isNull(t.deletedAt)),
+    index('products_point_type_list_idx')
+      .on(t.pointTypeId, t.sort, t.createdAt)
+      .where(isNull(t.deletedAt)),
+    index('products_delivery_type_list_idx')
+      .on(t.deliveryType, t.sort, t.createdAt)
+      .where(isNull(t.deletedAt)),
   ],
 );
 

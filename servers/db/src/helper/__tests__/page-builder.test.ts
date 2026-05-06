@@ -1,6 +1,13 @@
 import { describe, expect, it, mock } from 'bun:test';
 
-import { PageBuilder } from '../page-builder';
+import { pointTypes } from '@server/db/schema';
+
+import { PageBuilder, QueryPageBuilder } from '../page-builder';
+
+type Equal<TActual, TExpected> =
+  (<T>() => T extends TActual ? 1 : 2) extends <T>() => T extends TExpected ? 1 : 2 ? true : false;
+
+type Expect<T extends true> = T;
 
 function createMockDb(items: unknown[] = [], total = 0) {
   const calls: { method: string; args: unknown[] }[] = [];
@@ -47,6 +54,20 @@ function createMockDb(items: unknown[] = [], total = 0) {
 }
 
 const mockTable = {} as any;
+
+function createMockRelationalDb(items: unknown[] = [], total = 0) {
+  const findMany = mock(async (_config?: any) => items);
+
+  return {
+    db: {
+      $count: mock(async () => total),
+    } as any,
+    query: {
+      findMany,
+    },
+    findMany,
+  };
+}
 
 describe('PageBuilder', () => {
   describe('page()', () => {
@@ -250,6 +271,121 @@ describe('PageBuilder', () => {
         .maxPageSize(50)
         .where(undefined)
         .orderBy()
+        .paginate();
+
+      expect(result.meta.page).toBe(2);
+      expect(result.meta.pageSize).toBe(5);
+    });
+  });
+});
+
+describe('QueryPageBuilder', () => {
+  describe('paginate()', () => {
+    it('返回正确的分页数据和 meta', async () => {
+      const items = [{ id: 1 }, { id: 2 }];
+      const { db, query } = createMockRelationalDb(items, 25);
+
+      const result = await new QueryPageBuilder(db, mockTable, query)
+        .page(2)
+        .pageSize(10)
+        .paginate();
+
+      expect(result.items).toEqual(items);
+      expect(result.meta).toEqual({
+        page: 2,
+        pageSize: 10,
+        total: 25,
+        totalPages: 3,
+        hasNextPage: true,
+        hasPrevPage: true,
+      });
+    });
+
+    it('传递 columns、with、orderBy、limit 和 offset 到 findMany', async () => {
+      const { db, query, findMany } = createMockRelationalDb([], 0);
+      const columns = { id: true, name: true };
+      const withValue = { pointType: true };
+      const orderBy = { createdAt: 'desc' };
+
+      await new QueryPageBuilder(db, mockTable, query)
+        .columns(columns)
+        .with(withValue)
+        .orderBy(orderBy)
+        .page(3)
+        .pageSize(5)
+        .paginate();
+
+      expect(findMany).toHaveBeenCalledWith({
+        columns,
+        with: withValue,
+        orderBy,
+        where: undefined,
+        limit: 5,
+        offset: 10,
+      });
+    });
+
+    it('columns 会收窄 paginate item 类型', async () => {
+      const { db, query } = createMockRelationalDb([], 0);
+
+      const result = await new QueryPageBuilder(db, pointTypes, query)
+        .columns({ id: true, name: true })
+        .paginate();
+
+      type Item = (typeof result.items)[number];
+      type _ = Expect<Equal<Item, { id: string; name: string }>>;
+
+      expect(result.items).toEqual([]);
+    });
+
+    it('where 传给 findMany，并把 relation where 转成 SQL 传给 $count', async () => {
+      const { db, query, findMany } = createMockRelationalDb([], 0);
+      const where = { name: { like: 'test%' } };
+
+      await new QueryPageBuilder(db, pointTypes, query).where(where).paginate();
+
+      const config = findMany.mock.calls[0]?.[0];
+      expect(config.where).toBe(where);
+      expect(db.$count.mock.calls[0]?.[0]).toBe(pointTypes);
+      expect(db.$count.mock.calls[0]?.[1]).toBeDefined();
+    });
+
+    it('where 为 undefined 时不传 findMany where，并用 undefined 调用 $count', async () => {
+      const { db, query, findMany } = createMockRelationalDb([], 0);
+
+      await new QueryPageBuilder(db, mockTable, query).where(undefined).paginate();
+
+      const config = findMany.mock.calls[0]?.[0];
+      expect(config.where).toBeUndefined();
+      expect(db.$count).toHaveBeenCalledWith(mockTable, undefined);
+    });
+
+    it('pageSize 超过 maxPageSize 时被截断', async () => {
+      const { db, query, findMany } = createMockRelationalDb([], 0);
+
+      const result = await new QueryPageBuilder(db, mockTable, query)
+        .pageSize(200)
+        .maxPageSize(30)
+        .paginate();
+
+      const config = findMany.mock.calls[0]?.[0];
+      expect(config.limit).toBe(30);
+      expect(result.meta.pageSize).toBe(30);
+    });
+  });
+
+  describe('chaining', () => {
+    it('所有方法可链式调用', async () => {
+      const { db, query } = createMockRelationalDb([], 0);
+
+      const result = await new QueryPageBuilder(db, mockTable, query)
+        .page(2)
+        .pageSize(5)
+        .maxPageSize(50)
+        .where(undefined)
+        .columns(undefined as any)
+        .with(undefined as any)
+        .orderBy(undefined as any)
         .paginate();
 
       expect(result.meta.page).toBe(2);
