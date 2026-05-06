@@ -1,10 +1,10 @@
 import type {
-  CreateProductInput,
-  StockAdjustmentInput,
-  UpdateProductInput,
+  CreateProductBody,
+  StockAdjustmentBody,
+  UpdateProductBody,
 } from '@internal/shared/schema';
-import type { DbExecutor, DbTransaction } from '@server/db';
-import { productStockMovements, type Product } from '@server/db/schema';
+import type { DbClient, DbTransaction } from '@server/db';
+import type { Product } from '@server/db/schema';
 
 import { PointTypeUseCase } from '#server/shared/modules/point';
 
@@ -17,23 +17,24 @@ import {
   StockMovementPolicy,
   StockPolicy,
 } from '../domain';
-import { ProductRepository } from '../repository';
+import { ProductRepository, StockMovementRepository } from '../repository';
 import { STOCK_MOVEMENT_SOURCE_TYPE, type ChangeStockInput } from './types';
 
-export class ProductUseCase {
-  private readonly productRepo: ProductRepository;
-  private readonly pointType: PointTypeUseCase;
+export interface ProductUseCaseDeps {
+  db: DbClient;
+  pointTypeUseCase: PointTypeUseCase;
+  productRepo: ProductRepository;
+  stockMovementRepo: StockMovementRepository;
+}
 
-  constructor(private readonly db: DbExecutor) {
-    this.productRepo = new ProductRepository(db);
-    this.pointType = new PointTypeUseCase(db);
-  }
+export class ProductUseCase {
+  constructor(private readonly deps: ProductUseCaseDeps) {}
 
   /**
    * 获取商品信息
    */
   async get(id: string) {
-    const product = await this.productRepo.findById(id);
+    const product = await this.deps.productRepo.findById(id);
 
     if (!product) {
       throw new ProductNotFoundError();
@@ -45,20 +46,20 @@ export class ProductUseCase {
   /**
    * 创建商品
    */
-  async create(input: CreateProductInput) {
-    await this.pointType.requireAvailableById(input.pointTypeId);
-    ProductInputPolicy.assertValid(input);
+  async create(productData: CreateProductBody) {
+    await this.deps.pointTypeUseCase.requireAvailableById(productData.pointTypeId);
+    ProductInputPolicy.assertValid(productData);
 
-    return this.productRepo.create(input);
+    return this.deps.productRepo.create(productData);
   }
 
   /**
    * 更新商品
    */
-  async update(id: string, input: UpdateProductInput) {
-    ProductInputPolicy.assertValid(input);
+  async update(id: string, productData: UpdateProductBody) {
+    ProductInputPolicy.assertValid(productData);
 
-    return this.productRepo.update(id, input);
+    return this.deps.productRepo.update(id, productData);
   }
 
   /**
@@ -71,7 +72,7 @@ export class ProductUseCase {
       return product;
     }
 
-    return this.productRepo.updateStatus(id, 'active');
+    return this.deps.productRepo.updateStatus(id, 'active');
   }
 
   /**
@@ -84,11 +85,11 @@ export class ProductUseCase {
       return product;
     }
 
-    return this.productRepo.updateStatus(id, 'disabled');
+    return this.deps.productRepo.updateStatus(id, 'disabled');
   }
 
-  static async requireByIdForUpdate(tx: DbTransaction, id: string) {
-    const product = await ProductRepository.findByIdForUpdate(tx, id);
+  async requireByIdForUpdate(tx: DbTransaction, id: string) {
+    const product = await this.deps.productRepo.findByIdForUpdate(tx, id);
 
     if (!product) {
       throw new ProductNotFoundError();
@@ -111,7 +112,7 @@ export class ProductUseCase {
     let updateProduct: Product;
 
     if (input.delta > 0) {
-      updateProduct = await ProductRepository.increaseStock(tx, {
+      updateProduct = await this.deps.productRepo.increaseStock(tx, {
         productId: product.id,
         amount: input.delta,
       });
@@ -122,15 +123,14 @@ export class ProductUseCase {
       // 确保库存充足
       StockPolicy.assertSufficientStock(product, amount);
 
-      updateProduct = updateProduct = await ProductRepository.decreaseStock(tx, {
+      updateProduct = await this.deps.productRepo.decreaseStock(tx, {
         productId: product.id,
         amount,
       });
     }
 
-    const [movement] = await tx
-      .insert(productStockMovements)
-      .values({
+    const movement = await this.deps.stockMovementRepo.create(
+      {
         productId: input.productId,
         type: input.type,
         delta: input.delta,
@@ -141,8 +141,9 @@ export class ProductUseCase {
         idempotencyKey: input.idempotencyKey,
         remark: input.remark,
         metadata: input.metadata,
-      })
-      .returning();
+      },
+      tx,
+    );
 
     if (!movement) {
       throw new StockMovementCreateFailedError();
@@ -157,23 +158,24 @@ export class ProductUseCase {
   /**
    * 管理员操作库存
    */
-  async adminAdjustStock(productId: string, adminId: string, input: StockAdjustmentInput) {
-    return this.db.transaction(async tx => {
-      const product = await ProductUseCase.requireByIdForUpdate(tx, productId);
+  async adminAdjustStock(productId: string, adminId: string, adjustmentData: StockAdjustmentBody) {
+    return this.deps.db.transaction(async tx => {
+      const product = await this.requireByIdForUpdate(tx, productId);
 
       return await this.changeStock(tx, product, {
         type: 'adjust',
         productId,
-        delta: input.delta,
+        delta: adjustmentData.delta,
         sourceType: STOCK_MOVEMENT_SOURCE_TYPE.adjust,
         sourceId: adminId,
-        idempotencyKey: `admin:stock:adjust:${productId}:${adminId}:${input.requestId}`,
-        remark: input.remark ?? `管理员调整库存：${product.name}`,
+        idempotencyKey: `admin:stock:adjust:${productId}:${adminId}:${adjustmentData.nonce}`,
+        remark: adjustmentData.remark ?? `管理员调整库存：${product.name}`,
         metadata: {
           adminId,
           productId,
           productName: product.name,
-          delta: input.delta,
+          delta: adjustmentData.delta,
+          nonce: adjustmentData.nonce,
         },
       });
     });

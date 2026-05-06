@@ -1,7 +1,7 @@
 import { UnauthorizedError } from '@server/shared';
 import { SignJWT, jwtVerify } from 'jose';
 
-export class JwtAuthenticator {
+export class AuthUseCase {
   private encodedSecret: Uint8Array<ArrayBuffer>;
 
   constructor(private secret: string) {
@@ -17,10 +17,6 @@ export class JwtAuthenticator {
       .sign(this.encodedSecret);
   }
 
-  /**
-   * @param token
-   * @returns userId
-   */
   async verify(token: string) {
     try {
       const { payload } = await jwtVerify(token, this.encodedSecret);

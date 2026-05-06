@@ -1,9 +1,7 @@
 import { userIdParamsSchema, userPageQuerySchema } from '@internal/shared/schema';
-import { userModule } from '@server/shared/user';
 import Elysia from 'elysia';
 
-import { db } from '#server/admin/db';
-import { authGuard } from '#server/admin/modules/auth';
+import { appContext } from '#server/admin/context';
 
 export const users = new Elysia({
   name: 'UsersRoute',
@@ -12,12 +10,11 @@ export const users = new Elysia({
     tags: ['User'],
   },
 })
-  .use(authGuard)
-  .use(userModule({ db }))
+  .use(appContext)
   .get(
     '/',
-    ({ query, user }) => {
-      return user.list(query);
+    ({ query, userUseCase }) => {
+      return userUseCase.page(query);
     },
     {
       query: userPageQuerySchema,
@@ -29,8 +26,8 @@ export const users = new Elysia({
   )
   .patch(
     '/:id/ban',
-    async ({ params, user }) => {
-      const { id, status } = await user.ban(params.id);
+    async ({ params, userUseCase }) => {
+      const { id, status } = await userUseCase.ban(params.id);
 
       return {
         id,
@@ -47,8 +44,8 @@ export const users = new Elysia({
   )
   .patch(
     '/:id/restore',
-    async ({ params, user }) => {
-      const { id, status } = await user.restore(params.id);
+    async ({ params, userUseCase }) => {
+      const { id, status } = await userUseCase.restore(params.id);
 
       return {
         id,

@@ -1,11 +1,15 @@
-import type { DbExecutor } from '@server/db';
+import type { StockMovementPageQuery } from '@internal/shared';
 
 import { StockMovementRepository } from '../repository';
 
-export class StockMovementUseCase {
-  private readonly stockMovementRepo: StockMovementRepository;
+export interface StockMovementUseCaseDeps {
+  stockMovementRepo: StockMovementRepository;
+}
 
-  constructor(private readonly db: DbExecutor) {
-    this.stockMovementRepo = new StockMovementRepository(db);
+export class StockMovementUseCase {
+  constructor(private readonly deps: StockMovementUseCaseDeps) {}
+
+  page(query: StockMovementPageQuery) {
+    return this.deps.stockMovementRepo.pageBuilder(query).paginate();
   }
 }

@@ -1,35 +1,71 @@
+import type { UserPageQuery } from '@internal/shared';
 import type { DbExecutor } from '@server/db';
 import { eqIfDefined, keywordLike, PageBuilder } from '@server/db/helper';
 import { users } from '@server/db/schema';
-import { and, desc, eq, getColumns } from 'drizzle-orm';
-
-import type { UserPageFilter } from './types';
-
-const { passwordHash: _passwordHash, ...userAdminFields } = getColumns(users);
+import { and, desc, eq } from 'drizzle-orm';
 
 export class UserRepository {
   constructor(private db: DbExecutor) {}
 
-  static async findById(db: DbExecutor, id: string) {
+  /**
+   * 获取用户
+   */
+  async findById(userId: string, db: DbExecutor = this.db) {
     const user = await db.query.users.findFirst({
       where: {
-        id,
-        deletedAt: {
-          isNull: true,
-        },
+        id: userId,
       },
     });
 
     return user ?? null;
   }
 
-  static async findByBiliUid(db: DbExecutor, biliUid: string) {
+  /**
+   * 通过 B站 UID 查询用户
+   */
+  async findByBiliUid(biliUid: string, db: DbExecutor = this.db) {
     const user = await db.query.users.findFirst({
       where: {
         biliUid,
-        deletedAt: {
-          isNull: true,
+      },
+    });
+
+    return user ?? null;
+  }
+
+  /**
+   * 查询用户详情
+   */
+  async findDetailById(userId: string) {
+    const user = await this.db.query.users.findFirst({
+      columns: {
+        id: true,
+        biliUid: true,
+        username: true,
+        status: true,
+        phoneEncrypted: true,
+        emailEncrypted: true,
+        addressEncrypted: true,
+      },
+      with: {
+        pointAccounts: {
+          columns: {
+            id: true,
+            balance: true,
+            status: true,
+          },
+          with: {
+            pointType: {
+              columns: {
+                id: true,
+                name: true,
+              },
+            },
+          },
         },
+      },
+      where: {
+        id: userId,
       },
     });
 
@@ -47,7 +83,7 @@ export class UserRepository {
         updatedAt: new Date(),
       })
       .where(and(eq(users.id, userId)))
-      .returning(userAdminFields);
+      .returning();
 
     return user ?? null;
   }
@@ -63,22 +99,31 @@ export class UserRepository {
         updatedAt: new Date(),
       })
       .where(and(eq(users.id, userId)))
-      .returning(userAdminFields);
+      .returning();
 
     return user ?? null;
   }
 
-  pageBuilder(filter: UserPageFilter) {
+  /**
+   * 分页构造查询
+   */
+  pageBuilder(query: UserPageQuery) {
     return new PageBuilder(this.db, users)
       .where(
         and(
-          eqIfDefined(users.status, filter.status),
-          keywordLike([users.username, users.biliUid], filter.keyword),
+          eqIfDefined(users.status, query.status),
+          keywordLike([users.username, users.biliUid], query.keyword),
         ),
       )
       .orderBy(desc(users.createdAt))
-      .columns(userAdminFields)
-      .page(filter.page)
-      .pageSize(filter.pageSize);
+      .page(query.page)
+      .pageSize(query.pageSize);
+  }
+
+  /**
+   * 分页
+   */
+  page(query: UserPageQuery) {
+    return this.pageBuilder(query).paginate();
   }
 }

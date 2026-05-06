@@ -1,13 +1,9 @@
 import { adminLoginSchema } from '@internal/shared/schema';
-import { createAuthModule } from '@server/shared/auth';
 import Elysia from 'elysia';
 
-import { config } from '#server/admin/config';
-import { db } from '#server/admin/db';
+import { appContext } from '#server/admin/context';
 
-import { AuthUseCase } from './usecase';
-
-export const { authGuard, authenticator } = createAuthModule(config.JWT_SECRET);
+export * from './usecase';
 
 export const auth = new Elysia({
   name: 'AuthRoute',
@@ -16,11 +12,11 @@ export const auth = new Elysia({
     tags: ['Auth'],
   },
 })
-  .decorate('auth', new AuthUseCase(db, authenticator))
+  .use(appContext)
   .post(
     '/login',
-    ({ body, auth }) => {
-      return auth.login(body);
+    ({ body, adminAuthUseCase }) => {
+      return adminAuthUseCase.login(body);
     },
     {
       body: adminLoginSchema,

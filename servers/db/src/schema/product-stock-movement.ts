@@ -70,7 +70,7 @@ export const productStockMovements = pgTable(
     /**
      * 来源类型
      *
-     * 示例：
+     * 示例:
      * reward_order
      * admin_adjustment
      */
@@ -79,8 +79,8 @@ export const productStockMovements = pgTable(
     /**
      * 来源 ID
      *
-     * 示例：
-     * 订单 ID、管理员操作 ID。
+     * 示例:
+     * 订单 ID、管理员操作 ID
      */
     sourceId: text('source_id').notNull(),
 

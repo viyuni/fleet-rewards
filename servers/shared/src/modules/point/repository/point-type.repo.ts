@@ -1,45 +1,42 @@
 import type { DbExecutor } from '@server/db';
-import { eqIfDefined, keywordLike, PageBuilder } from '@server/db/helper';
 import {
   pointTypes,
   type InsertPointType,
   type PointType,
   type UpdatePointType,
 } from '@server/db/schema';
-import { and, desc, eq } from 'drizzle-orm';
-
-import type { PointTypePageFilter } from './types';
+import { eq } from 'drizzle-orm';
 
 export class PointTypeRepository {
   constructor(private readonly db: DbExecutor) {}
 
-  static async findById(db: DbExecutor, id: string) {
-    return await db.query.pointTypes.findFirst({
-      where: {
-        id,
-      },
-    });
+  async findById(id: string, db: DbExecutor = this.db) {
+    return (
+      (await db.query.pointTypes.findFirst({
+        where: {
+          id,
+        },
+      })) ?? null
+    );
   }
 
-  async findById(id: string) {
-    return PointTypeRepository.findById(this.db, id);
+  async findByName(name: string, db: DbExecutor = this.db) {
+    return (
+      (await db.query.pointTypes.findFirst({
+        where: {
+          name,
+        },
+      })) ?? null
+    );
   }
 
-  async findByName(name: string) {
-    return await this.db.query.pointTypes.findFirst({
-      where: {
-        name,
-      },
-    });
-  }
-
-  async create(input: InsertPointType) {
-    const [row] = await this.db.insert(pointTypes).values(input).returning();
+  async create(input: InsertPointType, db: DbExecutor = this.db) {
+    const [row] = await db.insert(pointTypes).values(input).returning();
     return row ?? null;
   }
 
-  async update(id: string, input: UpdatePointType) {
-    const [row] = await this.db
+  async update(id: string, input: UpdatePointType, db: DbExecutor = this.db) {
+    const [row] = await db
       .update(pointTypes)
       .set({
         ...input,
@@ -51,8 +48,8 @@ export class PointTypeRepository {
     return row ?? null;
   }
 
-  async updateStatus(id: string, status: PointType['status']) {
-    const [row] = await this.db
+  async updateStatus(id: string, status: PointType['status'], db: DbExecutor = this.db) {
+    const [row] = await db
       .update(pointTypes)
       .set({
         status,
@@ -64,16 +61,11 @@ export class PointTypeRepository {
     return row ?? null;
   }
 
-  pageBuilder(filter: PointTypePageFilter) {
-    return new PageBuilder(this.db, pointTypes)
-      .where(
-        and(
-          eqIfDefined(pointTypes.status, filter.status),
-          keywordLike([pointTypes.name], filter.keyword),
-        ),
-      )
-      .orderBy(desc(pointTypes.createdAt))
-      .page(filter.page)
-      .pageSize(filter.pageSize);
+  list() {
+    return this.db.query.pointTypes.findMany({
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
   }
 }

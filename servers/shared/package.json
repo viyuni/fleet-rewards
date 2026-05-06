@@ -7,6 +7,7 @@
     ".": "./src/index.ts",
     "./env": "./src/env.ts",
     "./config": "./src/config.ts",
+    "./context": "./src/context.ts",
     "./errors": "./src/errors/index.ts",
     "./logger": "./src/logger.ts",
     "./setup-app": "./src/setup-app.ts",

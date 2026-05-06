@@ -1,6 +1,6 @@
 import Elysia from 'elysia';
 
-import { authGuard } from '../auth';
+import { appContext } from '../../context';
 import { pointAccountRoute } from './point-account.route';
 import { pointConversionRoute } from './point-conversion.route';
 import { pointTransactionRoute } from './point-transaction.route';
@@ -13,7 +13,7 @@ export const point = new Elysia({
     tags: ['Point'],
   },
 })
-  .use(authGuard)
+  .use(appContext)
   .use(pointTypeRoute)
   .use(pointAccountRoute)
   .use(pointConversionRoute)

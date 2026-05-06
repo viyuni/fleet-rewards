@@ -2,15 +2,10 @@ import {
   createPointTypeSchema,
   pointTypeIdParamsSchema,
   updatePointTypeSchema,
-  pointTypePageQuerySchema,
 } from '@internal/shared/schema';
-import { pointModule } from '@server/shared/point';
 import Elysia from 'elysia';
 
-import { db } from '#server/admin/db';
-import { authGuard } from '#server/admin/modules/auth';
-
-import { AdminPointTypeUseCase } from './usecase/admin-point-type.usecase';
+import { appContext } from '../../context';
 
 export const pointTypeRoute = new Elysia({
   name: 'PointTypeRoute',
@@ -19,17 +14,15 @@ export const pointTypeRoute = new Elysia({
     tags: ['PointType'],
   },
 })
-  .use(authGuard)
-  .use(pointModule({ db }))
-  .decorate('adminPointType', new AdminPointTypeUseCase(db))
+  .use(appContext)
   .get(
     '/',
-    ({ query, adminPointType }) => {
-      return adminPointType.page(query);
+    ({ pointTypeUseCase }) => {
+      return pointTypeUseCase.list();
     },
     {
       requiredAuth: true,
-      query: pointTypePageQuerySchema,
+
       detail: {
         description: '积分类型列表',
       },
@@ -37,8 +30,8 @@ export const pointTypeRoute = new Elysia({
   )
   .get(
     '/:id',
-    ({ params, pointType }) => {
-      return pointType.get(params.id);
+    ({ params, pointTypeUseCase }) => {
+      return pointTypeUseCase.get(params.id);
     },
     {
       params: pointTypeIdParamsSchema,
@@ -50,8 +43,8 @@ export const pointTypeRoute = new Elysia({
   )
   .post(
     '/',
-    ({ body, pointType }) => {
-      return pointType.create(body);
+    ({ body, pointTypeUseCase }) => {
+      return pointTypeUseCase.create(body);
     },
     {
       body: createPointTypeSchema,
@@ -63,8 +56,8 @@ export const pointTypeRoute = new Elysia({
   )
   .put(
     '/:id',
-    ({ body, params, pointType }) => {
-      return pointType.update(params.id, body);
+    ({ body, params, pointTypeUseCase }) => {
+      return pointTypeUseCase.update(params.id, body);
     },
     {
       body: updatePointTypeSchema,
@@ -77,8 +70,8 @@ export const pointTypeRoute = new Elysia({
   )
   .patch(
     '/:id/enable',
-    ({ params, pointType }) => {
-      return pointType.enable(params.id);
+    ({ params, pointTypeUseCase }) => {
+      return pointTypeUseCase.enable(params.id);
     },
     {
       params: pointTypeIdParamsSchema,
@@ -90,8 +83,8 @@ export const pointTypeRoute = new Elysia({
   )
   .patch(
     '/:id/disable',
-    ({ params, pointType }) => {
-      return pointType.disable(params.id);
+    ({ params, pointTypeUseCase }) => {
+      return pointTypeUseCase.disable(params.id);
     },
     {
       params: pointTypeIdParamsSchema,

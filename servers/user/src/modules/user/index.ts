@@ -2,7 +2,10 @@ import { userLoginSchema, userRegisterSchema } from '@internal/shared';
 import { setupApp } from '@server/shared/setup-app';
 import Elysia from 'elysia';
 
-import { userContext } from './context';
+import { appContext } from '#servers/user/context';
+import { db } from '#servers/user/db';
+
+import { UserUseCase as UserAuthUseCase } from './usecase';
 
 export * from './repository';
 export * from './usecase';
@@ -14,11 +17,14 @@ export const user = setupApp(
     name: 'UserRoute',
   }),
 )
-  .use(userContext)
+  .use(appContext)
+  .derive(({ authUseCase }) => ({
+    userAuthUseCase: new UserAuthUseCase(db, authUseCase),
+  }))
   .post(
     '/login',
-    ({ body, user }) => {
-      return user.login(body);
+    ({ body, userAuthUseCase }) => {
+      return userAuthUseCase.login(body);
     },
     {
       body: userLoginSchema,
@@ -29,8 +35,8 @@ export const user = setupApp(
   )
   .post(
     '/register',
-    ({ body, user }) => {
-      return user.register(body);
+    ({ body, userAuthUseCase }) => {
+      return userAuthUseCase.register(body);
     },
     {
       body: userRegisterSchema,

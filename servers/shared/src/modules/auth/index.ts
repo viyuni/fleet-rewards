@@ -1,13 +1,12 @@
-export { JwtAuthenticator } from './authenticator';
-import { Elysia } from 'elysia';
+import Elysia from 'elysia';
 
 import { UnauthorizedError } from '../../errors';
-import { JwtAuthenticator } from './authenticator';
+import type { AuthUseCase } from './usecase';
 
-export const createAuthModule = (secret: string) => {
-  const authenticator = new JwtAuthenticator(secret);
+export * from './usecase';
 
-  const authGuard = new Elysia({ name: 'AuthGuardModule' }).macro('requiredAuth', {
+export const createAuthGuard = (authUseCase: AuthUseCase) => {
+  const authGuard = new Elysia({ name: 'AuthGuard' }).macro('requiredAuth', {
     // OpenAPI
     detail: {
       security: [{ requiredAuth: [] }],
@@ -37,7 +36,7 @@ export const createAuthModule = (secret: string) => {
       }
 
       const token = authorization.replace(/^Bearer\s+/i, '');
-      const userId = await authenticator.verify(token);
+      const userId = await authUseCase.verify(token);
 
       return {
         userId,
@@ -45,5 +44,5 @@ export const createAuthModule = (secret: string) => {
     },
   });
 
-  return { authGuard, authenticator };
+  return authGuard;
 };

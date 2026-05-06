@@ -1,15 +1,35 @@
+import type { PointTransactionPageQuery } from '@internal/shared';
 import type { DbExecutor, DbTransaction } from '@server/db';
-import { eqIfDefined, gteIfDefined, lteIfDefined, PageBuilder, parseDate } from '@server/db/helper';
+import {
+  defineSelectColumns,
+  eqIfDefined,
+  gteIfDefined,
+  lteIfDefined,
+  PageBuilder,
+  parseDate,
+} from '@server/db/helper';
 import { pointTransactions } from '@server/db/schema';
 import { and, desc, eq } from 'drizzle-orm';
 
 import { PointTransactionNotFoundError } from '../domain';
-import type { PointTransactionPageFilter } from './types';
+
+const userPointTransactionSelectCols = defineSelectColumns(
+  pointTransactions,
+  ({ pointTypeNameSnapshot, type, delta, balanceBefore, balanceAfter, remark, createdAt }) => ({
+    pointTypeNameSnapshot,
+    type,
+    delta,
+    balanceBefore,
+    balanceAfter,
+    remark,
+    createdAt,
+  }),
+);
 
 export class PointTransactionRepository {
   constructor(private readonly db: DbExecutor) {}
 
-  static async requireByIdForUpdate(tx: DbTransaction, transactionId: string) {
+  async requireByIdForUpdate(tx: DbTransaction, transactionId: string) {
     const [transaction] = await tx
       .select()
       .from(pointTransactions)
@@ -23,9 +43,9 @@ export class PointTransactionRepository {
     return transaction;
   }
 
-  static async findByAccountAndIdempotencyKey(
-    db: DbExecutor,
+  async findByAccountAndIdempotencyKey(
     input: { accountId: string; idempotencyKey: string },
+    db: DbExecutor = this.db,
   ) {
     return await db.query.pointTransactions.findFirst({
       where: {
@@ -35,19 +55,33 @@ export class PointTransactionRepository {
     });
   }
 
-  pageBuilder(filter: PointTransactionPageFilter) {
+  pageBuilder(query: PointTransactionPageQuery) {
     return new PageBuilder(this.db, pointTransactions)
       .where(
         and(
-          eqIfDefined(pointTransactions.userId, filter.userId),
-          eqIfDefined(pointTransactions.type, filter.type),
-          eqIfDefined(pointTransactions.pointTypeId, filter.pointTypeId),
-          gteIfDefined(pointTransactions.createdAt, parseDate(filter.startTime)),
-          lteIfDefined(pointTransactions.createdAt, parseDate(filter.endTime)),
+          eqIfDefined(pointTransactions.userId, query.userId),
+          eqIfDefined(pointTransactions.type, query.type),
+          eqIfDefined(pointTransactions.pointTypeId, query.pointTypeId),
+          gteIfDefined(pointTransactions.createdAt, parseDate(query.startTime)),
+          lteIfDefined(pointTransactions.createdAt, parseDate(query.endTime)),
         ),
       )
       .orderBy(desc(pointTransactions.createdAt))
-      .page(filter.page)
-      .pageSize(filter.pageSize);
+      .page(query.page)
+      .pageSize(query.pageSize);
+  }
+
+  page(query: PointTransactionPageQuery) {
+    return this.pageBuilder(query).paginate();
+  }
+
+  pageByUserId(userId: string, query: PointTransactionPageQuery) {
+    return this.pageBuilder({
+      ...query,
+      userId,
+    })
+      .orderBy(desc(pointTransactions.createdAt))
+      .columns(userPointTransactionSelectCols)
+      .paginate();
   }
 }

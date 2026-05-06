@@ -9,4 +9,10 @@ export const relations = defineRelations(schema, r => ({
       to: r.pointAccounts.userId,
     }),
   },
+  pointAccounts: {
+    pointType: r.one.pointTypes({
+      from: r.pointAccounts.pointTypeId,
+      to: r.pointTypes.id,
+    }),
+  },
 }));

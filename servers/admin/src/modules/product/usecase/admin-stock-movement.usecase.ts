@@ -1,9 +1,7 @@
+import type { StockMovementPageQuery } from '@internal/shared/schema';
 import type { DbExecutor } from '@server/db';
 
-import {
-  StockMovementRepository,
-  type StockMovementPageFilter,
-} from '#server/shared/modules/product';
+import { StockMovementRepository } from '#server/shared/modules/product';
 
 export class AdminStockMovementUseCase {
   private stockMovementRepo: StockMovementRepository;
@@ -12,7 +10,7 @@ export class AdminStockMovementUseCase {
     this.stockMovementRepo = new StockMovementRepository(db);
   }
 
-  page(filter: StockMovementPageFilter) {
-    return this.stockMovementRepo.pageBuilder(filter).paginate();
+  page(query: StockMovementPageQuery) {
+    return this.stockMovementRepo.pageBuilder(query).paginate();
   }
 }

@@ -1,3 +1,4 @@
+import type { ProductPageQuery } from '@internal/shared';
 import type { DbExecutor, DbTransaction } from '@server/db';
 import { deletedAtIsNull, eqIfDefined, keywordLike, PageBuilder } from '@server/db/helper';
 import {
@@ -9,7 +10,6 @@ import {
 import { and, desc, eq, gte, sql } from 'drizzle-orm';
 
 import { StockAmountPolicy, StockInsufficientError, StockUpdateFailedError } from '../domain';
-import type { ProductPageFilter } from './types';
 
 export class ProductRepository {
   constructor(private readonly db: DbExecutor) {}
@@ -17,8 +17,8 @@ export class ProductRepository {
   /**
    * 获取指定 ID 的商品
    */
-  async findById(id: string) {
-    return await this.db.query.products.findFirst({
+  async findById(id: string, db: DbExecutor = this.db) {
+    return await db.query.products.findFirst({
       where: {
         id,
         deletedAt: {
@@ -31,27 +31,27 @@ export class ProductRepository {
   /**
    * 获取商品列表
    */
-  pageBuilder(filter: ProductPageFilter) {
+  pageBuilder(query: ProductPageQuery) {
     return new PageBuilder(this.db, products)
       .where(
         and(
           deletedAtIsNull(products),
-          eqIfDefined(products.status, filter.status),
-          eqIfDefined(products.pointTypeId, filter.pointTypeId),
-          eqIfDefined(products.deliveryType, filter.deliveryType),
-          keywordLike([products.name, products.description], filter.keyword),
+          eqIfDefined(products.status, query.status),
+          eqIfDefined(products.pointTypeId, query.pointTypeId),
+          eqIfDefined(products.deliveryType, query.deliveryType),
+          keywordLike([products.name, products.description], query.keyword),
         ),
       )
       .orderBy(desc(products.sort), desc(products.createdAt))
-      .pageSize(filter.pageSize)
-      .page(filter.page);
+      .pageSize(query.pageSize)
+      .page(query.page);
   }
 
   /**
    * 创建商品
    */
-  async create(input: InsertProduct) {
-    const [row] = await this.db.insert(products).values(input).returning();
+  async create(input: InsertProduct, db: DbExecutor = this.db) {
+    const [row] = await db.insert(products).values(input).returning();
 
     return row ?? null;
   }
@@ -59,8 +59,8 @@ export class ProductRepository {
   /**
    * 更新商品
    */
-  async update(id: string, input: UpdateProduct) {
-    const [row] = await this.db
+  async update(id: string, input: UpdateProduct, db: DbExecutor = this.db) {
+    const [row] = await db
       .update(products)
       .set({
         ...input,
@@ -75,12 +75,12 @@ export class ProductRepository {
   /**
    * 更新商品状态
    */
-  async updateStatus(id: string, status: ProductStatus) {
-    return this.update(id, { status });
+  async updateStatus(id: string, status: ProductStatus, db: DbExecutor = this.db) {
+    return this.update(id, { status }, db);
   }
 
-  async delete(id: string) {
-    const [row] = await this.db
+  async delete(id: string, db: DbExecutor = this.db) {
+    const [row] = await db
       .update(products)
       .set({
         deletedAt: new Date(),
@@ -95,8 +95,12 @@ export class ProductRepository {
   /**
    * 行锁商品并返回查询结果
    */
-  static async findByIdForUpdate(tx: DbTransaction, id: string) {
-    const [product] = await tx.select().from(products).where(eq(products.id, id)).for('update');
+  async findByIdForUpdate(tx: DbTransaction, id: string) {
+    const [product] = await tx
+      .select()
+      .from(products)
+      .where(and(eq(products.id, id), deletedAtIsNull(products)))
+      .for('update');
 
     return product;
   }
@@ -104,7 +108,7 @@ export class ProductRepository {
   /**
    * 增加商品库存
    */
-  static async increaseStock(tx: DbTransaction, input: { productId: string; amount: number }) {
+  async increaseStock(tx: DbTransaction, input: { productId: string; amount: number }) {
     StockAmountPolicy.assertPositiveInteger(input.amount);
 
     const [product] = await tx
@@ -125,7 +129,7 @@ export class ProductRepository {
   /**
    * 减少商品库存
    */
-  static async decreaseStock(tx: DbTransaction, input: { productId: string; amount: number }) {
+  async decreaseStock(tx: DbTransaction, input: { productId: string; amount: number }) {
     StockAmountPolicy.assertPositiveInteger(input.amount);
 
     const [product] = await tx

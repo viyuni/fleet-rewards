@@ -48,10 +48,10 @@ export const pointTransactionTypeEnum = pgEnum('point_transaction_type', [
 /**
  * 积分流水表
  *
- * - 所有积分变动都必须写入这里。
+ * - 所有积分变动都必须写入这里
  * - 不允许删除, 不可逆
  *
- * 约定：
+ * 约定:
  * - amount > 0 表示增加积分
  * - amount < 0 表示扣除积分
  * - 不物理删除流水
@@ -79,11 +79,16 @@ export const pointTransactions = pgTable(
     /**
      * 积分类型 ID
      *
-     * 冗余一份 pointTypeId 是为了查询流水时不用总是 join account。
+     * 冗余一份 pointTypeId 是为了查询流水时不用总是 join account
      */
     pointTypeId: uuid('point_type_id')
       .notNull()
       .references(() => pointTypes.id),
+
+    /**
+     * 积分类型名称快照
+     */
+    pointTypeNameSnapshot: text('point_type_name_snapshot').notNull(),
 
     /**
      * 流水类型
@@ -93,10 +98,10 @@ export const pointTransactions = pgTable(
     /**
      * 变动数量
      *
-     * 发放：正数
-     * 消费：负数
-     * 退款：正数
-     * 冲正：根据被冲正流水反向写入
+     * 发放: 正数
+     * 消费: 负数
+     * 退款: 正数
+     * 冲正: 根据被冲正流水反向写入
      */
     delta: integer('delta').notNull(),
 
@@ -124,15 +129,15 @@ export const pointTransactions = pgTable(
     /**
      * 来源 ID
      *
-     * 示例：
-     * 订单 ID、直播事件 ID、管理员操作 ID。
+     * 示例:
+     * 订单 ID、直播事件 ID、管理员操作 ID
      */
     sourceId: text('source_id'),
 
     /**
      * 幂等键
      *
-     * 用于避免重复发放、重复扣款、重复退款。
+     * 用于避免重复发放、重复扣款、重复退款
      *
      * @example
      * 'guard_event:bilibili:xxxx'
@@ -145,7 +150,7 @@ export const pointTransactions = pgTable(
      * 流水备注
      *
      * @example
-     * '兑换商品：钥匙扣'
+     * '兑换商品: 钥匙扣'
      * '管理员补发积分'
      * '订单退款返还积分'
      */
@@ -154,12 +159,12 @@ export const pointTransactions = pgTable(
     /**
      * 原始上下文
      *
-     * 可以保存事件 payload、订单快照、管理员信息等。
+     * 可以保存事件 payload、订单快照、管理员信息等
      */
     metadata: jsonb('metadata'),
 
     /**
-     * 如果这是冲正流水，指向被冲正的流水。
+     * 如果这是冲正流水，指向被冲正的流水
      */
     reversalOfTransactionId: uuid('reversal_of_transaction_id'),
 

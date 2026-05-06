@@ -6,12 +6,11 @@ import {
   stockMovementPageQuerySchema,
   updateProductSchema,
 } from '@internal/shared/schema';
-import { productModule } from '@server/shared/product';
 import Elysia from 'elysia';
 
 import { db } from '#server/admin/db';
 
-import { authGuard } from '../auth';
+import { appContext } from '../../context';
 import { AdminProductUseCase } from './usecase';
 import { AdminStockMovementUseCase } from './usecase/admin-stock-movement.usecase';
 
@@ -22,14 +21,13 @@ export const product = new Elysia({
     tags: ['Product'],
   },
 })
-  .use(authGuard)
-  .use(productModule({ db }))
-  .decorate('adminProduct', new AdminProductUseCase(db))
-  .decorate('adminStockMovement', new AdminStockMovementUseCase(db))
+  .use(appContext)
+  .decorate('adminProductUseCase', new AdminProductUseCase(db))
+  .decorate('adminStockMovementUseCase', new AdminStockMovementUseCase(db))
   .get(
     '/',
-    ({ query, adminProduct }) => {
-      return adminProduct.page(query);
+    ({ query, adminProductUseCase }) => {
+      return adminProductUseCase.page(query);
     },
     {
       query: productPageQuerySchema,
@@ -41,8 +39,8 @@ export const product = new Elysia({
   )
   .get(
     '/stock/movements',
-    ({ query, adminStockMovement }) => {
-      return adminStockMovement.page(query);
+    ({ query, adminStockMovementUseCase }) => {
+      return adminStockMovementUseCase.page(query);
     },
     {
       query: stockMovementPageQuerySchema,
@@ -54,8 +52,8 @@ export const product = new Elysia({
   )
   .get(
     '/:id/stock/movements',
-    ({ query, params, adminStockMovement }) => {
-      return adminStockMovement.page({
+    ({ query, params, adminStockMovementUseCase }) => {
+      return adminStockMovementUseCase.page({
         ...query,
         productId: params.id,
       });
@@ -71,8 +69,8 @@ export const product = new Elysia({
   )
   .get(
     '/:id',
-    ({ params, product }) => {
-      return product.get(params.id);
+    ({ params, productUseCase }) => {
+      return productUseCase.get(params.id);
     },
     {
       params: productIdParamsSchema,
@@ -84,8 +82,8 @@ export const product = new Elysia({
   )
   .post(
     '/',
-    ({ body, product }) => {
-      return product.create(body);
+    ({ body, productUseCase }) => {
+      return productUseCase.create(body);
     },
     {
       body: createProductSchema,
@@ -97,8 +95,8 @@ export const product = new Elysia({
   )
   .put(
     '/:id',
-    ({ body, params, product }) => {
-      return product.update(params.id, body);
+    ({ body, params, productUseCase }) => {
+      return productUseCase.update(params.id, body);
     },
     {
       body: updateProductSchema,
@@ -111,8 +109,8 @@ export const product = new Elysia({
   )
   .patch(
     '/:id/enable',
-    ({ params, product }) => {
-      return product.active(params.id);
+    ({ params, productUseCase }) => {
+      return productUseCase.active(params.id);
     },
     {
       params: productIdParamsSchema,
@@ -124,8 +122,8 @@ export const product = new Elysia({
   )
   .patch(
     '/:id/disable',
-    ({ params, product }) => {
-      return product.disable(params.id);
+    ({ params, productUseCase }) => {
+      return productUseCase.disable(params.id);
     },
     {
       params: productIdParamsSchema,
@@ -137,10 +135,10 @@ export const product = new Elysia({
   )
   .patch(
     '/:id/stock/adjust',
-    async ({ body, params, product, userId }) => {
+    async ({ body, params, productUseCase, userId }) => {
       const {
         product: { id, stock },
-      } = await product.adminAdjustStock(params.id, userId, body);
+      } = await productUseCase.adminAdjustStock(params.id, userId, body);
 
       return {
         id,

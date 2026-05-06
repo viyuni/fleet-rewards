@@ -1,1 +1,1 @@
-export * from './auth.usecase';
+export * from './admin-auth.usecase';

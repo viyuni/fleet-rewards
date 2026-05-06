@@ -9,8 +9,8 @@ import { and, desc, eq } from 'drizzle-orm';
 export class PointConversionRuleRepository {
   constructor(private readonly db: DbExecutor) {}
 
-  async findById(id: string) {
-    const [row] = await this.db
+  async findById(id: string, db: DbExecutor = this.db) {
+    const [row] = await db
       .select()
       .from(pointConversionRules)
       .where(eq(pointConversionRules.id, id))
@@ -19,13 +19,13 @@ export class PointConversionRuleRepository {
     return row ?? null;
   }
 
-  async create(input: InsertPointConversionRule) {
-    const [row] = await this.db.insert(pointConversionRules).values(input).returning();
+  async create(input: InsertPointConversionRule, db: DbExecutor = this.db) {
+    const [row] = await db.insert(pointConversionRules).values(input).returning();
     return row ?? null;
   }
 
-  async update(id: string, input: UpdatePointConversionRule) {
-    const [row] = await this.db
+  async update(id: string, input: UpdatePointConversionRule, db: DbExecutor = this.db) {
+    const [row] = await db
       .update(pointConversionRules)
       .set({
         ...input,
@@ -37,14 +37,11 @@ export class PointConversionRuleRepository {
     return row ?? null;
   }
 
-  async updateEnabled(id: string, enabled: boolean) {
-    return this.update(id, { enabled });
+  async updateEnabled(id: string, enabled: boolean, db: DbExecutor = this.db) {
+    return this.update(id, { enabled }, db);
   }
 
-  list() {
-    return this.db
-      .select()
-      .from(pointConversionRules)
-      .orderBy(desc(pointConversionRules.createdAt));
+  list(db: DbExecutor = this.db) {
+    return db.select().from(pointConversionRules).orderBy(desc(pointConversionRules.createdAt));
   }
 }

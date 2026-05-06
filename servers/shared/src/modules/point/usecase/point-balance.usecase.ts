@@ -11,14 +11,26 @@ import {
   PointTransactionPolicy,
 } from '../domain';
 import { PointAccountRepository } from '../repository/point-account.repo';
+import type { PointTypeUseCase } from './point-type.usecase';
 
 export class PointBalanceUseCase {
-  static async changeBalance(tx: DbTransaction, account: PointAccount, input: ChangeBalanceInput) {
+  constructor(
+    private readonly deps: {
+      pointAccountRepo: PointAccountRepository;
+      pointTypeUseCase: PointTypeUseCase;
+      userUseCase: UserUseCase;
+    },
+  ) {}
+
+  async changeBalance(tx: DbTransaction, account: PointAccount, input: ChangeBalanceInput) {
     PointAmountPolicy.assertNonZeroInteger(input.delta);
     PointTransactionPolicy.assertDeltaMatchesType(input.type, input.delta);
 
+    // 获取积分类型, 用于存快照
+    const pointType = await this.deps.pointTypeUseCase.requireAvailableById(input.pointTypeId, tx);
+
     // 获取用户
-    const user = await UserUseCase.requireAvailableById(tx, input.userId);
+    const user = await this.deps.userUseCase.requireAvailableById(input.userId, tx);
 
     let updatedAccount: PointAccount;
 
@@ -26,7 +38,7 @@ export class PointBalanceUseCase {
       // 添加积分
       PointAccountPolicy.assertCanIncrease(account);
 
-      updatedAccount = await PointAccountRepository.increaseBalance(tx, {
+      updatedAccount = await this.deps.pointAccountRepo.increaseBalance(tx, {
         accountId: account.id,
         amount: input.delta,
       });
@@ -37,7 +49,7 @@ export class PointBalanceUseCase {
       PointAccountPolicy.assertCanConsume(account);
       PointAccountPolicy.assertSufficientBalance(account, amount);
 
-      updatedAccount = await PointAccountRepository.decreaseBalance(tx, {
+      updatedAccount = await this.deps.pointAccountRepo.decreaseBalance(tx, {
         accountId: account.id,
         amount,
       });
@@ -50,6 +62,7 @@ export class PointBalanceUseCase {
         userId: user.id,
         pointAccountId: account.id,
         pointTypeId: input.pointTypeId,
+        pointTypeNameSnapshot: pointType.name,
         type: input.type,
         delta: input.delta,
         balanceBefore: account.balance,

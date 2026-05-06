@@ -1,9 +1,9 @@
 import type {
-  ConvertPointInput,
-  CreatePointConversionRuleInput,
-  UpdatePointConversionRuleInput,
+  ConvertPointBody,
+  CreatePointConversionRuleBody,
+  UpdatePointConversionRuleBody,
 } from '@internal/shared/schema';
-import type { DbExecutor } from '@server/db';
+import type { DbClient } from '@server/db';
 import type { InsertPointConversionRule, UpdatePointConversionRule } from '@server/db/schema';
 
 import {
@@ -16,19 +16,23 @@ import { PointAccountRepository, PointConversionRuleRepository } from '../reposi
 import { PointBalanceUseCase } from './point-balance.usecase';
 import { PointTypeUseCase } from './point-type.usecase';
 
-export class PointConversionUseCase {
-  private readonly ruleRepo: PointConversionRuleRepository;
+export interface PointConversionUseCaseDeps {
+  db: DbClient;
+  pointAccountRepo: PointAccountRepository;
+  pointBalanceUseCase: PointBalanceUseCase;
+  pointConversionRuleRepo: PointConversionRuleRepository;
+  pointTypeUseCase: PointTypeUseCase;
+}
 
-  constructor(private readonly db: DbExecutor) {
-    this.ruleRepo = new PointConversionRuleRepository(db);
-  }
+export class PointConversionUseCase {
+  constructor(private readonly deps: PointConversionUseCaseDeps) {}
 
   list() {
-    return this.ruleRepo.list();
+    return this.deps.pointConversionRuleRepo.list();
   }
 
   async get(id: string) {
-    const rule = await this.ruleRepo.findById(id);
+    const rule = await this.deps.pointConversionRuleRepo.findById(id);
 
     if (!rule) {
       throw new PointConversionRuleNotFoundError();
@@ -37,28 +41,28 @@ export class PointConversionUseCase {
     return rule;
   }
 
-  async create(input: CreatePointConversionRuleInput) {
-    PointConversionRulePolicy.assertValidShape(this.toRuleShape(input));
+  async create(ruleData: CreatePointConversionRuleBody) {
+    PointConversionRulePolicy.assertValidShape(this.toRuleShape(ruleData));
 
-    await this.ensurePointTypesAvailable(input.fromPointTypeId, input.toPointTypeId);
+    await this.ensurePointTypesAvailable(ruleData.fromPointTypeId, ruleData.toPointTypeId);
 
-    return this.ruleRepo.create(this.toInsertRule(input));
+    return this.deps.pointConversionRuleRepo.create(this.toInsertRule(ruleData));
   }
 
-  async update(id: string, input: UpdatePointConversionRuleInput) {
+  async update(id: string, ruleData: UpdatePointConversionRuleBody) {
     const current = await this.get(id);
     const next = {
       ...current,
-      ...this.toUpdateRule(input),
+      ...this.toUpdateRule(ruleData),
     };
 
     PointConversionRulePolicy.assertValidShape(next);
 
-    if (input.fromPointTypeId || input.toPointTypeId) {
+    if (ruleData.fromPointTypeId || ruleData.toPointTypeId) {
       await this.ensurePointTypesAvailable(next.fromPointTypeId, next.toPointTypeId);
     }
 
-    return this.ruleRepo.update(id, this.toUpdateRule(input));
+    return this.deps.pointConversionRuleRepo.update(id, this.toUpdateRule(ruleData));
   }
 
   async enable(id: string) {
@@ -68,7 +72,7 @@ export class PointConversionUseCase {
       return rule;
     }
 
-    return this.ruleRepo.updateEnabled(id, true);
+    return this.deps.pointConversionRuleRepo.updateEnabled(id, true);
   }
 
   async disable(id: string) {
@@ -78,13 +82,12 @@ export class PointConversionUseCase {
       return rule;
     }
 
-    return this.ruleRepo.updateEnabled(id, false);
+    return this.deps.pointConversionRuleRepo.updateEnabled(id, false);
   }
 
-  async convert(input: ConvertPointInput) {
-    return this.db.transaction(async tx => {
-      const ruleRepo = new PointConversionRuleRepository(tx);
-      const rule = await ruleRepo.findById(input.ruleId);
+  async convert(conversionData: ConvertPointBody) {
+    return this.deps.db.transaction(async tx => {
+      const rule = await this.deps.pointConversionRuleRepo.findById(conversionData.ruleId, tx);
 
       if (!rule) {
         throw new PointConversionRuleNotFoundError();
@@ -92,49 +95,49 @@ export class PointConversionUseCase {
 
       PointConversionRulePolicy.assertAvailable(rule);
 
-      const toAmount = PointConversionRulePolicy.calculateToAmount(rule, input.fromAmount);
-      const fromAccount = await PointAccountRepository.ensureAccountAndLock(tx, {
-        userId: input.userId,
+      const toAmount = PointConversionRulePolicy.calculateToAmount(rule, conversionData.fromAmount);
+      const fromAccount = await this.deps.pointAccountRepo.ensureAccountAndLock(tx, {
+        userId: conversionData.userId,
         pointTypeId: rule.fromPointTypeId,
       });
-      const toAccount = await PointAccountRepository.ensureAccountAndLock(tx, {
-        userId: input.userId,
+      const toAccount = await this.deps.pointAccountRepo.ensureAccountAndLock(tx, {
+        userId: conversionData.userId,
         pointTypeId: rule.toPointTypeId,
       });
-      const sourceId = `${rule.id}:${input.requestId}`;
-      const remark = input.remark ?? `积分转换：${rule.name}`;
+      const sourceId = `${rule.id}:${conversionData.nonce}`;
+      const remark = conversionData.remark ?? `积分转换：${rule.name}`;
 
-      const consumeResult = await PointBalanceUseCase.changeBalance(tx, fromAccount, {
+      const consumeResult = await this.deps.pointBalanceUseCase.changeBalance(tx, fromAccount, {
         type: 'consume',
-        userId: input.userId,
+        userId: conversionData.userId,
         pointTypeId: rule.fromPointTypeId,
-        delta: -input.fromAmount,
+        delta: -conversionData.fromAmount,
         sourceType: POINT_CHANGE_SOURCE_TYPE.Conversion,
         sourceId,
-        idempotencyKey: `point:conversion:${rule.id}:${input.requestId}:consume`,
+        idempotencyKey: `point:conversion:${rule.id}:${conversionData.nonce}:consume`,
         remark,
         metadata: {
           ruleId: rule.id,
-          requestId: input.requestId,
+          nonce: conversionData.nonce,
           toPointTypeId: rule.toPointTypeId,
           toAmount,
         },
       });
 
-      const grantResult = await PointBalanceUseCase.changeBalance(tx, toAccount, {
+      const grantResult = await this.deps.pointBalanceUseCase.changeBalance(tx, toAccount, {
         type: 'grant',
-        userId: input.userId,
+        userId: conversionData.userId,
         pointTypeId: rule.toPointTypeId,
         delta: toAmount,
         sourceType: POINT_CHANGE_SOURCE_TYPE.Conversion,
         sourceId,
-        idempotencyKey: `point:conversion:${rule.id}:${input.requestId}:grant`,
+        idempotencyKey: `point:conversion:${rule.id}:${conversionData.nonce}:grant`,
         remark,
         metadata: {
           ruleId: rule.id,
-          requestId: input.requestId,
+          nonce: conversionData.nonce,
           fromPointTypeId: rule.fromPointTypeId,
-          fromAmount: input.fromAmount,
+          fromAmount: conversionData.fromAmount,
         },
       });
 
@@ -151,38 +154,38 @@ export class PointConversionUseCase {
       throw new PointConversionRuleInvalidError('来源积分类型和目标积分类型不能相同');
     }
 
-    await PointTypeUseCase.requireAvailableById(this.db, fromPointTypeId);
-    await PointTypeUseCase.requireAvailableById(this.db, toPointTypeId);
+    await this.deps.pointTypeUseCase.requireAvailableById(fromPointTypeId);
+    await this.deps.pointTypeUseCase.requireAvailableById(toPointTypeId);
   }
 
-  private toInsertRule(input: CreatePointConversionRuleInput): InsertPointConversionRule {
+  private toInsertRule(ruleData: CreatePointConversionRuleBody): InsertPointConversionRule {
     return {
-      name: input.name,
-      description: input.description,
-      remark: input.remark,
-      fromPointTypeId: input.fromPointTypeId,
-      toPointTypeId: input.toPointTypeId,
-      fromAmount: input.fromAmount,
-      toAmount: input.toAmount,
-      minFromAmount: input.minFromAmount,
-      maxFromAmount: input.maxFromAmount,
-      enabled: input.enabled ?? true,
-      startsAt: input.startsAt ? new Date(input.startsAt) : undefined,
-      endsAt: input.endsAt ? new Date(input.endsAt) : undefined,
+      name: ruleData.name,
+      description: ruleData.description,
+      remark: ruleData.remark,
+      fromPointTypeId: ruleData.fromPointTypeId,
+      toPointTypeId: ruleData.toPointTypeId,
+      fromAmount: ruleData.fromAmount,
+      toAmount: ruleData.toAmount,
+      minFromAmount: ruleData.minFromAmount,
+      maxFromAmount: ruleData.maxFromAmount,
+      enabled: ruleData.enabled ?? true,
+      startsAt: ruleData.startsAt ? new Date(ruleData.startsAt) : undefined,
+      endsAt: ruleData.endsAt ? new Date(ruleData.endsAt) : undefined,
     };
   }
 
-  private toUpdateRule(input: UpdatePointConversionRuleInput): UpdatePointConversionRule {
-    return this.toRuleShape(input);
+  private toUpdateRule(ruleData: UpdatePointConversionRuleBody): UpdatePointConversionRule {
+    return this.toRuleShape(ruleData);
   }
 
   private toRuleShape(
-    input: CreatePointConversionRuleInput | UpdatePointConversionRuleInput,
+    ruleData: CreatePointConversionRuleBody | UpdatePointConversionRuleBody,
   ): InsertPointConversionRule | UpdatePointConversionRule {
     return {
-      ...input,
-      startsAt: input.startsAt ? new Date(input.startsAt) : undefined,
-      endsAt: input.endsAt ? new Date(input.endsAt) : undefined,
+      ...ruleData,
+      startsAt: ruleData.startsAt ? new Date(ruleData.startsAt) : undefined,
+      endsAt: ruleData.endsAt ? new Date(ruleData.endsAt) : undefined,
     };
   }
 }

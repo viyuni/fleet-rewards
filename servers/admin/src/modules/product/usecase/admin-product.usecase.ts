@@ -1,6 +1,7 @@
+import type { ProductPageQuery } from '@internal/shared/schema';
 import type { DbExecutor } from '@server/db';
 
-import { ProductRepository, type ProductPageFilter } from '#server/shared/modules/product';
+import { ProductRepository } from '#server/shared/modules/product';
 
 export class AdminProductUseCase {
   private productRepo: ProductRepository;
@@ -9,7 +10,7 @@ export class AdminProductUseCase {
     this.productRepo = new ProductRepository(db);
   }
 
-  page(filter: ProductPageFilter) {
-    return this.productRepo.pageBuilder(filter).paginate();
+  page(query: ProductPageQuery) {
+    return this.productRepo.pageBuilder(query).paginate();
   }
 }

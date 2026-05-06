@@ -1,9 +1,7 @@
 import { adjustBalanceSchema } from '@internal/shared/schema';
-import { pointModule } from '@server/shared/point';
 import Elysia from 'elysia';
 
-import { db } from '#server/admin/db';
-import { authGuard } from '#server/admin/modules/auth';
+import { appContext } from '../../context';
 
 export const pointAccountRoute = new Elysia({
   name: 'PointAccountRoute',
@@ -12,12 +10,11 @@ export const pointAccountRoute = new Elysia({
     tags: ['PointAccount'],
   },
 })
-  .use(authGuard)
-  .use(pointModule({ db }))
+  .use(appContext)
   .patch(
-    '/adjust-balance',
-    ({ pointAccount, userId: adminId, body }) => {
-      return pointAccount.adjustBalance(adminId, body);
+    '/balance/adjust',
+    ({ pointAccountUseCase, userId: adminId, body }) => {
+      return pointAccountUseCase.adjustBalance(adminId, body);
     },
     {
       requiredAuth: true,

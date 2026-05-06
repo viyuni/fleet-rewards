@@ -1,9 +1,9 @@
 import { createOrderSchema, orderPageQuerySchema } from '@internal/shared/schema';
-import { orderModule } from '@server/shared/order';
 import Elysia from 'elysia';
 
+import { appContext } from '#servers/user/context';
+
 import { db } from '../../db';
-import { authGuard } from '../auth';
 import { UserOrderUseCase } from './usecase';
 
 export const order = new Elysia({
@@ -13,13 +13,12 @@ export const order = new Elysia({
     tags: ['Order'],
   },
 })
-  .use(authGuard)
-  .use(orderModule({ db }))
-  .decorate('userOrder', new UserOrderUseCase(db))
+  .use(appContext)
+  .decorate('userOrderUseCase', new UserOrderUseCase(db))
   .get(
     '/',
-    ({ query, userId, userOrder }) => {
-      return userOrder.page({
+    ({ query, userId, userOrderUseCase }) => {
+      return userOrderUseCase.page({
         ...query,
         userId,
       });
@@ -34,8 +33,8 @@ export const order = new Elysia({
   )
   .post(
     '/',
-    async ({ body, userId, order }) => {
-      const { orderNo } = await order.create(userId, body);
+    async ({ body, userId, orderUseCase }) => {
+      const { orderNo } = await orderUseCase.create(userId, body);
       return {
         orderNo,
       };

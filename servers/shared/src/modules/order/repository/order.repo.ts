@@ -1,4 +1,5 @@
-import type { DbExecutor } from '@server/db';
+import type { OrderPageQuery } from '@internal/shared/schema';
+import type { DbExecutor, DbTransaction } from '@server/db';
 import {
   eqIfDefined,
   gteIfDefined,
@@ -10,53 +11,44 @@ import {
 import { orders, type InsertOrder, type UpdateOrder } from '@server/db/schema';
 import { and, desc, eq } from 'drizzle-orm';
 
-import type { OrderPageFilter } from './types';
-
 export class OrderRepository {
   constructor(protected readonly db: DbExecutor) {}
 
-  pageBuilder(filter: OrderPageFilter) {
+  pageBuilder(query: OrderPageQuery) {
     return new PageBuilder(this.db, orders)
       .where(
         and(
-          eqIfDefined(orders.status, filter.status),
-          eqIfDefined(orders.userId, filter.userId),
-          gteIfDefined(orders.createdAt, parseDate(filter.startTime)),
-          lteIfDefined(orders.createdAt, parseDate(filter.endTime)),
+          eqIfDefined(orders.status, query.status),
+          eqIfDefined(orders.userId, query.userId),
+          gteIfDefined(orders.createdAt, parseDate(query.startTime)),
+          lteIfDefined(orders.createdAt, parseDate(query.endTime)),
           keywordLike(
             [orders.orderNo, orders.productNameSnapshot, orders.pointTypeNameSnapshot],
-            filter.keyword,
+            query.keyword,
           ),
         ),
       )
       .orderBy(desc(orders.createdAt))
-      .page(filter.page)
-      .pageSize(filter.pageSize);
+      .page(query.page)
+      .pageSize(query.pageSize);
   }
 
-  async findById(id: string) {
-    return await this.db.query.orders.findFirst({
+  async findById(id: string, db: DbExecutor = this.db) {
+    return await db.query.orders.findFirst({
       where: {
         id,
-        deletedAt: {
-          isNull: true,
-        },
       },
     });
   }
 
-  static async create(tx: DbExecutor, input: InsertOrder) {
+  async create(tx: DbTransaction, input: InsertOrder) {
     const [row] = await tx.insert(orders).values(input).returning();
 
     return row;
   }
 
-  async update(id: string, input: UpdateOrder) {
-    return await OrderRepository.update(this.db, id, input);
-  }
-
-  static async update(tx: DbExecutor, id: string, input: UpdateOrder) {
-    const [row] = await tx
+  async update(id: string, input: UpdateOrder, db: DbExecutor = this.db) {
+    const [row] = await db
       .update(orders)
       .set({
         ...input,

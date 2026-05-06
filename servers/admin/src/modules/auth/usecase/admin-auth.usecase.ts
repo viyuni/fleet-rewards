@@ -1,29 +1,28 @@
-import type { AdminLoginInput, AdminRegisterInput } from '@internal/shared/schema';
+import type { AdminLoginBody, AdminRegisterBody } from '@internal/shared/schema';
 import type { DbExecutor } from '@server/db';
 import { InvalidCredentialsError } from '@server/shared';
-import type { JwtAuthenticator } from '@server/shared/auth';
+import type { AuthUseCase } from '@server/shared/auth';
 
 import { AdminRepository } from '../../admin/repository';
 import { AlreadyExistsError, DisabledError } from '../domain';
 
-export class AuthUseCase {
-  private adminRepo: AdminRepository;
+export interface AdminAuthUseCaseDeps {
+  db: DbExecutor;
+  adminRepo: AdminRepository;
+  authUseCase: AuthUseCase;
+}
 
-  constructor(
-    private db: DbExecutor,
-    private authenticator: JwtAuthenticator,
-  ) {
-    this.adminRepo = new AdminRepository(db);
-  }
+export class AdminAuthUseCase {
+  constructor(private readonly deps: AdminAuthUseCaseDeps) {}
 
-  async login(input: AdminLoginInput) {
-    const user = await this.adminRepo.findByBiliUid(input.biliUid);
+  async login(body: AdminLoginBody) {
+    const user = await this.deps.adminRepo.findByBiliUid(body.biliUid);
 
     if (!user) {
       throw new InvalidCredentialsError();
     }
 
-    const isValidPassword = await Bun.password.verify(input.password, user.passwordHash, 'bcrypt');
+    const isValidPassword = await Bun.password.verify(body.password, user.passwordHash, 'bcrypt');
 
     if (!isValidPassword) {
       throw new InvalidCredentialsError();
@@ -33,8 +32,8 @@ export class AuthUseCase {
       throw new DisabledError();
     }
 
-    const loggedIn = await this.adminRepo.updateLastLoginAt(user.id);
-    const token = await this.authenticator.sign(user.id);
+    const loggedIn = await this.deps.adminRepo.updateLastLoginAt(user.id);
+    const token = await this.deps.authUseCase.sign(user.id);
 
     return {
       token,
@@ -48,25 +47,23 @@ export class AuthUseCase {
     };
   }
 
-  async register(input: AdminRegisterInput) {
-    const adminRepo = new AdminRepository(this.db);
-
-    const existingBiliUidAdmin = await adminRepo.findByBiliUid(input.biliUid);
+  async register(body: AdminRegisterBody) {
+    const existingBiliUidAdmin = await this.deps.adminRepo.findByBiliUid(body.biliUid);
 
     if (existingBiliUidAdmin) {
       throw new AlreadyExistsError('管理员 B站 UID 已存在');
     }
 
-    const passwordHash = await Bun.password.hash(input.password, {
+    const passwordHash = await Bun.password.hash(body.password, {
       algorithm: 'bcrypt',
       cost: 12,
     });
 
-    const admin = await adminRepo.create({
-      biliUid: input.biliUid,
-      username: input.username,
+    const admin = await this.deps.adminRepo.create({
+      biliUid: body.biliUid,
+      username: body.username,
       passwordHash,
-      remark: input.remark ?? null,
+      remark: body.remark ?? null,
     });
 
     return {

@@ -1,27 +1,33 @@
-import type { DbExecutor } from '@server/db';
+import type { DbClient } from '@server/db';
 
-import { POINT_CHANGE_SOURCE_TYPE, PointTypePolicy } from '#server/shared/modules/point';
 import {
+  POINT_CHANGE_SOURCE_TYPE,
   PointAccountRepository,
+  PointBalanceUseCase,
   PointTransactionRepository,
-  PointTypeRepository,
-} from '#server/shared/modules/point/repository';
-import { PointBalanceUseCase } from '#server/shared/modules/point/usecase';
+  PointTypeUseCase,
+} from '#server/shared/modules/point';
 import { UserPolicy } from '#server/shared/modules/user/domain';
 import { UserRepository } from '#server/shared/modules/user/repository';
 
 import { RewardRulePolicy, type BiliGuardRewardEvent } from '../domain';
 import { RewardRuleRepository } from '../repository';
 
-export class RewardUseCase {
-  private readonly rewardRuleRepo: RewardRuleRepository;
+export interface RewardUseCaseDeps {
+  db: DbClient;
+  pointAccountRepo: PointAccountRepository;
+  pointBalanceUseCase: PointBalanceUseCase;
+  pointTransactionRepo: PointTransactionRepository;
+  pointTypeUseCase: PointTypeUseCase;
+  rewardRuleRepo: RewardRuleRepository;
+  userRepo: UserRepository;
+}
 
-  constructor(private readonly db: DbExecutor) {
-    this.rewardRuleRepo = new RewardRuleRepository(db);
-  }
+export class RewardUseCase {
+  constructor(private readonly deps: RewardUseCaseDeps) {}
 
   async previewBiliGuard(event: BiliGuardRewardEvent, now = new Date()) {
-    const rules = await this.rewardRuleRepo.listCandidates(now);
+    const rules = await this.deps.rewardRuleRepo.listCandidates(now);
     const matchedRules = rules.filter(rule => RewardRulePolicy.matchesBiliGuard(rule, event));
     const effectiveRules = RewardRulePolicy.pickEffectiveRules(matchedRules);
 
@@ -36,35 +42,34 @@ export class RewardUseCase {
   }
 
   async grantBiliGuard(event: BiliGuardRewardEvent, now = new Date()) {
-    return await this.db.transaction(async tx => {
-      const user = await UserRepository.findByBiliUid(tx, String(event.uid));
+    return await this.deps.db.transaction(async tx => {
+      const user = await this.deps.userRepo.findByBiliUid(String(event.uid), tx);
 
       UserPolicy.assertAvailable(user);
 
-      const rewardRuleRepo = new RewardRuleRepository(tx);
-      const rules = await rewardRuleRepo.listCandidates(now);
+      const rules = await this.deps.rewardRuleRepo.listCandidates(now, tx);
       const matchedRules = rules.filter(rule => RewardRulePolicy.matchesBiliGuard(rule, event));
       const effectiveRules = RewardRulePolicy.pickEffectiveRules(matchedRules);
       const results = [];
 
       for (const rule of effectiveRules) {
-        const pointType = await PointTypeRepository.findById(tx, rule.pointTypeId);
-        PointTypePolicy.assertAvailable(pointType);
+        await this.deps.pointTypeUseCase.requireAvailableById(rule.pointTypeId, tx);
 
-        const account = await PointAccountRepository.ensureAccountAndLock(tx, {
+        const account = await this.deps.pointAccountRepo.ensureAccountAndLock(tx, {
           userId: user.id,
           pointTypeId: rule.pointTypeId,
         });
 
         const idempotencySource = event.stableKey ?? event.id;
         const idempotencyKey = `bili-guard:${idempotencySource}:rule:${rule.id}`;
-        const existingTransaction = await PointTransactionRepository.findByAccountAndIdempotencyKey(
-          tx,
-          {
-            accountId: account.id,
-            idempotencyKey,
-          },
-        );
+        const existingTransaction =
+          await this.deps.pointTransactionRepo.findByAccountAndIdempotencyKey(
+            {
+              accountId: account.id,
+              idempotencyKey,
+            },
+            tx,
+          );
 
         if (existingTransaction) {
           results.push({
@@ -79,7 +84,7 @@ export class RewardUseCase {
           continue;
         }
 
-        const result = await PointBalanceUseCase.changeBalance(tx, account, {
+        const result = await this.deps.pointBalanceUseCase.changeBalance(tx, account, {
           type: 'grant',
           userId: user.id,
           pointTypeId: rule.pointTypeId,

@@ -3,11 +3,10 @@ import {
   orderPageQuerySchema,
   refundOrderSchema,
 } from '@internal/shared/schema';
-import { orderModule } from '@server/shared/order';
 import Elysia from 'elysia';
 
+import { appContext } from '../../context';
 import { db } from '../../db';
-import { authGuard } from '../auth';
 import { AdminOrderUseCase } from './usecase';
 
 export const order = new Elysia({
@@ -17,13 +16,13 @@ export const order = new Elysia({
     tags: ['Order'],
   },
 })
-  .use(authGuard)
-  .use(orderModule({ db }))
-  .decorate('adminOrder', new AdminOrderUseCase(db))
+
+  .use(appContext)
+  .decorate('adminOrderUseCase', new AdminOrderUseCase(db))
   .get(
     '/',
-    ({ query, adminOrder }) => {
-      return adminOrder.page(query);
+    ({ query, adminOrderUseCase }) => {
+      return adminOrderUseCase.page(query);
     },
     {
       query: orderPageQuerySchema,
@@ -35,8 +34,8 @@ export const order = new Elysia({
   )
   .get(
     '/:id',
-    ({ params, order }) => {
-      return order.get(params.id);
+    ({ params, orderUseCase }) => {
+      return orderUseCase.get(params.id);
     },
     {
       params: orderIdParamsSchema,
@@ -48,8 +47,8 @@ export const order = new Elysia({
   )
   .patch(
     '/:id/complete',
-    async ({ params, order }) => {
-      const { id, status } = await order.complete(params.id);
+    async ({ params, orderUseCase }) => {
+      const { id, status } = await orderUseCase.complete(params.id);
 
       return {
         id,
@@ -66,8 +65,8 @@ export const order = new Elysia({
   )
   .patch(
     '/:id/refund',
-    async ({ body, params, order }) => {
-      const { id, status } = await order.refund(params.id, body);
+    async ({ body, params, orderUseCase }) => {
+      const { id, status } = await orderUseCase.refund(params.id, body);
 
       return {
         id,

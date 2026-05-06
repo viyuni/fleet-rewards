@@ -19,11 +19,6 @@ export type PaginatedResult<TItem> = {
   meta: PaginationMeta;
 };
 
-export type PageQuery = {
-  page?: number;
-  pageSize?: number;
-};
-
 type PageItem<
   TTable extends AnyPgTable,
   TFields extends SelectedFields | undefined,

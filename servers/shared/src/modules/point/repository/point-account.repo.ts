@@ -14,15 +14,12 @@ export class PointAccountRepository {
   /**
    * 确保积分账户存在, 并行锁
    */
-  static async ensureAccountAndLock(
-    tx: DbTransaction,
-    input: { userId: string; pointTypeId: string },
-  ) {
+  async ensureAccountAndLock(tx: DbTransaction, data: { userId: string; pointTypeId: string }) {
     await tx
       .insert(pointAccounts)
       .values({
-        userId: input.userId,
-        pointTypeId: input.pointTypeId,
+        userId: data.userId,
+        pointTypeId: data.pointTypeId,
         balance: 0,
       })
       .onConflictDoNothing({
@@ -33,10 +30,7 @@ export class PointAccountRepository {
       .select()
       .from(pointAccounts)
       .where(
-        and(
-          eq(pointAccounts.userId, input.userId),
-          eq(pointAccounts.pointTypeId, input.pointTypeId),
-        ),
+        and(eq(pointAccounts.userId, data.userId), eq(pointAccounts.pointTypeId, data.pointTypeId)),
       )
       .for('update');
 
@@ -50,7 +44,7 @@ export class PointAccountRepository {
   /**
    * 查询积分账户并行锁
    */
-  static async requireByIdForUpdate(tx: DbTransaction, accountId: string) {
+  async requireByIdForUpdate(tx: DbTransaction, accountId: string) {
     const [account] = await tx
       .select()
       .from(pointAccounts)
@@ -69,17 +63,17 @@ export class PointAccountRepository {
    * @param input.accountId 积分账户ID
    * @param input.amount 增加的积分数量, 必须大于0
    */
-  static async increaseBalance(tx: DbTransaction, input: { accountId: string; amount: number }) {
-    PointAmountPolicy.assertPositiveInteger(input.amount);
+  async increaseBalance(tx: DbTransaction, data: { accountId: string; amount: number }) {
+    PointAmountPolicy.assertPositiveInteger(data.amount);
 
     const [updatedAccount] = await tx
       .update(pointAccounts)
       .set({
-        balance: sql`${pointAccounts.balance} + ${input.amount}`,
+        balance: sql`${pointAccounts.balance} + ${data.amount}`,
       })
       .where(
         and(
-          eq(pointAccounts.id, input.accountId),
+          eq(pointAccounts.id, data.accountId),
           // 账户状态为激活或挂起
           inArray(pointAccounts.status, ['active', 'suspended']),
         ),
@@ -98,18 +92,18 @@ export class PointAccountRepository {
    * @param input.accountId 积分账户ID
    * @param input.amount 扣除的积分数量, 必须大于0
    */
-  static async decreaseBalance(tx: DbTransaction, input: { accountId: string; amount: number }) {
-    PointAmountPolicy.assertPositiveInteger(input.amount);
+  async decreaseBalance(tx: DbTransaction, data: { accountId: string; amount: number }) {
+    PointAmountPolicy.assertPositiveInteger(data.amount);
 
     const [updatedAccount] = await tx
       .update(pointAccounts)
       .set({
-        balance: sql`${pointAccounts.balance} - ${input.amount}`,
+        balance: sql`${pointAccounts.balance} - ${data.amount}`,
       })
       .where(
         and(
-          eq(pointAccounts.id, input.accountId),
-          gte(pointAccounts.balance, input.amount),
+          eq(pointAccounts.id, data.accountId),
+          gte(pointAccounts.balance, data.amount),
           // 账户状态为激活
           eq(pointAccounts.status, 'active'),
         ),

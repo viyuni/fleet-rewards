@@ -1,29 +1,29 @@
 import type {
-  CreateRewardRuleInput,
+  CreateRewardRuleBody,
   RewardRulePageQuery,
-  UpdateRewardRuleInput,
+  UpdateRewardRuleBody,
 } from '@internal/shared';
-import type { DbExecutor } from '@server/db';
 import type { InsertRewardRule, UpdateRewardRule } from '@server/db/schema';
 
-import { PointTypePolicy, PointTypeRepository } from '#server/shared/modules/point';
+import { PointTypeUseCase } from '#server/shared/modules/point';
 
 import { RewardRuleNotFoundError, RewardRulePolicy } from '../domain';
 import { RewardRuleRepository } from '../repository';
 
+export interface RewardRuleUseCaseDeps {
+  pointTypeUseCase: PointTypeUseCase;
+  rewardRuleRepo: RewardRuleRepository;
+}
+
 export class RewardRuleUseCase {
-  private readonly rewardRuleRepo: RewardRuleRepository;
+  constructor(private readonly deps: RewardRuleUseCaseDeps) {}
 
-  constructor(private readonly db: DbExecutor) {
-    this.rewardRuleRepo = new RewardRuleRepository(db);
-  }
-
-  page(filter: RewardRulePageQuery = {}) {
-    return this.rewardRuleRepo.pageBuilder(filter).paginate();
+  page(query: RewardRulePageQuery = {}) {
+    return this.deps.rewardRuleRepo.pageBuilder(query).paginate();
   }
 
   async get(id: string) {
-    const rule = await this.rewardRuleRepo.findById(id);
+    const rule = await this.deps.rewardRuleRepo.findById(id);
 
     if (!rule) {
       throw new RewardRuleNotFoundError();
@@ -32,10 +32,10 @@ export class RewardRuleUseCase {
     return rule;
   }
 
-  async create(input: CreateRewardRuleInput) {
-    await this.assertPointTypeAvailable(input.pointTypeId);
+  async create(ruleData: CreateRewardRuleBody) {
+    await this.deps.pointTypeUseCase.requireAvailableById(ruleData.pointTypeId);
 
-    const rule = await this.rewardRuleRepo.create(this.toInsert(input));
+    const rule = await this.deps.rewardRuleRepo.create(this.toInsert(ruleData));
 
     if (!rule) {
       throw new RewardRuleNotFoundError();
@@ -44,21 +44,21 @@ export class RewardRuleUseCase {
     return rule;
   }
 
-  async update(id: string, input: UpdateRewardRuleInput) {
+  async update(id: string, ruleData: UpdateRewardRuleBody) {
     const current = await this.get(id);
 
-    if (input.pointTypeId) {
-      await this.assertPointTypeAvailable(input.pointTypeId);
+    if (ruleData.pointTypeId) {
+      await this.deps.pointTypeUseCase.requireAvailableById(ruleData.pointTypeId);
     }
 
-    const update = this.toUpdate(input);
+    const update = this.toUpdate(ruleData);
 
     RewardRulePolicy.assertValidTimeRange({
       startsAt: update.startsAt ?? current.startsAt,
       endsAt: update.endsAt ?? current.endsAt,
     });
 
-    const rule = await this.rewardRuleRepo.update(id, update);
+    const rule = await this.deps.rewardRuleRepo.update(id, update);
 
     if (!rule) {
       throw new RewardRuleNotFoundError();
@@ -68,7 +68,7 @@ export class RewardRuleUseCase {
   }
 
   async enable(id: string) {
-    const rule = await this.rewardRuleRepo.updateEnabled(id, true);
+    const rule = await this.deps.rewardRuleRepo.updateEnabled(id, true);
 
     if (!rule) {
       throw new RewardRuleNotFoundError();
@@ -78,7 +78,7 @@ export class RewardRuleUseCase {
   }
 
   async disable(id: string) {
-    const rule = await this.rewardRuleRepo.updateEnabled(id, false);
+    const rule = await this.deps.rewardRuleRepo.updateEnabled(id, false);
 
     if (!rule) {
       throw new RewardRuleNotFoundError();
@@ -88,7 +88,7 @@ export class RewardRuleUseCase {
   }
 
   async remove(id: string) {
-    const rule = await this.rewardRuleRepo.delete(id);
+    const rule = await this.deps.rewardRuleRepo.delete(id);
 
     if (!rule) {
       throw new RewardRuleNotFoundError();
@@ -97,13 +97,7 @@ export class RewardRuleUseCase {
     return rule;
   }
 
-  private async assertPointTypeAvailable(pointTypeId: string) {
-    const pointType = await PointTypeRepository.findById(this.db, pointTypeId);
-
-    PointTypePolicy.assertAvailable(pointType);
-  }
-
-  private toInsert(input: CreateRewardRuleInput): InsertRewardRule {
+  private toInsert(input: CreateRewardRuleBody): InsertRewardRule {
     const rule: InsertRewardRule = {
       ...input,
       startsAt: this.parseDate(input.startsAt),
@@ -115,7 +109,7 @@ export class RewardRuleUseCase {
     return rule;
   }
 
-  private toUpdate(input: UpdateRewardRuleInput): UpdateRewardRule {
+  private toUpdate(input: UpdateRewardRuleBody): UpdateRewardRule {
     return {
       ...input,
       startsAt: this.parseDate(input.startsAt),

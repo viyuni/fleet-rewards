@@ -19,7 +19,7 @@ import { users } from './user';
 
 /**
  * 订单状态枚举
- * 状态流转：
+ * 状态流转:
  * 1. pending -> completed
  * 2. completed -> refunded
  */
@@ -27,22 +27,22 @@ export const orderStatusEnum = pgEnum('order_status', [
   /**
    * 待完成
    *
-   * 用户已兑换，积分已扣除，商品库存已扣减。
-   * 等待管理员履约/处理。
+   * 用户已兑换，积分已扣除，商品库存已扣减
+   * 等待管理员履约/处理
    */
   'pending',
 
   /**
    * 已完成
    *
-   * 订单已履约完成。
+   * 订单已履约完成
    */
   'completed',
 
   /**
    * 已退款
    *
-   * 管理员退款后，积分已返还。
+   * 管理员退款后，积分已返还
    */
   'refunded',
 ]);
@@ -50,7 +50,7 @@ export const orderStatusEnum = pgEnum('order_status', [
 /**
  * 兑换订单表
  * - 不允许删除
- * 一个订单兑换一个商品，只使用一种积分。
+ * 一个订单兑换一个商品，只使用一种积分
  */
 export const orders = pgTable(
   'orders',

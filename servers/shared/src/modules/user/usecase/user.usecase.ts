@@ -4,18 +4,18 @@ import type { DbExecutor } from '@server/db';
 import { UserNotFoundError, UserPolicy } from '../domain';
 import { UserRepository } from '../repository';
 
-export class UserUseCase {
-  private readonly userRepo: UserRepository;
+export interface UserUseCaseDeps {
+  userRepo: UserRepository;
+}
 
-  constructor(private readonly db: DbExecutor) {
-    this.userRepo = new UserRepository(db);
-  }
+export class UserUseCase {
+  constructor(private readonly deps: UserUseCaseDeps) {}
 
   /**
-   * 查询活动用户
+   * 查询可用用户
    */
-  static async requireAvailableById(db: DbExecutor, id: string) {
-    const user = await UserRepository.findById(db, id);
+  async requireAvailableById(userId: string, db?: DbExecutor) {
+    const user = await this.deps.userRepo.findById(userId, db);
 
     UserPolicy.assertAvailable(user);
 
@@ -23,17 +23,24 @@ export class UserUseCase {
   }
 
   /**
+   * 获取用户详情
+   */
+  async profile(userId: string) {
+    return this.deps.userRepo.findDetailById(userId);
+  }
+
+  /**
    * 查询用户列表
    */
-  async list(filter: UserPageQuery = {}) {
-    return await this.userRepo.pageBuilder(filter).paginate();
+  async page(query: UserPageQuery) {
+    return await this.deps.userRepo.page(query);
   }
 
   /**
    * 封禁用户
    */
   async ban(id: string) {
-    const user = await this.userRepo.ban(id);
+    const user = await this.deps.userRepo.ban(id);
 
     if (!user) {
       throw new UserNotFoundError();
@@ -46,7 +53,7 @@ export class UserUseCase {
    * 恢复用户
    */
   async restore(id: string) {
-    const user = await this.userRepo.restore(id);
+    const user = await this.deps.userRepo.restore(id);
 
     if (!user) {
       throw new UserNotFoundError();

@@ -27,7 +27,7 @@ export const pointAccountStatusEnum = pgEnum('point_account_status', [
 /**
  * 用户积分账户表
  *
- * 一个用户针对一种积分类型只有一个账户。
+ * 一个用户针对一种积分类型只有一个账户
  */
 export const pointAccounts = pgTable(
   'point_accounts',
@@ -35,24 +35,24 @@ export const pointAccounts = pgTable(
     id: uuid('id').primaryKey().defaultRandom(),
 
     /**
-     * 用户 ID。
+     * 用户 ID
      */
     userId: text('user_id').notNull(),
 
     /**
-     * 积分类型 ID。
+     * 积分类型 ID
      */
     pointTypeId: uuid('point_type_id')
       .notNull()
       .references(() => pointTypes.id),
 
     /**
-     * 当前可用余额。
+     * 当前可用余额
      */
     balance: integer('balance').notNull().default(0),
 
     /**
-     * 账户状态。
+     * 账户状态
      */
     status: pointAccountStatusEnum('status').notNull().default('active'),
 

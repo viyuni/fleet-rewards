@@ -1,5 +1,14 @@
-import type { InferEnum, InferInsertModel, InferSelectModel } from 'drizzle-orm';
-import { index, integer, jsonb, pgEnum, pgTable, text, uuid } from 'drizzle-orm/pg-core';
+import { isNull, type InferEnum, type InferInsertModel, type InferSelectModel } from 'drizzle-orm';
+import {
+  index,
+  integer,
+  jsonb,
+  pgEnum,
+  pgTable,
+  text,
+  uniqueIndex,
+  uuid,
+} from 'drizzle-orm/pg-core';
 
 import { deletedAt, timestamps } from './column-helpers';
 import { pointTypes } from './point-type';
@@ -37,7 +46,7 @@ export const productDeliveryTypeEnum = pgEnum('product_delivery_type', [
 /**
  * 商品表
  *
- * - 一个商品只能使用一种积分兑换。
+ * - 一个商品只能使用一种积分兑换
  * - 仅支持软删除
  */
 export const products = pgTable(
@@ -63,7 +72,7 @@ export const products = pgTable(
     /**
      * 商品详情
      *
-     * 可以存 Markdown / 富文本 JSON 字符串 / HTML。
+     * 可以存 Markdown / 富文本 JSON 字符串 / HTML
      */
     detail: text('detail'),
 
@@ -90,10 +99,10 @@ export const products = pgTable(
     stock: integer('stock').notNull().default(0),
 
     /**
-     * 发货方式。
+     * 发货方式
      *
-     * automatic：兑换后自动发放，订单可直接 completed
-     * manual：兑换后创建已完成订单，等待线下/人工履约
+     * automatic: 兑换后自动发放，订单可直接 completed
+     * manual: 兑换后创建已完成订单，等待线下/人工履约
      */
     deliveryType: productDeliveryTypeEnum('delivery_type').notNull().default('manual'),
 
@@ -110,6 +119,7 @@ export const products = pgTable(
     ...timestamps,
   },
   t => [
+    uniqueIndex('products_name_active_unique').on(t.name).where(isNull(t.deletedAt)),
     index('products_point_type_id_idx').on(t.pointTypeId),
     index('products_status_idx').on(t.status),
     index('products_sort_idx').on(t.sort),

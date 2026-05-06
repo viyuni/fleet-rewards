@@ -5,9 +5,10 @@ import { Elysia } from 'elysia';
 
 import { version } from '../package.json' with { type: 'json' };
 import { config } from './config';
+import { appContext } from './context';
 import { logger } from './logger';
 import { admin } from './modules/admin';
-import { auth, authGuard } from './modules/auth';
+import { auth } from './modules/auth';
 import { email } from './modules/email/index';
 import { image } from './modules/image';
 import { order } from './modules/order';
@@ -15,8 +16,6 @@ import { point } from './modules/point';
 import { product } from './modules/product';
 import { reward } from './modules/reward';
 import { users } from './modules/users';
-
-logger.info(config);
 
 export const app = setupApp(
   new Elysia({
@@ -28,7 +27,7 @@ export const app = setupApp(
   },
 )
   .use(cors({ origin: '*', allowedHeaders: ['Content-Type', 'Authorization'] }))
-  .use(authGuard)
+  .use(appContext)
   .use(auth)
   .use(admin)
   .use(point)

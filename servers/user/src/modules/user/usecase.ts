@@ -1,14 +1,14 @@
-import type { UserLoginInput, UserRegisterInput } from '@internal/shared';
+import type { UserLoginBody, UserRegisterBody } from '@internal/shared';
 import type { DbClient } from '@server/db';
-import type { JwtAuthenticator } from '@server/shared/auth';
+import type { AuthUseCase } from '@server/shared/auth';
 
 export class UserUseCase {
   constructor(
     private db: DbClient,
-    private authenticator: JwtAuthenticator,
+    private authUseCase: AuthUseCase,
   ) {}
 
-  login(_input: UserLoginInput) {}
+  login(_input: UserLoginBody) {}
 
-  register(_input: UserRegisterInput) {}
+  register(_input: UserRegisterBody) {}
 }

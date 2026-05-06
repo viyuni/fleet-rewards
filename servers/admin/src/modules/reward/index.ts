@@ -1,6 +1,6 @@
 import Elysia from 'elysia';
 
-import { authGuard } from '../auth';
+import { appContext } from '../../context';
 import { rewardRuleRoute } from './reward-rule.route';
 
 export const reward = new Elysia({
@@ -10,5 +10,5 @@ export const reward = new Elysia({
     tags: ['Reward'],
   },
 })
-  .use(authGuard)
+  .use(appContext)
   .use(rewardRuleRoute);

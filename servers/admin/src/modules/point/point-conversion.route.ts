@@ -4,11 +4,9 @@ import {
   pointConversionRuleIdParamsSchema,
   updatePointConversionRuleSchema,
 } from '@internal/shared/schema';
-import { pointModule } from '@server/shared/point';
 import Elysia from 'elysia';
 
-import { db } from '#server/admin/db';
-import { authGuard } from '#server/admin/modules/auth';
+import { appContext } from '../../context';
 
 export const pointConversionRoute = new Elysia({
   name: 'PointConversionRoute',
@@ -17,12 +15,12 @@ export const pointConversionRoute = new Elysia({
     tags: ['PointConversion'],
   },
 })
-  .use(authGuard)
-  .use(pointModule({ db }))
+
+  .use(appContext)
   .get(
     '/',
-    ({ pointConversion }) => {
-      return pointConversion.list();
+    ({ pointConversionUseCase }) => {
+      return pointConversionUseCase.list();
     },
     {
       requiredAuth: true,
@@ -34,8 +32,8 @@ export const pointConversionRoute = new Elysia({
 
   .post(
     '/',
-    ({ body, pointConversion }) => {
-      return pointConversion.create(body);
+    ({ body, pointConversionUseCase }) => {
+      return pointConversionUseCase.create(body);
     },
     {
       body: createPointConversionRuleSchema,
@@ -47,8 +45,8 @@ export const pointConversionRoute = new Elysia({
   )
   .put(
     '/:id',
-    ({ body, params, pointConversion }) => {
-      return pointConversion.update(params.id, body);
+    ({ body, params, pointConversionUseCase }) => {
+      return pointConversionUseCase.update(params.id, body);
     },
     {
       body: updatePointConversionRuleSchema,
@@ -61,8 +59,8 @@ export const pointConversionRoute = new Elysia({
   )
   .patch(
     '/:id/enable',
-    ({ params, pointConversion }) => {
-      return pointConversion.enable(params.id);
+    ({ params, pointConversionUseCase }) => {
+      return pointConversionUseCase.enable(params.id);
     },
     {
       params: pointConversionRuleIdParamsSchema,
@@ -74,8 +72,8 @@ export const pointConversionRoute = new Elysia({
   )
   .patch(
     '/:id/disable',
-    ({ params, pointConversion }) => {
-      return pointConversion.disable(params.id);
+    ({ params, pointConversionUseCase }) => {
+      return pointConversionUseCase.disable(params.id);
     },
     {
       params: pointConversionRuleIdParamsSchema,
@@ -87,8 +85,8 @@ export const pointConversionRoute = new Elysia({
   )
   .post(
     '/convert',
-    ({ body, pointConversion }) => {
-      return pointConversion.convert(body);
+    ({ body, pointConversionUseCase }) => {
+      return pointConversionUseCase.convert(body);
     },
     {
       body: convertPointSchema,

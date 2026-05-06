@@ -1,6 +1,7 @@
+import type { OrderPageQuery } from '@internal/shared/schema';
 import type { DbExecutor } from '@server/db';
 
-import { OrderRepository, type OrderPageFilter } from '#server/shared/modules/order';
+import { OrderRepository } from '#server/shared/modules/order';
 
 export class UserOrderUseCase {
   private orderRepo: OrderRepository;
@@ -9,7 +10,7 @@ export class UserOrderUseCase {
     this.orderRepo = new OrderRepository(db);
   }
 
-  page(filter: OrderPageFilter) {
-    return this.orderRepo.pageBuilder(filter).columns({}).paginate();
+  page(query: OrderPageQuery) {
+    return this.orderRepo.pageBuilder(query).columns({}).paginate();
   }
 }

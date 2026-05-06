@@ -1,3 +1,4 @@
+import type { RewardRulePageQuery } from '@internal/shared';
 import type { DbExecutor } from '@server/db';
 import { eqIfDefined, keywordLike, PageBuilder } from '@server/db/helper';
 import {
@@ -8,19 +9,10 @@ import {
 } from '@server/db/schema';
 import { and, asc, desc, eq, gt, isNull, lte, or } from 'drizzle-orm';
 
-export interface RewardRulePageFilter {
-  page?: number;
-  pageSize?: number;
-  enabled?: boolean;
-  pointTypeId?: string;
-  group?: string;
-  keyword?: string;
-}
-
 export class RewardRuleRepository {
   constructor(private readonly db: DbExecutor) {}
 
-  static async findById(db: DbExecutor, id: string) {
+  async findById(id: string, db: DbExecutor = this.db) {
     return await db.query.rewardRules.findFirst({
       where: {
         id,
@@ -28,8 +20,8 @@ export class RewardRuleRepository {
     });
   }
 
-  async listCandidates(now = new Date()) {
-    return await this.db
+  async listCandidates(now = new Date(), db: DbExecutor = this.db) {
+    return await db
       .select()
       .from(rewardRules)
       .where(
@@ -42,32 +34,28 @@ export class RewardRuleRepository {
       .orderBy(asc(rewardRules.priority), asc(rewardRules.createdAt));
   }
 
-  pageBuilder(filter: RewardRulePageFilter) {
+  pageBuilder(query: RewardRulePageQuery) {
     return new PageBuilder(this.db, rewardRules)
       .where(
         and(
-          eqIfDefined(rewardRules.enabled, filter.enabled),
-          eqIfDefined(rewardRules.pointTypeId, filter.pointTypeId),
-          eqIfDefined(rewardRules.group, filter.group),
-          keywordLike([rewardRules.name, rewardRules.remark], filter.keyword),
+          eqIfDefined(rewardRules.enabled, query.enabled),
+          eqIfDefined(rewardRules.pointTypeId, query.pointTypeId),
+          eqIfDefined(rewardRules.group, query.group),
+          keywordLike([rewardRules.name, rewardRules.remark], query.keyword),
         ),
       )
       .orderBy(asc(rewardRules.priority), desc(rewardRules.createdAt))
-      .page(filter.page)
-      .pageSize(filter.pageSize);
+      .page(query.page)
+      .pageSize(query.pageSize);
   }
 
-  async findById(id: string) {
-    return await RewardRuleRepository.findById(this.db, id);
-  }
-
-  async create(input: InsertRewardRule) {
-    const [rule] = await this.db.insert(rewardRules).values(input).returning();
+  async create(input: InsertRewardRule, db: DbExecutor = this.db) {
+    const [rule] = await db.insert(rewardRules).values(input).returning();
     return rule ?? null;
   }
 
-  async update(id: string, input: UpdateRewardRule) {
-    const [rule] = await this.db
+  async update(id: string, input: UpdateRewardRule, db: DbExecutor = this.db) {
+    const [rule] = await db
       .update(rewardRules)
       .set({
         ...input,
@@ -79,13 +67,13 @@ export class RewardRuleRepository {
     return rule ?? null;
   }
 
-  async delete(id: string) {
-    const [rule] = await this.db.delete(rewardRules).where(eq(rewardRules.id, id)).returning();
+  async delete(id: string, db: DbExecutor = this.db) {
+    const [rule] = await db.delete(rewardRules).where(eq(rewardRules.id, id)).returning();
 
     return rule ?? null;
   }
 
-  async updateEnabled(id: string, enabled: RewardRule['enabled']) {
-    return await this.update(id, { enabled });
+  async updateEnabled(id: string, enabled: RewardRule['enabled'], db: DbExecutor = this.db) {
+    return await this.update(id, { enabled }, db);
   }
 }

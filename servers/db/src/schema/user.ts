@@ -7,7 +7,6 @@ export const userStatusEnum = pgEnum('user_status', ['normal', 'banned']);
 
 /**
  * 用户表
- * - 仅支持软删除
  */
 export const users = pgTable(
   'users',

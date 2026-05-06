@@ -4,11 +4,10 @@ import {
   rewardRulePageQuerySchema,
   updateRewardRuleSchema,
 } from '@internal/shared';
-import { rewardModule } from '@server/shared/reward';
+import { RewardErrors } from '@server/shared/reward';
 import Elysia from 'elysia';
 
-import { db } from '#server/admin/db';
-import { authGuard } from '#server/admin/modules/auth';
+import { appContext } from '../../context';
 
 export const rewardRuleRoute = new Elysia({
   name: 'RewardRuleRoute',
@@ -17,12 +16,12 @@ export const rewardRuleRoute = new Elysia({
     tags: ['RewardRule'],
   },
 })
-  .use(authGuard)
-  .use(rewardModule({ db }))
+  .use(appContext)
+  .error(RewardErrors)
   .get(
     '/',
-    ({ query, rewardRule }) => {
-      return rewardRule.page(query);
+    ({ query, rewardRuleUseCase }) => {
+      return rewardRuleUseCase.page(query);
     },
     {
       query: rewardRulePageQuerySchema,
@@ -34,8 +33,8 @@ export const rewardRuleRoute = new Elysia({
   )
   .get(
     '/:id',
-    ({ params, rewardRule }) => {
-      return rewardRule.get(params.id);
+    ({ params, rewardRuleUseCase }) => {
+      return rewardRuleUseCase.get(params.id);
     },
     {
       params: rewardRuleIdParamsSchema,
@@ -47,8 +46,8 @@ export const rewardRuleRoute = new Elysia({
   )
   .post(
     '/',
-    ({ body, rewardRule }) => {
-      return rewardRule.create(body);
+    ({ body, rewardRuleUseCase }) => {
+      return rewardRuleUseCase.create(body);
     },
     {
       body: createRewardRuleSchema,
@@ -60,8 +59,8 @@ export const rewardRuleRoute = new Elysia({
   )
   .put(
     '/:id',
-    ({ body, params, rewardRule }) => {
-      return rewardRule.update(params.id, body);
+    ({ body, params, rewardRuleUseCase }) => {
+      return rewardRuleUseCase.update(params.id, body);
     },
     {
       body: updateRewardRuleSchema,
@@ -74,8 +73,8 @@ export const rewardRuleRoute = new Elysia({
   )
   .patch(
     '/:id/enable',
-    ({ params, rewardRule }) => {
-      return rewardRule.enable(params.id);
+    ({ params, rewardRuleUseCase }) => {
+      return rewardRuleUseCase.enable(params.id);
     },
     {
       params: rewardRuleIdParamsSchema,
@@ -87,8 +86,8 @@ export const rewardRuleRoute = new Elysia({
   )
   .patch(
     '/:id/disable',
-    ({ params, rewardRule }) => {
-      return rewardRule.disable(params.id);
+    ({ params, rewardRuleUseCase }) => {
+      return rewardRuleUseCase.disable(params.id);
     },
     {
       params: rewardRuleIdParamsSchema,
@@ -100,8 +99,8 @@ export const rewardRuleRoute = new Elysia({
   )
   .delete(
     '/:id',
-    ({ params, rewardRule }) => {
-      return rewardRule.remove(params.id);
+    ({ params, rewardRuleUseCase }) => {
+      return rewardRuleUseCase.remove(params.id);
     },
     {
       params: rewardRuleIdParamsSchema,

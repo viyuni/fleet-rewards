@@ -1,11 +1,7 @@
 import { transactionPageQuerySchema } from '@internal/shared/schema';
-import { pointModule } from '@server/shared/point';
 import Elysia from 'elysia';
 
-import { db } from '#server/admin/db';
-import { authGuard } from '#server/admin/modules/auth';
-
-import { AdminPointTransactionUseCase } from './usecase';
+import { appContext } from '#server/admin/context';
 
 export const pointTransactionRoute = new Elysia({
   name: 'PointTransactionRoute',
@@ -14,13 +10,11 @@ export const pointTransactionRoute = new Elysia({
     tags: ['PointTransaction'],
   },
 })
-  .use(authGuard)
-  .use(pointModule({ db }))
-  .decorate('adminPointTransaction', new AdminPointTransactionUseCase(db))
+  .use(appContext)
   .get(
     '/',
-    ({ adminPointTransaction, query }) => {
-      return adminPointTransaction.page(query);
+    ({ pointTransactionUseCase, query }) => {
+      return pointTransactionUseCase.page(query);
     },
     {
       query: transactionPageQuerySchema,

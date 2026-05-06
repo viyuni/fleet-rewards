@@ -1,23 +1,23 @@
 import { userLoginSchema, userRegisterSchema } from '@internal/shared';
-import { createAuthModule } from '@server/shared/auth';
 import Elysia from 'elysia';
 
-import { config } from '#servers/user/config';
+import { appContext } from '#servers/user/context';
 import { db } from '#servers/user/db';
 
 import { AuthUseCase } from './usecase';
-
-export const { authGuard, authenticator } = createAuthModule(config.JWT_SECRET);
 
 export const auth = new Elysia({
   name: 'AuthRoute',
   prefix: '/auth',
 })
-  .decorate('auth', new AuthUseCase(db, authenticator))
+  .use(appContext)
+  .derive(({ authUseCase }) => ({
+    userAuthUseCase: new AuthUseCase(db, authUseCase),
+  }))
   .post(
     '/login',
-    ({ body, auth }) => {
-      return auth.login(body);
+    ({ body, userAuthUseCase }) => {
+      return userAuthUseCase.login(body);
     },
     {
       body: userLoginSchema,
@@ -25,8 +25,8 @@ export const auth = new Elysia({
   )
   .post(
     '/register',
-    ({ body, auth }) => {
-      return auth.register(body);
+    ({ body, userAuthUseCase }) => {
+      return userAuthUseCase.register(body);
     },
     {
       body: userRegisterSchema,

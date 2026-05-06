@@ -1,9 +1,9 @@
-import type { CreateProductInput, UpdateProductInput } from '@internal/shared/schema';
+import type { CreateProductBody, UpdateProductBody } from '@internal/shared/schema';
 
 import { ProductInvalidInputError } from './errors';
 
 export class ProductInputPolicy {
-  static assertValid(input: Partial<CreateProductInput & UpdateProductInput>) {
+  static assertValid(input: Partial<CreateProductBody & UpdateProductBody>) {
     if (input.price !== undefined) {
       ProductInputPolicy.assertPositiveInteger(input.price, '商品价格必须是正整数');
     }
