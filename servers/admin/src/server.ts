@@ -24,7 +24,13 @@ export const app = setupApp(
     version,
   },
 )
-  .use(cors({ origin: '*', allowedHeaders: ['Content-Type', 'Authorization'] }))
+  .use(
+    cors({
+      origin: true,
+      allowedHeaders: ['Content-Type', 'Authorization', 'X-API-Key'],
+      credentials: true,
+    }),
+  )
   .use(appContext)
   .use(auth)
   .use(admin)

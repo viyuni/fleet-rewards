@@ -12,6 +12,9 @@
     "prepare": "vp config",
     "check": "vp fmt && vp lint && vpr typecheck"
   },
+  "dependencies": {
+    "@typescript/native-preview": "^7.0.0-dev.20260507.1"
+  },
   "devDependencies": {
     "@tsconfig/node24": "^24.0.4",
     "@types/bun": "^1.3.13",

@@ -1,18 +1,52 @@
 import type { DbExecutor } from '@server/db';
 import { admins, type InsertAdmin } from '@server/db/schema';
 import { BaseErrors } from '@server/shared';
-import { and, eq, isNull } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 
 export class AdminRepository {
   constructor(private db: DbExecutor) {}
 
-  async findByBiliUid(biliUid: string) {
-    return this.db.query.admins.findFirst({
+  async findById(adminId: string) {
+    const admin = await this.db.query.admins.findFirst({
       where: {
-        biliUid,
-        deletedAt: {
-          isNull: true,
-        },
+        id: adminId,
+        status: 'active',
+      },
+    });
+
+    return admin;
+  }
+
+  async findInfoById(adminId: string) {
+    const admin = await this.db.query.admins.findFirst({
+      where: {
+        id: adminId,
+        status: 'active',
+      },
+      columns: {
+        id: true,
+        uid: true,
+        username: true,
+        lastLoginAt: true,
+      },
+    });
+
+    return admin ?? null;
+  }
+
+  async findByBiliUid(uid: string) {
+    return await this.db.query.admins.findFirst({
+      where: {
+        uid,
+      },
+    });
+  }
+
+  async findActiveByUid(uid: string) {
+    return await this.db.query.admins.findFirst({
+      where: {
+        uid,
+        status: 'active',
       },
     });
   }
@@ -31,7 +65,7 @@ export class AdminRepository {
     const [admin] = await this.db
       .update(admins)
       .set({ lastLoginAt })
-      .where(and(eq(admins.id, id), isNull(admins.deletedAt)))
+      .where(and(eq(admins.id, id)))
       .returning();
 
     return admin ?? null;

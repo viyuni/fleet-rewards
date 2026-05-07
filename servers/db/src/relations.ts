@@ -21,4 +21,10 @@ export const relations = defineRelations(schema, r => ({
       to: r.pointTypes.id,
     }),
   },
+  productStockMovements: {
+    product: r.one.products({
+      from: r.productStockMovements.productId,
+      to: r.products.id,
+    }),
+  },
 }));

@@ -46,13 +46,10 @@ export class ProductRepository {
   /**
    * 更新商品
    */
-  async update(id: string, input: UpdateProduct, db: DbExecutor = this.db) {
+  async update(id: string, data: UpdateProduct, db: DbExecutor = this.db) {
     const [row] = await db
       .update(products)
-      .set({
-        ...input,
-        updatedAt: new Date(),
-      })
+      .set(data)
       .where(and(eq(products.id, id), deletedAtIsNull(products)))
       .returning();
 
@@ -71,7 +68,6 @@ export class ProductRepository {
       .update(products)
       .set({
         deletedAt: new Date(),
-        updatedAt: new Date(),
       })
       .where(and(eq(products.id, id), deletedAtIsNull(products)))
       .returning();
@@ -141,77 +137,88 @@ export class ProductRepository {
   }
 
   /**
-   * 分页查询商品
+   * 管理端分页
    */
-  async page(query: ProductPageQuery) {
-    new PageBuilder(this.db, products)
-      .where(
-        and(
-          deletedAtIsNull(products),
-          eqIfDefined(products.status, query.status),
-          eqIfDefined(products.pointTypeId, query.pointTypeId),
-          eqIfDefined(products.deliveryType, query.deliveryType),
-          keywordLike([products.name, products.description], query.keyword),
-        ),
+  async pageManage(query: ProductPageQuery) {
+    return new QueryPageBuilder(this.db, products, this.db.query.products)
+      .where({
+        deletedAt: {
+          isNull: true,
+        },
+        status: query.status,
+        deliveryType: query.deliveryType,
+        pointTypeId: query.pointTypeId,
+        OR: query.keyword
+          ? [
+              {
+                name: {
+                  ilike: `%${query.keyword}%`,
+                },
+              },
+              {
+                description: {
+                  ilike: `%${query.keyword}%`,
+                },
+              },
+            ]
+          : undefined,
+      })
+      .query((findMany, { where, limit, offset }) =>
+        findMany({
+          where,
+          limit,
+          offset,
+          with: {
+            pointType: {
+              columns: {
+                name: true,
+              },
+            },
+          },
+          orderBy: {
+            createdAt: 'desc',
+            sort: 'desc',
+          },
+        }),
       )
-      .orderBy(desc(products.sort), desc(products.createdAt))
-      .pageSize(query.pageSize)
       .page(query.page)
+      .pageSize(query.pageSize)
       .paginate();
-
-    // return new QueryPageBuilder(this.db, products, this.db.query.products)
-    //   .columns({
-    //     id: true,
-    //     name: true,
-    //     description: true,
-    //     cover: true,
-    //     price: true,
-    //     stock: true,
-    //     deliveryType: true,
-    //   })
-    //   .where(
-    //     {
-    //       deletedAt: {
-    //         isNull: true,
-    //       },
-    //     },
-    //     deletedAtIsNull(products),
-    //   )
-    //   .with({
-    //     pointType: {
-    //       columns: {
-    //         name: true,
-    //       },
-    //     },
-    //   })
-    //   .page(query.page)
-    //   .pageSize(query.pageSize)
-    //   .paginate();
   }
 
-  async list(query: PageQuery) {
+  /**
+   * 兑换商城分页
+   */
+  async pageRedeem(query: PageQuery) {
     return new QueryPageBuilder(this.db, products, this.db.query.products)
-      .columns({
-        id: true,
-        name: true,
-        description: true,
-        cover: true,
-        price: true,
-        stock: true,
-        deliveryType: true,
-      })
       .where({
         deletedAt: {
           isNull: true,
         },
       })
-      .with({
-        pointType: {
+      .query((findMany, { where, limit, offset }) =>
+        findMany({
+          where,
+          limit,
+          offset,
           columns: {
+            id: true,
             name: true,
+            description: true,
+            cover: true,
+            price: true,
+            stock: true,
+            deliveryType: true,
           },
-        },
-      })
+          with: {
+            pointType: {
+              columns: {
+                name: true,
+              },
+            },
+          },
+        }),
+      )
       .page(query.page)
       .pageSize(query.pageSize)
       .paginate();

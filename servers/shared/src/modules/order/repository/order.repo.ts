@@ -47,13 +47,10 @@ export class OrderRepository {
     return row;
   }
 
-  async update(id: string, input: UpdateOrder, db: DbExecutor = this.db) {
+  async update(id: string, data: UpdateOrder, db: DbExecutor = this.db) {
     const [row] = await db
       .update(orders)
-      .set({
-        ...input,
-        updatedAt: new Date(),
-      })
+      .set(data)
       .where(and(eq(orders.id, id)))
       .returning();
 

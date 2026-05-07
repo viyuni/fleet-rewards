@@ -3,7 +3,7 @@ import { ConflictError, ForbiddenError } from '@server/shared';
 export class AdminAlreadyExistsError extends ConflictError {
   override code = 'ADMIN_ALREADY_EXISTS';
 
-  constructor(message = '管理员用户名已存在') {
+  constructor(message = '管理员已存在') {
     super(message);
   }
 }

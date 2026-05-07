@@ -158,7 +158,14 @@ describeWithDatabase('QueryPageBuilder 真实数据库', () => {
       .page(1)
       .pageSize(3)
       .where({ name: { like: `${batch}%` } })
-      .orderBy({ sort: 'asc' })
+      .query((findMany, { where, limit, offset }) =>
+        findMany({
+          where,
+          orderBy: { sort: 'asc' },
+          limit,
+          offset,
+        }),
+      )
       .paginate();
 
     expect(result.items.length).toBe(3);
@@ -179,14 +186,28 @@ describeWithDatabase('QueryPageBuilder 真实数据库', () => {
       .page(1)
       .pageSize(3)
       .where(where)
-      .orderBy({ sort: 'asc' })
+      .query((findMany, { where, limit, offset }) =>
+        findMany({
+          where,
+          orderBy: { sort: 'asc' },
+          limit,
+          offset,
+        }),
+      )
       .paginate();
 
     const page2 = await new QueryPageBuilder(db, pointTypes, db.query.pointTypes)
       .page(2)
       .pageSize(3)
       .where(where)
-      .orderBy({ sort: 'asc' })
+      .query((findMany, { where, limit, offset }) =>
+        findMany({
+          where,
+          orderBy: { sort: 'asc' },
+          limit,
+          offset,
+        }),
+      )
       .paginate();
 
     const page1Ids = new Set(page1.items.map(item => item.id));
@@ -206,6 +227,13 @@ describeWithDatabase('QueryPageBuilder 真实数据库', () => {
       .page(1)
       .pageSize(100)
       .where({ name: { like: `${batch}%` }, status: 'disabled' })
+      .query((findMany, { where, limit, offset }) =>
+        findMany({
+          where,
+          limit,
+          offset,
+        }),
+      )
       .paginate();
 
     expect(result.items.every(item => item.status === 'disabled')).toBe(true);
@@ -220,7 +248,14 @@ describeWithDatabase('QueryPageBuilder 真实数据库', () => {
       .page(1)
       .pageSize(100)
       .where({ name: { like: `${batch}%` } })
-      .orderBy({ sort: 'asc' })
+      .query((findMany, { where, limit, offset }) =>
+        findMany({
+          where,
+          orderBy: { sort: 'asc' },
+          limit,
+          offset,
+        }),
+      )
       .paginate();
 
     const sorts = result.items.map(item => item.sort);
@@ -236,7 +271,14 @@ describeWithDatabase('QueryPageBuilder 真实数据库', () => {
       .page(1)
       .pageSize(10)
       .where({ name: { like: `${batch}%` } })
-      .columns({ name: true })
+      .query((findMany, { where, limit, offset }) =>
+        findMany({
+          where,
+          columns: { name: true },
+          limit,
+          offset,
+        }),
+      )
       .paginate();
 
     expect(result.items.length).toBeGreaterThanOrEqual(1);
@@ -252,7 +294,14 @@ describeWithDatabase('QueryPageBuilder 真实数据库', () => {
       .pageSize(200)
       .maxPageSize(2)
       .where({ name: { like: `${batch}%` } })
-      .orderBy({ createdAt: 'desc' })
+      .query((findMany, { where, limit, offset }) =>
+        findMany({
+          where,
+          orderBy: { createdAt: 'desc' },
+          limit,
+          offset,
+        }),
+      )
       .paginate();
 
     expect(result.meta.pageSize).toBe(2);

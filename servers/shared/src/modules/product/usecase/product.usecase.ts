@@ -1,11 +1,14 @@
 import type {
   CreateProductBody,
+  PageQuery,
+  ProductPageQuery,
   StockAdjustmentBody,
   UpdateProductBody,
 } from '@internal/shared/schema';
 import type { DbClient, DbTransaction } from '@server/db';
 import type { Product } from '@server/db/schema';
 
+import { ImageUseCase } from '#server/shared/modules/image';
 import { PointTypeUseCase } from '#server/shared/modules/point';
 
 import {
@@ -25,6 +28,7 @@ export interface ProductUseCaseDeps {
   pointTypeUseCase: PointTypeUseCase;
   productRepo: ProductRepository;
   stockMovementRepo: StockMovementRepository;
+  imageUseCase: ImageUseCase;
 }
 
 export class ProductUseCase {
@@ -50,7 +54,15 @@ export class ProductUseCase {
     await this.deps.pointTypeUseCase.requireAvailableById(productData.pointTypeId);
     ProductInputPolicy.assertValid(productData);
 
-    return this.deps.productRepo.create(productData);
+    const { cover, ...data } = productData;
+
+    let coverName: string | undefined;
+
+    if (cover) {
+      coverName = await this.deps.imageUseCase.upload(cover).then(res => res.filename);
+    }
+
+    return this.deps.productRepo.create({ ...data, cover: coverName });
   }
 
   /**
@@ -59,7 +71,15 @@ export class ProductUseCase {
   async update(id: string, productData: UpdateProductBody) {
     ProductInputPolicy.assertValid(productData);
 
-    return this.deps.productRepo.update(id, productData);
+    const { cover, ...data } = productData;
+
+    let coverName: string | undefined;
+
+    if (cover) {
+      coverName = await this.deps.imageUseCase.upload(cover).then(res => res.filename);
+    }
+
+    return this.deps.productRepo.update(id, { ...data, cover: coverName });
   }
 
   /**
@@ -181,7 +201,11 @@ export class ProductUseCase {
     });
   }
 
-  list() {
-    return this.deps.productRepo;
+  pageManage(query: ProductPageQuery) {
+    return this.deps.productRepo.pageManage(query);
+  }
+
+  pageRedeem(query: PageQuery) {
+    return this.deps.productRepo.pageRedeem(query);
   }
 }

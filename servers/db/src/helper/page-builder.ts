@@ -19,25 +19,118 @@ export type PaginatedResult<TItem> = {
   meta: PaginationMeta;
 };
 
+export interface PageQuery {
+  page?: number | null;
+  pageSize?: number | null;
+}
+
+export interface ResolvePaginationOptions extends PageQuery {
+  maxPageSize?: number | null;
+  defaultPage?: number;
+  defaultPageSize?: number;
+  defaultMaxPageSize?: number;
+}
+
+export type ResolvedPagination = {
+  page: number;
+  pageSize: number;
+  limit: number;
+  offset: number;
+};
+
+type FindManyQuery = {
+  findMany: (config?: any) => Promise<any[]>;
+};
+
+type FindManyConfig<TQuery extends FindManyQuery> = NonNullable<Parameters<TQuery['findMany']>[0]>;
+
+type ConfigWhere<TQuery extends FindManyQuery> =
+  FindManyConfig<TQuery> extends { where?: infer TWhere } ? TWhere : never;
+
+type QueryInput<TQuery extends FindManyQuery> = {
+  where: ConfigWhere<TQuery> | undefined;
+  limit: number;
+  offset: number;
+};
+
+type QueryRunner<TQuery extends FindManyQuery, TItem> = (
+  findMany: TQuery['findMany'],
+  input: QueryInput<TQuery>,
+) => Promise<TItem[]>;
+
 type PageItem<
   TTable extends AnyPgTable,
   TFields extends SelectedFields | undefined,
 > = TFields extends SelectedFields ? SelectResultFields<TFields> : InferSelectModel<TTable>;
 
+const DEFAULT_PAGE = 1;
+const DEFAULT_PAGE_SIZE = 20;
+const DEFAULT_MAX_PAGE_SIZE = 100;
+
+export function resolvePagination(options: ResolvePaginationOptions = {}): ResolvedPagination {
+  const maxPageSize = Math.max(
+    1,
+    options.maxPageSize ?? options.defaultMaxPageSize ?? DEFAULT_MAX_PAGE_SIZE,
+  );
+
+  const page = Math.max(1, options.page ?? options.defaultPage ?? DEFAULT_PAGE);
+
+  const rawPageSize = options.pageSize ?? options.defaultPageSize ?? DEFAULT_PAGE_SIZE;
+
+  const pageSize = Math.min(maxPageSize, Math.max(1, rawPageSize));
+
+  return {
+    page,
+    pageSize,
+    limit: pageSize,
+    offset: (page - 1) * pageSize,
+  };
+}
+
+export function createPaginationMeta(input: {
+  page: number;
+  pageSize: number;
+  total: number;
+}): PaginationMeta {
+  const { page, pageSize, total } = input;
+
+  const totalPages = Math.ceil(total / pageSize);
+
+  return {
+    page,
+    pageSize,
+    total,
+    totalPages,
+    hasNextPage: page < totalPages,
+    hasPrevPage: page > 1,
+  };
+}
+
+export function createPaginatedResult<TItem>(input: {
+  items: TItem[];
+  total: number;
+  pagination: ResolvedPagination;
+}): PaginatedResult<TItem> {
+  return {
+    items: input.items,
+    meta: createPaginationMeta({
+      page: input.pagination.page,
+      pageSize: input.pagination.pageSize,
+      total: input.total,
+    }),
+  };
+}
+
 export class PageBuilder<
   TTable extends AnyPgTable,
   TFields extends SelectedFields | undefined = undefined,
 > {
-  private static readonly DEFAULT_PAGE = 1;
-  private static readonly DEFAULT_PAGE_SIZE = 20;
-  private static readonly DEFAULT_MAX_PAGE_SIZE = 100;
-
   private whereValue?: SQL;
   private orderByValues: SQL[] = [];
 
-  private currentPage = PageBuilder.DEFAULT_PAGE;
-  private currentPageSize = PageBuilder.DEFAULT_PAGE_SIZE;
-  private currentMaxPageSize = PageBuilder.DEFAULT_MAX_PAGE_SIZE;
+  private currentPage = DEFAULT_PAGE;
+  private currentPageSize = DEFAULT_PAGE_SIZE;
+  private currentMaxPageSize = DEFAULT_MAX_PAGE_SIZE;
 
   private fields?: TFields;
 
@@ -47,18 +140,18 @@ export class PageBuilder<
   ) {}
 
   page(page: number | undefined | null) {
-    this.currentPage = Math.max(1, page ?? PageBuilder.DEFAULT_PAGE);
+    this.currentPage = Math.max(1, page ?? DEFAULT_PAGE);
     return this;
   }
 
   pageSize(pageSize: number | undefined | null) {
-    const value = pageSize ?? PageBuilder.DEFAULT_PAGE_SIZE;
+    const value = pageSize ?? DEFAULT_PAGE_SIZE;
     this.currentPageSize = Math.min(this.currentMaxPageSize, Math.max(1, value));
     return this;
   }
 
   maxPageSize(maxPageSize: number | undefined | null) {
-    const value = maxPageSize ?? PageBuilder.DEFAULT_MAX_PAGE_SIZE;
+    const value = maxPageSize ?? DEFAULT_MAX_PAGE_SIZE;
     this.currentMaxPageSize = Math.max(1, value);
     this.currentPageSize = Math.min(this.currentPageSize, this.currentMaxPageSize);
     return this;
@@ -83,11 +176,11 @@ export class PageBuilder<
   }
 
   async paginate(): Promise<PaginatedResult<PageItem<TTable, TFields>>> {
-    const page = this.currentPage;
-    const pageSize = this.currentPageSize;
-
-    const limit = pageSize;
-    const offset = (page - 1) * pageSize;
+    const pagination = resolvePagination({
+      page: this.currentPage,
+      pageSize: this.currentPageSize,
+      maxPageSize: this.currentMaxPageSize,
+    });
 
     const table = this.table as any;
 
@@ -108,158 +201,102 @@ export class PageBuilder<
       builtQuery = builtQuery.orderBy(...this.orderByValues);
     }
 
-    const pagedQuery = builtQuery.limit(limit).offset(offset);
+    const pagedQuery = builtQuery.limit(pagination.limit).offset(pagination.offset);
 
     const [total, items] = await Promise.all([this.db.$count(table, this.whereValue), pagedQuery]);
 
-    const totalPages = Math.ceil(total / pageSize);
-
-    return {
+    return createPaginatedResult({
       items,
-      meta: {
-        page,
-        pageSize,
-        total,
-        totalPages,
-        hasNextPage: page < totalPages,
-        hasPrevPage: page > 1,
-      },
-    } as PaginatedResult<PageItem<TTable, TFields>>;
+      total,
+      pagination,
+    }) as PaginatedResult<PageItem<TTable, TFields>>;
   }
 }
-
-type FindManyQuery = {
-  findMany: (config?: any) => Promise<any[]>;
-};
-
-type FindManyConfig<TQuery extends FindManyQuery> = NonNullable<Parameters<TQuery['findMany']>[0]>;
-
-type FindManyResult<TQuery extends FindManyQuery> = Awaited<ReturnType<TQuery['findMany']>>;
-
-type FindManyItem<TQuery extends FindManyQuery> = FindManyResult<TQuery>[number];
-
-type ConfigColumns<TQuery extends FindManyQuery> =
-  FindManyConfig<TQuery> extends { columns?: infer TColumns } ? TColumns : never;
-
-type ConfigWith<TQuery extends FindManyQuery> =
-  FindManyConfig<TQuery> extends { with?: infer TWith } ? TWith : never;
-
-type ConfigOrderBy<TQuery extends FindManyQuery> =
-  FindManyConfig<TQuery> extends { orderBy?: infer TOrderBy } ? TOrderBy : never;
-
-type ConfigWhere<TQuery extends FindManyQuery> =
-  FindManyConfig<TQuery> extends { where?: infer TWhere } ? TWhere : never;
-
-type SelectedColumnKeys<TColumns> = {
-  [TKey in keyof TColumns]: TColumns[TKey] extends true ? TKey : never;
-}[keyof TColumns];
-
-type QueryColumnsItem<TTable extends AnyPgTable, TColumns> = Pick<
-  InferSelectModel<TTable>,
-  Extract<SelectedColumnKeys<TColumns>, keyof InferSelectModel<TTable>>
->;
 
 export class QueryPageBuilder<
   TTable extends AnyPgTable,
   TQuery extends FindManyQuery,
-  TItem = FindManyItem<TQuery>,
+  TItem = never,
 > {
-  private static readonly DEFAULT_PAGE = 1;
-  private static readonly DEFAULT_PAGE_SIZE = 20;
-  private static readonly DEFAULT_MAX_PAGE_SIZE = 100;
-
-  private currentPage = QueryPageBuilder.DEFAULT_PAGE;
-  private currentPageSize = QueryPageBuilder.DEFAULT_PAGE_SIZE;
-  private currentMaxPageSize = QueryPageBuilder.DEFAULT_MAX_PAGE_SIZE;
+  private currentPage = DEFAULT_PAGE;
+  private currentPageSize = DEFAULT_PAGE_SIZE;
+  private currentMaxPageSize = DEFAULT_MAX_PAGE_SIZE;
 
   private whereValue?: ConfigWhere<TQuery>;
-  private columnsValue?: ConfigColumns<TQuery>;
-  private withValue?: ConfigWith<TQuery>;
-  private orderByValue?: ConfigOrderBy<TQuery>;
+  private queryRunner?: QueryRunner<TQuery, unknown>;
 
   constructor(
     private readonly db: DbExecutor,
     private readonly table: TTable,
-    private readonly query: TQuery,
+    private readonly queryTarget: TQuery,
   ) {}
 
   page(page: number | undefined | null) {
-    this.currentPage = Math.max(1, page ?? QueryPageBuilder.DEFAULT_PAGE);
+    this.currentPage = Math.max(1, page ?? DEFAULT_PAGE);
     return this;
   }
 
   pageSize(pageSize: number | undefined | null) {
-    const value = pageSize ?? QueryPageBuilder.DEFAULT_PAGE_SIZE;
+    const value = pageSize ?? DEFAULT_PAGE_SIZE;
     this.currentPageSize = Math.min(this.currentMaxPageSize, Math.max(1, value));
     return this;
   }
 
   maxPageSize(maxPageSize: number | undefined | null) {
-    const value = maxPageSize ?? QueryPageBuilder.DEFAULT_MAX_PAGE_SIZE;
+    const value = maxPageSize ?? DEFAULT_MAX_PAGE_SIZE;
     this.currentMaxPageSize = Math.max(1, value);
     this.currentPageSize = Math.min(this.currentPageSize, this.currentMaxPageSize);
     return this;
   }
 
-  where<const TWhere extends ConfigWhere<TQuery>>(value: TWhere | undefined) {
-    this.whereValue = value;
+  where<const TWhere extends ConfigWhere<TQuery>>(where: TWhere | undefined) {
+    this.whereValue = where;
     return this;
   }
 
-  columns<const TColumns extends ConfigColumns<TQuery>>(
-    columns: TColumns,
-  ): QueryPageBuilder<TTable, TQuery, QueryColumnsItem<TTable, TColumns>> {
-    this.columnsValue = columns;
-    return this as unknown as QueryPageBuilder<TTable, TQuery, QueryColumnsItem<TTable, TColumns>>;
+  query<TNextItem>(
+    runner: QueryRunner<TQuery, TNextItem>,
+  ): QueryPageBuilder<TTable, TQuery, TNextItem> {
+    this.queryRunner = runner as QueryRunner<TQuery, unknown>;
+
+    return this as unknown as QueryPageBuilder<TTable, TQuery, TNextItem>;
   }
 
-  with<const TWith extends ConfigWith<TQuery>>(withValue: TWith) {
-    this.withValue = withValue;
-    return this;
-  }
+  private buildCountWhere() {
+    if (!this.whereValue) {
+      return undefined;
+    }
 
-  orderBy<const TOrderBy extends ConfigOrderBy<TQuery>>(orderBy: TOrderBy) {
-    this.orderByValue = orderBy;
-    return this;
+    return relationsFilterToSQL(this.table, this.whereValue as never);
   }
 
   async paginate(): Promise<PaginatedResult<TItem>> {
-    const page = this.currentPage;
-    const pageSize = this.currentPageSize;
+    const pagination = resolvePagination({
+      page: this.currentPage,
+      pageSize: this.currentPageSize,
+      maxPageSize: this.currentMaxPageSize,
+    });
 
-    const limit = pageSize;
-    const offset = (page - 1) * pageSize;
+    if (!this.queryRunner) {
+      throw new Error('QueryPageBuilder requires query() before paginate().');
+    }
 
-    const config = {
-      columns: this.columnsValue,
-      with: this.withValue,
-      orderBy: this.orderByValue,
-      where: this.whereValue,
-      limit,
-      offset,
-    } satisfies Partial<FindManyConfig<TQuery>>;
-
-    const sqlWhere = this.whereValue
-      ? relationsFilterToSQL(this.table, this.whereValue as never)
-      : undefined;
+    const countWhere = this.buildCountWhere();
+    const findMany = this.queryTarget.findMany.bind(this.queryTarget) as TQuery['findMany'];
 
     const [total, items] = await Promise.all([
-      this.db.$count(this.table, sqlWhere),
-      this.query.findMany(config as FindManyConfig<TQuery>),
+      this.db.$count(this.table, countWhere),
+      this.queryRunner(findMany, {
+        where: this.whereValue,
+        limit: pagination.limit,
+        offset: pagination.offset,
+      }),
     ]);
 
-    const totalPages = Math.ceil(total / pageSize);
-
-    return {
+    return createPaginatedResult({
       items,
-      meta: {
-        page,
-        pageSize,
-        total,
-        totalPages,
-        hasNextPage: page < totalPages,
-        hasPrevPage: page > 1,
-      },
-    } as PaginatedResult<TItem>;
+      total,
+      pagination,
+    }) as PaginatedResult<TItem>;
   }
 }

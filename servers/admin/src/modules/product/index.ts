@@ -18,11 +18,10 @@ export const product = new Elysia({
   },
 })
   .use(appContext)
-
   .get(
     '/',
     ({ query, productUseCase }) => {
-      return productUseCase.page(query);
+      return productUseCase.pageManage(query);
     },
     {
       query: productPageQuerySchema,
@@ -34,8 +33,8 @@ export const product = new Elysia({
   )
   .get(
     '/stock/movements',
-    ({ query, adminStockMovementUseCase }) => {
-      return adminStockMovementUseCase.page(query);
+    ({ query, stockMovementUseCase }) => {
+      return stockMovementUseCase.page(query);
     },
     {
       query: stockMovementPageQuerySchema,
@@ -47,8 +46,8 @@ export const product = new Elysia({
   )
   .get(
     '/:id/stock/movements',
-    ({ query, params, adminStockMovementUseCase }) => {
-      return adminStockMovementUseCase.page({
+    ({ query, params, stockMovementUseCase }) => {
+      return stockMovementUseCase.page({
         ...query,
         productId: params.id,
       });
@@ -85,6 +84,11 @@ export const product = new Elysia({
       requiredAuth: true,
       detail: {
         description: '创建商品',
+        requestBody: {
+          content: {
+            'multipart/form-data': {},
+          },
+        },
       },
     },
   )

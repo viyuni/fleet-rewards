@@ -1,4 +1,4 @@
-import { AppError, NotFoundError } from '#server/shared/errors';
+import { AppError, ConflictError, NotFoundError } from '#server/shared/errors';
 
 export class UserNotFoundError extends NotFoundError {
   constructor() {
@@ -14,6 +14,15 @@ export class UserUnavailableError extends AppError {
   code = 'USER_UNAVAILABLE';
 
   constructor(message = '用户不可用') {
+    super(message);
+  }
+}
+
+/**
+ * 用户已注册
+ */
+export class UserAlreadyRegisteredError extends ConflictError {
+  constructor(message = '用户已注册') {
     super(message);
   }
 }

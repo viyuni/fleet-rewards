@@ -1,8 +1,10 @@
 import type { DbClient } from '@server/db';
 import Elysia from 'elysia';
 
+import type { SharedConfig } from './config';
 import { createAuthGuard } from './modules/auth';
 import { AuthUseCase } from './modules/auth/usecase';
+import { ImageUseCase } from './modules/image';
 import { OrderRepository, OrderUseCase } from './modules/order';
 import {
   PointAccountRepository,
@@ -22,15 +24,19 @@ import {
   StockMovementUseCase,
 } from './modules/product';
 import { RewardRuleRepository, RewardRuleUseCase, RewardUseCase } from './modules/reward';
-import { UserRepository, UserUseCase } from './modules/user';
+import { UserBasicInfoCrypto, UserRepository, UserUseCase } from './modules/user';
 
 export interface CreateContextOptions {
   db: DbClient;
-  secret: string;
+  config: SharedConfig & {
+    JWT_SECRET: string;
+    DATA_SECRET: string;
+  };
 }
 
-export function createAppInstances({ db, secret }: CreateContextOptions) {
-  const authUseCase = new AuthUseCase(secret);
+export function createAppInstances({ db, config }: CreateContextOptions) {
+  const authUseCase = new AuthUseCase(config.JWT_SECRET);
+  const userBasicInfoCrypto = new UserBasicInfoCrypto(config.DATA_SECRET);
 
   const userRepo = new UserRepository(db);
   const pointAccountRepo = new PointAccountRepository();
@@ -43,6 +49,7 @@ export function createAppInstances({ db, secret }: CreateContextOptions) {
   const stockMovementRepo = new StockMovementRepository(db);
 
   const userUseCase = new UserUseCase({
+    userBasicInfoCrypto,
     userRepo,
   });
 
@@ -77,11 +84,14 @@ export function createAppInstances({ db, secret }: CreateContextOptions) {
     pointTypeUseCase,
   });
 
+  const imageUseCase = new ImageUseCase(config.IMAGE_SAVE_PATH);
+
   const productUseCase = new ProductUseCase({
     db,
     pointTypeUseCase,
     productRepo,
     stockMovementRepo,
+    imageUseCase,
   });
 
   const stockMovementUseCase = new StockMovementUseCase({
@@ -144,19 +154,18 @@ export function createAppInstances({ db, secret }: CreateContextOptions) {
 
 export type AppInstances = ReturnType<typeof createAppInstances>;
 
-export function createAppContextPlugin(instances: AppInstances) {
+export function createContext(instances: AppInstances) {
   return new Elysia({ name: 'SharedAppContext' })
     .use(createAuthGuard(instances.useCases.authUseCase))
     .decorate(instances.useCases);
 }
+
 export function createAppContext(options: CreateContextOptions) {
   const instances = createAppInstances(options);
-  const appContext = createAppContextPlugin(instances);
+  const context = createContext(instances);
 
   return {
     instances,
-    appContext,
+    context,
   };
 }
-
-export type AppContext = ReturnType<typeof createAppContext>;

@@ -1,4 +1,8 @@
-import { userIdParamsSchema, userPageQuerySchema } from '@internal/shared/schema';
+import {
+  userIdParamsSchema,
+  userPageQuerySchema,
+  userRegisterSchema,
+} from '@internal/shared/schema';
 import Elysia from 'elysia';
 
 import { appContext } from '#server/admin/context';
@@ -21,6 +25,19 @@ export const users = new Elysia({
       requiredAuth: true,
       detail: {
         description: '用户列表',
+      },
+    },
+  )
+  .post(
+    '/',
+    async ({ body, userUseCase }) => {
+      return await userUseCase.create(body);
+    },
+    {
+      body: userRegisterSchema,
+      requiredAuth: true,
+      detail: {
+        description: '用户注册',
       },
     },
   )

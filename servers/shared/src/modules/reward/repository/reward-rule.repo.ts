@@ -1,6 +1,6 @@
 import type { RewardRulePageQuery } from '@internal/shared';
 import type { DbExecutor } from '@server/db';
-import { eqIfDefined, keywordLike, PageBuilder } from '@server/db/helper';
+import { deletedAtIsNull, eqIfDefined, keywordLike, PageBuilder } from '@server/db/helper';
 import {
   rewardRules,
   type InsertRewardRule,
@@ -16,6 +16,9 @@ export class RewardRuleRepository {
     return await db.query.rewardRules.findFirst({
       where: {
         id,
+        deletedAt: {
+          isNull: true,
+        },
       },
     });
   }
@@ -26,6 +29,7 @@ export class RewardRuleRepository {
       .from(rewardRules)
       .where(
         and(
+          deletedAtIsNull(rewardRules),
           eq(rewardRules.enabled, true),
           or(isNull(rewardRules.startsAt), lte(rewardRules.startsAt, now)),
           or(isNull(rewardRules.endsAt), gt(rewardRules.endsAt, now)),
@@ -38,6 +42,7 @@ export class RewardRuleRepository {
     return new PageBuilder(this.db, rewardRules)
       .where(
         and(
+          deletedAtIsNull(rewardRules),
           eqIfDefined(rewardRules.enabled, query.enabled),
           eqIfDefined(rewardRules.pointTypeId, query.pointTypeId),
           eqIfDefined(rewardRules.group, query.group),
@@ -54,21 +59,24 @@ export class RewardRuleRepository {
     return rule ?? null;
   }
 
-  async update(id: string, input: UpdateRewardRule, db: DbExecutor = this.db) {
+  async update(id: string, data: UpdateRewardRule, db: DbExecutor = this.db) {
     const [rule] = await db
       .update(rewardRules)
-      .set({
-        ...input,
-        updatedAt: new Date(),
-      })
-      .where(eq(rewardRules.id, id))
+      .set(data)
+      .where(and(eq(rewardRules.id, id), deletedAtIsNull(rewardRules)))
       .returning();
 
     return rule ?? null;
   }
 
   async delete(id: string, db: DbExecutor = this.db) {
-    const [rule] = await db.delete(rewardRules).where(eq(rewardRules.id, id)).returning();
+    const [rule] = await db
+      .update(rewardRules)
+      .set({
+        deletedAt: new Date(),
+      })
+      .where(and(eq(rewardRules.id, id), deletedAtIsNull(rewardRules)))
+      .returning();
 
     return rule ?? null;
   }

@@ -1,4 +1,6 @@
 import { openapi } from '@elysia/openapi';
+import { toOpenApiSchema } from '@internal/shared';
+import { type } from 'arktype';
 import { ValidationError, type AnyElysia } from 'elysia';
 
 interface ContactObject {
@@ -25,15 +27,18 @@ export function setupApp<T extends AnyElysia>(app: T, documentationInfo?: InfoOb
   return app
     .use(
       openapi({
+        mapJsonSchema: {
+          arktype: toOpenApiSchema,
+        },
         documentation: {
           info: documentationInfo,
           components: {
             securitySchemes: {
               requiredAuth: {
-                type: 'http',
-                scheme: 'bearer',
-                bearerFormat: 'JWT',
-                description: '输入 JWT Token',
+                type: 'apiKey',
+                in: 'cookie',
+                name: 'auth_token',
+                description: 'JWT Cookie，也兼容 Authorization Bearer 和 X-API-Key',
               },
             },
           },
@@ -52,12 +57,19 @@ export function setupApp<T extends AnyElysia>(app: T, documentationInfo?: InfoOb
         },
       }),
     )
-    .onError(({ error, status }) => {
+    .onError(({ error, status, code }) => {
       if (error instanceof ValidationError) {
         return status(422, {
           code: 'REQUEST_VALIDATION_ERROR',
           message: error.valueError?.message ?? '参数错误',
           details: error.all.map(({ value: _value, message: _message, ...rest }) => rest),
+        });
+      }
+
+      if (code === 500 || code === 'UNKNOWN') {
+        return status(500, {
+          code: 'INTERNAL_SERVER_ERROR',
+          message: '服务器内部错误',
         });
       }
     });

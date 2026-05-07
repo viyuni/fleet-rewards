@@ -4,25 +4,35 @@ import { config } from '#server/admin/config';
 
 import { db } from './db';
 import { AdminRepository } from './modules/admin/repository';
+import { AdminUseCase } from './modules/admin/usecase';
 import { AdminAuthUseCase } from './modules/auth/usecase';
 
-function createAdminAppContext() {
-  const {
-    appContext,
-    instances: {
-      useCases: { authUseCase },
-    },
-  } = createAppContext({ db, secret: config.JWT_SECRET });
+const {
+  context,
+  instances: {
+    useCases: { authUseCase },
+  },
+} = createAppContext({
+  db,
+  config,
+});
 
-  const adminRepo = new AdminRepository(db);
+const adminRepo = new AdminRepository(db);
+const adminUseCase = new AdminUseCase({
+  adminRepo,
+});
 
-  const adminAuthUseCase = new AdminAuthUseCase({
-    db,
-    adminRepo,
-    authUseCase,
-  });
+const adminAuthUseCase = new AdminAuthUseCase({
+  db,
+  adminRepo,
+  authUseCase,
+});
 
-  return appContext.decorate('adminAuthUseCase', adminAuthUseCase);
+export const appContext = context.decorate({
+  adminAuthUseCase,
+  adminUseCase,
+});
+
+export function initDefaultAdmin() {
+  return adminUseCase.initDefaultAdmin();
 }
-
-export const appContext = createAdminAppContext();

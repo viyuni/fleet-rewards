@@ -26,6 +26,29 @@ export const userRegisterSchema = type({
 export type UserRegisterBody = typeof userRegisterSchema.infer;
 
 /**
+ * 用户更新 Schema
+ */
+export const userUpdateSchema = type({
+  'username?': usernameSchema,
+  'email?': type('string.email').describe('邮箱'),
+  'address?': type('string').describe('收获地址'),
+  'phone?': type('string').describe('手机号码'),
+});
+
+export type UpdateUserBody = typeof userUpdateSchema.infer;
+
+/**
+ * 用户更新密码 Schema
+ */
+export const userUpdatePasswordSchema = type({
+  biliUid: biliUidSchema,
+  oldPassword: passwordSchema,
+  newPassword: passwordSchema,
+});
+
+export type UpdateUserPasswordBody = typeof userUpdatePasswordSchema.infer;
+
+/**
  * 用户登录 Schema
  */
 export const userLoginSchema = type({

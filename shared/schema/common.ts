@@ -8,7 +8,7 @@ export const usernameSchema = type('3 <= string <= 32 & /^[A-Za-z0-9_-]+$/').des
 /**
  * B站用户 UID Schema
  */
-export const biliUidSchema = type('1 <= string <= 32 & /^[0-9]+$/').describe('B站用户 UID');
+export const biliUidSchema = type('4 <= string <= 32 & /^[0-9]+$/').describe('B站用户 UID');
 
 /**
  * 密码 Schema

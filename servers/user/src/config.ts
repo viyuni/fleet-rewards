@@ -8,20 +8,20 @@ export const config = arkenv({
   /**
    * 用户服务端口
    */
-  SERVER_PORT: type('number.port').default(3002),
-
-  /**
-   * 用户数据密钥
-   */
-  DATA_SECRET: type('string').optional(),
-
-  /**
-   * 用户 JWT 密钥
-   */
-  JWT_SECRET: type('string'),
+  PORT: type('number.port').default(3002),
 
   /**
    * 存储图片的路径
    */
   IMAGE_SAVE_PATH: type('string').default(path.join(process.cwd(), 'public', 'images')),
+
+  /**
+   * 数据密钥
+   */
+  DATA_SECRET: type('string'),
+
+  /**
+   * JWT 密钥
+   */
+  JWT_SECRET: type('string'),
 });

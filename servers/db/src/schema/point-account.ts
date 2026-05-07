@@ -37,7 +37,7 @@ export const pointAccounts = pgTable(
     /**
      * 用户 ID
      */
-    userId: text('user_id').notNull(),
+    userId: uuid('user_id').notNull(),
 
     /**
      * 积分类型 ID

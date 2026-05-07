@@ -9,12 +9,12 @@ export const config = arkenv({
   PORT: type('number.port').default(3000),
 
   /**
-   * 管理员数据密钥
+   * 数据密钥
    */
-  DATA_SECRET: type('string').optional(),
+  DATA_SECRET: type('string'),
 
   /**
-   * 管理员 JWT 密钥
+   * JWT 密钥
    */
   JWT_SECRET: type('string'),
 });

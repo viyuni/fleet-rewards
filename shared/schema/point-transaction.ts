@@ -37,7 +37,8 @@ export type PointTransactionType = typeof pointTransactionTypeSchema.infer;
  * 用于管理员手动调整账户积分。
  */
 export const adjustBalanceSchema = nonceBodySchema.and(remarkBodySchema).and({
-  accountId: type('string').describe('账户 ID'),
+  userId: type('string').describe('用户 ID'),
+  pointTypeId: type('string').describe('积分类型 ID'),
   delta: type('number.integer').describe('积分变动数量'),
 });
 

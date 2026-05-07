@@ -35,15 +35,8 @@ export class PointTypeRepository {
     return row ?? null;
   }
 
-  async update(id: string, input: UpdatePointType, db: DbExecutor = this.db) {
-    const [row] = await db
-      .update(pointTypes)
-      .set({
-        ...input,
-        updatedAt: new Date(),
-      })
-      .where(eq(pointTypes.id, id))
-      .returning();
+  async update(id: string, data: UpdatePointType, db: DbExecutor = this.db) {
+    const [row] = await db.update(pointTypes).set(data).where(eq(pointTypes.id, id)).returning();
 
     return row ?? null;
   }
@@ -53,7 +46,6 @@ export class PointTypeRepository {
       .update(pointTypes)
       .set({
         status,
-        updatedAt: new Date(),
       })
       .where(eq(pointTypes.id, id))
       .returning();

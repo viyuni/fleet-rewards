@@ -1,4 +1,5 @@
 import type { DbExecutor } from '@server/db';
+import { deletedAtIsNull } from '@server/db/helper';
 import {
   pointConversionRules,
   type InsertPointConversionRule,
@@ -13,7 +14,7 @@ export class PointConversionRuleRepository {
     const [row] = await db
       .select()
       .from(pointConversionRules)
-      .where(eq(pointConversionRules.id, id))
+      .where(and(eq(pointConversionRules.id, id), deletedAtIsNull(pointConversionRules)))
       .limit(1);
 
     return row ?? null;
@@ -24,14 +25,11 @@ export class PointConversionRuleRepository {
     return row ?? null;
   }
 
-  async update(id: string, input: UpdatePointConversionRule, db: DbExecutor = this.db) {
+  async update(id: string, data: UpdatePointConversionRule, db: DbExecutor = this.db) {
     const [row] = await db
       .update(pointConversionRules)
-      .set({
-        ...input,
-        updatedAt: new Date(),
-      })
-      .where(and(eq(pointConversionRules.id, id)))
+      .set(data)
+      .where(and(eq(pointConversionRules.id, id), deletedAtIsNull(pointConversionRules)))
       .returning();
 
     return row ?? null;
@@ -42,6 +40,10 @@ export class PointConversionRuleRepository {
   }
 
   list(db: DbExecutor = this.db) {
-    return db.select().from(pointConversionRules).orderBy(desc(pointConversionRules.createdAt));
+    return db
+      .select()
+      .from(pointConversionRules)
+      .where(deletedAtIsNull(pointConversionRules))
+      .orderBy(desc(pointConversionRules.createdAt));
   }
 }

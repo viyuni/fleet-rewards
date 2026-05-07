@@ -1,9 +1,11 @@
 import Elysia from 'elysia';
 
 import { UnauthorizedError } from '../../errors';
+import { AUTH_COOKIE_NAME } from './constants';
 import type { AuthUseCase } from './usecase';
 
 export * from './usecase';
+export * from './constants';
 
 export const createAuthGuard = (authUseCase: AuthUseCase) => {
   const authGuard = new Elysia({ name: 'AuthGuard' }).macro('requiredAuth', {
@@ -12,30 +14,24 @@ export const createAuthGuard = (authUseCase: AuthUseCase) => {
       security: [{ requiredAuth: [] }],
       parameters: [
         {
-          name: 'Authorization',
-          in: 'header',
-          required: true,
-          description: 'Authorization header',
+          name: AUTH_COOKIE_NAME,
+          in: 'cookie',
+          required: false,
+          description: 'JWT Cookie',
           schema: {
             type: 'string',
-            example: 'Bearer <token>',
           },
         },
       ],
     },
 
-    async resolve({ headers }) {
-      const authorization = headers['authorization'] || headers['Authorization'];
+    async resolve({ cookie }) {
+      const token = cookie?.[AUTH_COOKIE_NAME]?.value;
 
-      if (!authorization) {
-        throw new UnauthorizedError('Missing authorization header');
+      if (!token || typeof token !== 'string') {
+        throw new UnauthorizedError('Missing auth cookie, api key, or authorization header');
       }
 
-      if (!/^Bearer\s\S+$/i.test(authorization)) {
-        throw new UnauthorizedError('Invalid authorization header');
-      }
-
-      const token = authorization.replace(/^Bearer\s+/i, '');
       const userId = await authUseCase.verify(token);
 
       return {

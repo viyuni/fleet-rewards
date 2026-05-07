@@ -59,7 +59,7 @@ const productDetailSchema = type('string').describe('商品详情');
 /**
  * 商品封面图 Schema。
  */
-const productCoverSchema = type('string').describe('商品封面图');
+const productCoverSchema = type('File').describe('商品封面图');
 
 /**
  * 商品关联积分类型 ID Schema。
@@ -69,27 +69,35 @@ const productPointTypeIdSchema = type('string').describe('积分类型 ID');
 /**
  * 商品兑换价格 Schema。
  */
-const productPriceSchema = type('number.integer > 0').describe('兑换所需积分数量');
+const productPriceSchema = type('string.numeric.parse')
+  .pipe(type('number.integer > 0'))
+  .describe('兑换所需积分数量');
 
 /**
  * 商品库存 Schema。
  */
-const productStockSchema = type('number.integer >= 0').describe('商品库存');
+const productStockSchema = type('string.numeric.parse')
+  .pipe(type('number.integer >= 0'))
+  .describe('商品库存');
 
 /**
  * 商品排序值 Schema。
  */
-const productSortSchema = type('number.integer').describe('排序值');
+const productSortSchema = type('string.numeric.parse')
+  .pipe(type('number.integer'))
+  .describe('排序值');
 
 /**
  * 商品是否允许用户取消订单 Schema。
  */
-const productAllowCancelSchema = type('boolean').describe('是否允许用户取消订单');
+const productAllowCancelSchema = type("'true' | 'false'")
+  .pipe(value => value === 'true')
+  .describe('是否允许用户取消订单');
 
 /**
  * 商品扩展数据 Schema。
  */
-const productMetadataSchema = type('unknown').describe('商品扩展数据');
+const productMetadataSchema = type('string.json').describe('商品扩展数据');
 
 /**
  * 商品列表分页查询 Query Schema。

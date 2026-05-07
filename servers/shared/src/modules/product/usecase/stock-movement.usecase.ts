@@ -10,6 +10,6 @@ export class StockMovementUseCase {
   constructor(private readonly deps: StockMovementUseCaseDeps) {}
 
   page(query: StockMovementPageQuery) {
-    return this.deps.stockMovementRepo.pageBuilder(query).paginate();
+    return this.deps.stockMovementRepo.page(query);
   }
 }

@@ -17,9 +17,6 @@ export class UserRepository {
     return this.db.query.users.findFirst({
       where: {
         id,
-        deletedAt: {
-          isNull: true,
-        },
       },
     });
   }
@@ -28,9 +25,6 @@ export class UserRepository {
     return this.db.query.users.findFirst({
       where: {
         username,
-        deletedAt: {
-          isNull: true,
-        },
       },
     });
   }
@@ -39,9 +33,6 @@ export class UserRepository {
     return this.db.query.users.findFirst({
       where: {
         biliUid,
-        deletedAt: {
-          isNull: true,
-        },
       },
     });
   }

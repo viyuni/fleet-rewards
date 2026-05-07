@@ -35,7 +35,7 @@ const nonZeroIntegerSchema = type('number.integer < 0 | number.integer > 0');
  */
 export const stockMovementPageQuerySchema = pageQuerySchema.and(dateRangeQuerySchema).and({
   'type?': stockMovementTypeSchema,
-  productId: type('string').describe('商品 ID'),
+  'productId?': type('string').describe('商品 ID'),
 });
 
 export type StockMovementPageQuery = typeof stockMovementPageQuerySchema.infer;

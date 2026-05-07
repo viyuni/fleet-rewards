@@ -56,16 +56,23 @@ function createMockDb(items: unknown[] = [], total = 0) {
 const mockTable = {} as any;
 
 function createMockRelationalDb(items: unknown[] = [], total = 0) {
-  const findMany = mock(async (_config?: any) => items);
+  const query = {
+    marker: Symbol('query'),
+    findMany: mock(async function (this: any, _config?: any) {
+      if (this !== query) {
+        throw new Error('findMany called without query target context');
+      }
+
+      return items;
+    }),
+  };
 
   return {
     db: {
       $count: mock(async () => total),
     } as any,
-    query: {
-      findMany,
-    },
-    findMany,
+    query,
+    findMany: query.findMany,
   };
 }
 
@@ -286,6 +293,7 @@ describe('QueryPageBuilder', () => {
       const { db, query } = createMockRelationalDb(items, 25);
 
       const result = await new QueryPageBuilder(db, mockTable, query)
+        .query((findMany, input) => findMany(input))
         .page(2)
         .pageSize(10)
         .paginate();
@@ -301,35 +309,43 @@ describe('QueryPageBuilder', () => {
       });
     });
 
-    it('传递 columns、with、orderBy、limit 和 offset 到 findMany', async () => {
+    it('query runner 接收 findMany、where、limit 和 offset', async () => {
       const { db, query, findMany } = createMockRelationalDb([], 0);
-      const columns = { id: true, name: true };
-      const withValue = { pointType: true };
-      const orderBy = { createdAt: 'desc' };
+      const runner = mock((findManyArg, input) =>
+        findManyArg({
+          where: input.where,
+          columns: { id: true, name: true },
+          with: { pointType: true },
+          orderBy: { createdAt: 'desc' },
+          limit: input.limit,
+          offset: input.offset,
+        }),
+      );
 
-      await new QueryPageBuilder(db, mockTable, query)
-        .columns(columns)
-        .with(withValue)
-        .orderBy(orderBy)
-        .page(3)
-        .pageSize(5)
-        .paginate();
+      await new QueryPageBuilder(db, mockTable, query).query(runner).page(3).pageSize(5).paginate();
 
+      const runnerCall = runner.mock.calls[0];
+      expect(typeof runnerCall?.[0]).toBe('function');
+      expect(runnerCall?.[1]).toEqual({
+        where: undefined,
+        limit: 5,
+        offset: 10,
+      });
       expect(findMany).toHaveBeenCalledWith({
-        columns,
-        with: withValue,
-        orderBy,
+        columns: { id: true, name: true },
+        with: { pointType: true },
+        orderBy: { createdAt: 'desc' },
         where: undefined,
         limit: 5,
         offset: 10,
       });
     });
 
-    it('columns 会收窄 paginate item 类型', async () => {
+    it('query 会收窄 paginate item 类型', async () => {
       const { db, query } = createMockRelationalDb([], 0);
 
       const result = await new QueryPageBuilder(db, pointTypes, query)
-        .columns({ id: true, name: true })
+        .query(async () => [] as { id: string; name: string }[])
         .paginate();
 
       type Item = (typeof result.items)[number];
@@ -342,7 +358,10 @@ describe('QueryPageBuilder', () => {
       const { db, query, findMany } = createMockRelationalDb([], 0);
       const where = { name: { like: 'test%' } };
 
-      await new QueryPageBuilder(db, pointTypes, query).where(where).paginate();
+      await new QueryPageBuilder(db, pointTypes, query)
+        .where(where)
+        .query((findMany, input) => findMany(input))
+        .paginate();
 
       const config = findMany.mock.calls[0]?.[0];
       expect(config.where).toBe(where);
@@ -353,7 +372,10 @@ describe('QueryPageBuilder', () => {
     it('where 为 undefined 时不传 findMany where，并用 undefined 调用 $count', async () => {
       const { db, query, findMany } = createMockRelationalDb([], 0);
 
-      await new QueryPageBuilder(db, mockTable, query).where(undefined).paginate();
+      await new QueryPageBuilder(db, mockTable, query)
+        .where(undefined)
+        .query((findMany, input) => findMany(input))
+        .paginate();
 
       const config = findMany.mock.calls[0]?.[0];
       expect(config.where).toBeUndefined();
@@ -364,6 +386,7 @@ describe('QueryPageBuilder', () => {
       const { db, query, findMany } = createMockRelationalDb([], 0);
 
       const result = await new QueryPageBuilder(db, mockTable, query)
+        .query((findMany, input) => findMany(input))
         .pageSize(200)
         .maxPageSize(30)
         .paginate();
@@ -371,6 +394,14 @@ describe('QueryPageBuilder', () => {
       const config = findMany.mock.calls[0]?.[0];
       expect(config.limit).toBe(30);
       expect(result.meta.pageSize).toBe(30);
+    });
+
+    it('未调用 query 时抛出错误', async () => {
+      const { db, query } = createMockRelationalDb([], 0);
+
+      await expect(new QueryPageBuilder(db, mockTable, query).paginate()).rejects.toThrow(
+        'QueryPageBuilder requires query() before paginate().',
+      );
     });
   });
 
@@ -383,9 +414,7 @@ describe('QueryPageBuilder', () => {
         .pageSize(5)
         .maxPageSize(50)
         .where(undefined)
-        .columns(undefined as any)
-        .with(undefined as any)
-        .orderBy(undefined as any)
+        .query((findMany, input) => findMany(input))
         .paginate();
 
       expect(result.meta.page).toBe(2);

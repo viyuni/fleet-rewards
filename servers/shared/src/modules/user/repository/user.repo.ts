@@ -1,8 +1,16 @@
-import type { UserPageQuery } from '@internal/shared';
+import type { UpdateUserBody, UserPageQuery } from '@internal/shared';
 import type { DbExecutor } from '@server/db';
-import { eqIfDefined, keywordLike, PageBuilder } from '@server/db/helper';
+import { defineSelectColumns, QueryPageBuilder } from '@server/db/helper';
+import type { InsertUser } from '@server/db/schema';
 import { users } from '@server/db/schema';
-import { and, desc, eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
+
+import { BadRequestError } from '#server/shared/errors';
+
+const userSelectCols = defineSelectColumns(
+  users,
+  ({ passwordHash: _passwordHash, phoneHash: _phoneHash, ...cols }) => cols,
+);
 
 export class UserRepository {
   constructor(private db: DbExecutor) {}
@@ -66,6 +74,7 @@ export class UserRepository {
       },
       where: {
         id: userId,
+        status: 'normal',
       },
     });
 
@@ -80,7 +89,6 @@ export class UserRepository {
       .update(users)
       .set({
         status: 'banned',
-        updatedAt: new Date(),
       })
       .where(and(eq(users.id, userId)))
       .returning();
@@ -96,7 +104,6 @@ export class UserRepository {
       .update(users)
       .set({
         status: 'normal',
-        updatedAt: new Date(),
       })
       .where(and(eq(users.id, userId)))
       .returning();
@@ -104,26 +111,90 @@ export class UserRepository {
     return user ?? null;
   }
 
-  /**
-   * 分页构造查询
-   */
-  pageBuilder(query: UserPageQuery) {
-    return new PageBuilder(this.db, users)
-      .where(
-        and(
-          eqIfDefined(users.status, query.status),
-          keywordLike([users.username, users.biliUid], query.keyword),
-        ),
-      )
-      .orderBy(desc(users.createdAt))
-      .page(query.page)
-      .pageSize(query.pageSize);
+  async create(data: InsertUser) {
+    const [user] = await this.db.insert(users).values(data).returning(userSelectCols);
+
+    if (!user) {
+      throw new BadRequestError('用户创建失败');
+    }
+
+    return user;
+  }
+
+  async updatePassword(userId: string, passwordHash: string) {
+    const [user] = await this.db
+      .update(users)
+      .set({
+        passwordHash,
+      })
+      .where(and(eq(users.id, userId), eq(users.status, 'normal')))
+      .returning(userSelectCols);
+
+    if (!user) {
+      throw new BadRequestError('用户创建失败');
+    }
+
+    return user;
+  }
+
+  async update(userId: string, data: UpdateUserBody) {
+    const [user] = await this.db
+      .update(users)
+      .set(data)
+      .where(and(eq(users.id, userId), eq(users.status, 'normal')))
+      .returning(userSelectCols);
+
+    if (!user) {
+      throw new BadRequestError('用户更新失败');
+    }
+
+    return user;
   }
 
   /**
    * 分页
    */
   page(query: UserPageQuery) {
-    return this.pageBuilder(query).paginate();
+    return new QueryPageBuilder(this.db, users, this.db.query.users)
+      .page(query.page)
+      .pageSize(query.pageSize)
+      .where({})
+      .query((findMany, { where, limit, offset }) =>
+        findMany({
+          where,
+          limit,
+          offset,
+          columns: {
+            id: true,
+            biliUid: true,
+            username: true,
+            status: true,
+            phoneEncrypted: true,
+            emailEncrypted: true,
+            addressEncrypted: true,
+            remark: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+          with: {
+            pointAccounts: {
+              columns: {
+                id: true,
+                balance: true,
+                createdAt: true,
+                updatedAt: true,
+              },
+              with: {
+                pointType: {
+                  columns: {
+                    name: true,
+                  },
+                },
+              },
+            },
+          },
+        }),
+      )
+      .paginate();
   }
 }

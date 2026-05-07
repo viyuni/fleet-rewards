@@ -10,7 +10,7 @@ export const admin = new Elysia({
   prefix: '/admin',
 })
   .use(appContext)
-  .get('/me', ({ userId }) => ({ name: 'Viyuni', userId }), {
+  .get('/me', ({ userId, adminUseCase }) => adminUseCase.me(userId), {
     requiredAuth: true,
     detail: {
       tags: ['Admin'],

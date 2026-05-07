@@ -17,7 +17,7 @@ export class PointAccountUseCase {
   async adjustBalance(adminId: string, data: AdjustBalanceBody) {
     return this.deps.db.transaction(async tx => {
       // 确保账户存在并锁行
-      const account = await this.deps.pointAccountRepo.requireByIdForUpdate(tx, data.accountId);
+      const account = await this.deps.pointAccountRepo.ensureAccountAndLock(tx, data);
 
       return this.deps.pointBalanceUseCase.changeBalance(tx, account, {
         type: 'adjust',

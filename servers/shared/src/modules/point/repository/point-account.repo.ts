@@ -43,6 +43,8 @@ export class PointAccountRepository {
 
   /**
    * 查询积分账户并行锁
+   *
+   * @description 如果账户不存在，此方法会抛错，不会自动创建。
    */
   async requireByIdForUpdate(tx: DbTransaction, accountId: string) {
     const [account] = await tx
