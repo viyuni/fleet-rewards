@@ -86,16 +86,17 @@ export class PointConversionUseCase {
   }
 
   async convert(conversionData: ConvertPointBody) {
+    const rule = await this.deps.pointConversionRuleRepo.findById(conversionData.ruleId);
+
+    if (!rule) {
+      throw new PointConversionRuleNotFoundError();
+    }
+
+    PointConversionRulePolicy.assertAvailable(rule);
+
+    const toAmount = PointConversionRulePolicy.calculateToAmount(rule, conversionData.fromAmount);
+
     return this.deps.db.transaction(async tx => {
-      const rule = await this.deps.pointConversionRuleRepo.findById(conversionData.ruleId, tx);
-
-      if (!rule) {
-        throw new PointConversionRuleNotFoundError();
-      }
-
-      PointConversionRulePolicy.assertAvailable(rule);
-
-      const toAmount = PointConversionRulePolicy.calculateToAmount(rule, conversionData.fromAmount);
       const fromAccount = await this.deps.pointAccountRepo.ensureAccountAndLock(tx, {
         userId: conversionData.userId,
         pointTypeId: rule.fromPointTypeId,

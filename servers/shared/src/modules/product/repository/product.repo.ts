@@ -1,19 +1,13 @@
 import type { PageQuery, ProductPageQuery } from '@internal/shared';
 import type { DbExecutor, DbTransaction } from '@server/db';
-import {
-  deletedAtIsNull,
-  eqIfDefined,
-  keywordLike,
-  PageBuilder,
-  QueryPageBuilder,
-} from '@server/db/helper';
+import { deletedAtIsNull, QueryPageBuilder } from '@server/db/helper';
 import {
   products,
   type InsertProduct,
   type ProductStatus,
   type UpdateProduct,
 } from '@server/db/schema';
-import { and, desc, eq, gte, sql } from 'drizzle-orm';
+import { and, eq, gte, sql } from 'drizzle-orm';
 
 import { StockAmountPolicy, StockInsufficientError, StockUpdateFailedError } from '../domain';
 
@@ -122,8 +116,8 @@ export class ProductRepository {
       })
       .where(
         and(
-          eq(products.id, input.productId),
           deletedAtIsNull(products),
+          eq(products.id, input.productId),
           gte(products.stock, input.amount),
         ),
       )
@@ -161,7 +155,7 @@ export class ProductRepository {
                 },
               },
             ]
-          : undefined,
+          : [],
       })
       .query((findMany, { where, limit, offset }) =>
         findMany({

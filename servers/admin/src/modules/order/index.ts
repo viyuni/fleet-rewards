@@ -5,9 +5,7 @@ import {
 } from '@internal/shared/schema';
 import Elysia from 'elysia';
 
-import { appContext } from '../../context';
-import { db } from '../../db';
-import { AdminOrderUseCase } from './usecase';
+import { appContext } from '#server/admin/context';
 
 export const order = new Elysia({
   name: 'OrderRoute',
@@ -18,11 +16,10 @@ export const order = new Elysia({
 })
 
   .use(appContext)
-  .decorate('adminOrderUseCase', new AdminOrderUseCase(db))
   .get(
     '/',
-    ({ query, adminOrderUseCase }) => {
-      return adminOrderUseCase.page(query);
+    ({ query, orderUseCase }) => {
+      return orderUseCase.pageManage(query);
     },
     {
       query: orderPageQuerySchema,

@@ -3,9 +3,6 @@ import Elysia from 'elysia';
 
 import { appContext } from '#servers/user/context';
 
-import { db } from '../../db';
-import { UserOrderUseCase } from './usecase';
-
 export const order = new Elysia({
   name: 'UserOrderRoute',
   prefix: '/orders',
@@ -14,11 +11,10 @@ export const order = new Elysia({
   },
 })
   .use(appContext)
-  .decorate('userOrderUseCase', new UserOrderUseCase(db))
   .get(
     '/',
-    ({ query, userId, userOrderUseCase }) => {
-      return userOrderUseCase.page({
+    ({ query, userId, orderUseCase }) => {
+      return orderUseCase.pageMine({
         ...query,
         userId,
       });

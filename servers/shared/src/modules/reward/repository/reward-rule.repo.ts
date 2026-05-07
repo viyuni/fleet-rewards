@@ -1,13 +1,12 @@
-import type { RewardRulePageQuery } from '@internal/shared';
 import type { DbExecutor } from '@server/db';
-import { deletedAtIsNull, eqIfDefined, keywordLike, PageBuilder } from '@server/db/helper';
+import { deletedAtIsNull, keywordLike, QueryPageBuilder } from '@server/db/helper';
 import {
   rewardRules,
   type InsertRewardRule,
   type RewardRule,
   type UpdateRewardRule,
 } from '@server/db/schema';
-import { and, asc, desc, eq, gt, isNull, lte, or } from 'drizzle-orm';
+import { and, asc, eq, gt, isNull, lte, or } from 'drizzle-orm';
 
 export class RewardRuleRepository {
   constructor(private readonly db: DbExecutor) {}
@@ -36,22 +35,6 @@ export class RewardRuleRepository {
         ),
       )
       .orderBy(asc(rewardRules.priority), asc(rewardRules.createdAt));
-  }
-
-  pageBuilder(query: RewardRulePageQuery) {
-    return new PageBuilder(this.db, rewardRules)
-      .where(
-        and(
-          deletedAtIsNull(rewardRules),
-          eqIfDefined(rewardRules.enabled, query.enabled),
-          eqIfDefined(rewardRules.pointTypeId, query.pointTypeId),
-          eqIfDefined(rewardRules.group, query.group),
-          keywordLike([rewardRules.name, rewardRules.remark], query.keyword),
-        ),
-      )
-      .orderBy(asc(rewardRules.priority), desc(rewardRules.createdAt))
-      .page(query.page)
-      .pageSize(query.pageSize);
   }
 
   async create(input: InsertRewardRule, db: DbExecutor = this.db) {
@@ -83,5 +66,78 @@ export class RewardRuleRepository {
 
   async updateEnabled(id: string, enabled: RewardRule['enabled'], db: DbExecutor = this.db) {
     return await this.update(id, { enabled }, db);
+  }
+
+  listManage() {
+    return this.db.query.rewardRules.findMany({
+      where: {
+        deletedAt: {
+          isNull: true,
+        },
+      },
+      with: {
+        pointType: {
+          columns: {
+            name: true,
+          },
+        },
+      },
+      orderBy: {
+        priority: 'desc',
+        createdAt: 'desc',
+      },
+    });
+  }
+
+  listVisible() {
+    const now = new Date();
+
+    return this.db.query.rewardRules.findMany({
+      where: {
+        AND: [
+          {
+            deletedAt: {
+              isNull: true,
+            },
+          },
+          {
+            enabled: true,
+          },
+          {
+            startsAt: {
+              isNull: true,
+              or: [
+                {
+                  lte: now,
+                },
+              ],
+            },
+            endsAt: {
+              isNull: true,
+              or: [
+                {
+                  gte: now,
+                },
+              ],
+            },
+          },
+        ],
+      },
+      columns: {
+        name: true,
+        description: true,
+      },
+      with: {
+        pointType: {
+          columns: {
+            name: true,
+          },
+        },
+      },
+      orderBy: {
+        priority: 'desc',
+        createdAt: 'desc',
+      },
+    });
   }
 }

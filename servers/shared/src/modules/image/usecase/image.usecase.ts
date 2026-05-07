@@ -22,7 +22,11 @@ export class ImageUseCase {
     }
   }
 
-  async upload(file: File) {
+  async save(file?: File) {
+    if (!file) {
+      return;
+    }
+
     await this.ensureImageDir();
 
     const inputBuffer = Buffer.from(await file.arrayBuffer());
@@ -64,11 +68,6 @@ export class ImageUseCase {
       await writeFile(filePath, outputBuffer);
     }
 
-    return {
-      filename,
-      size: outputBuffer.byteLength,
-      width: metadata.width,
-      height: metadata.height,
-    };
+    return filename;
   }
 }

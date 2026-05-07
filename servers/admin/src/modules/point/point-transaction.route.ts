@@ -14,7 +14,7 @@ export const pointTransactionRoute = new Elysia({
   .get(
     '/',
     ({ pointTransactionUseCase, query }) => {
-      return pointTransactionUseCase.page(query);
+      return pointTransactionUseCase.pageManage(query);
     },
     {
       query: transactionPageQuerySchema,

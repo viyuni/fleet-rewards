@@ -1,5 +1,10 @@
 import { UnauthorizedError } from '@server/shared';
-import { SignJWT, jwtVerify } from 'jose';
+import { SignJWT, jwtVerify, type JWTPayload } from 'jose';
+
+export interface AuthTokenPayload {
+  userId: string;
+  role?: string;
+}
 
 export class AuthUseCase {
   private encodedSecret: Uint8Array<ArrayBuffer>;
@@ -8,21 +13,30 @@ export class AuthUseCase {
     this.encodedSecret = new TextEncoder().encode(this.secret);
   }
 
-  async sign(userId: string) {
-    return new SignJWT()
+  async sign(payload: AuthTokenPayload) {
+    const jwtPayload: JWTPayload = {
+      userId: payload.userId,
+      role: payload.role,
+    };
+
+    return new SignJWT(jwtPayload)
       .setProtectedHeader({ alg: 'HS256' })
       .setIssuedAt()
       .setExpirationTime('1d')
-      .setSubject(userId)
       .sign(this.encodedSecret);
   }
 
   async verify(token: string) {
     try {
       const { payload } = await jwtVerify(token, this.encodedSecret);
-      if (!payload.sub) throw new UnauthorizedError();
+      if (typeof payload.userId !== 'string') throw new UnauthorizedError();
+      if (payload.role !== undefined && typeof payload.role !== 'string')
+        throw new UnauthorizedError();
 
-      return payload.sub;
+      return {
+        userId: payload.userId,
+        role: payload.role,
+      };
     } catch {
       throw new UnauthorizedError();
     }

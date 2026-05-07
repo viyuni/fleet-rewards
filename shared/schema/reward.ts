@@ -1,7 +1,5 @@
 import { type } from 'arktype';
 
-import { keywordQuerySchema, pageQuerySchema } from './common';
-
 /**
  * 积分奖励规则 ID Params Schema。
  */
@@ -17,9 +15,9 @@ export type RewardRuleIdParams = typeof rewardRuleIdParamsSchema.infer;
 const rewardRuleNameSchema = type('2 <= string <= 80').describe('积分奖励规则名称');
 
 /**
- * 积分奖励规则备注 Schema。
+ * 积分奖励规则描述 Schema。
  */
-const rewardRuleRemarkSchema = type('string <= 200').describe('备注');
+const rewardRuleDescriptionSchema = type('string <= 200').describe('备注');
 
 /**
  * 互斥分组 Schema。
@@ -74,22 +72,14 @@ export const rewardRuleConditionSchema = biliGuardRewardConditionSchema;
 export type RewardRuleCondition = typeof rewardRuleConditionSchema.infer;
 
 /**
- * 积分奖励规则分页查询 Query Schema。
- */
-export const rewardRulePageQuerySchema = pageQuerySchema.and(keywordQuerySchema).and({
-  'enabled?': type('boolean').describe('是否启用'),
-  'pointTypeId?': type('string').describe('积分类型 ID'),
-  'group?': rewardRuleGroupSchema,
-});
 
-export type RewardRulePageQuery = typeof rewardRulePageQuerySchema.infer;
 
 /**
  * 创建积分奖励规则 Body Schema。
  */
 export const createRewardRuleSchema = type({
   name: rewardRuleNameSchema,
-  'remark?': rewardRuleRemarkSchema,
+  'description?': rewardRuleDescriptionSchema,
 
   conditions: rewardRuleConditionSchema,
 
@@ -112,7 +102,7 @@ export type CreateRewardRuleBody = typeof createRewardRuleSchema.infer;
  */
 export const updateRewardRuleSchema = type({
   'name?': rewardRuleNameSchema,
-  'remark?': rewardRuleRemarkSchema,
+  'description?': rewardRuleDescriptionSchema,
 
   'conditions?': rewardRuleConditionSchema,
 

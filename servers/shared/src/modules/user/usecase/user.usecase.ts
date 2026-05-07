@@ -191,7 +191,7 @@ export class UserUseCase {
    * - 账号不会退出
    */
   async resetPassword(userId: string) {
-    const radomPassword = crypto.randomUUID().split('-').join('').slice(0, 12);
+    const radomPassword = crypto.randomUUID().split('-').join('').slice(0, 16);
     const passwordHash = await Bun.password.hash(radomPassword, {
       algorithm: 'bcrypt',
       cost: 12,

@@ -1,4 +1,4 @@
-import type { CreateOrderBody, RefundOrderBody } from '@internal/shared/schema';
+import type { CreateOrderBody, OrderPageQuery, RefundOrderBody } from '@internal/shared/schema';
 import type { DbClient } from '@server/db';
 
 import {
@@ -14,7 +14,12 @@ import {
 } from '#server/shared/modules/product';
 import { UserUseCase } from '#server/shared/modules/user';
 
-import { OrderNotFoundError, OrderStatusInvalidError, OrderUpdateFailedError } from '../domain';
+import {
+  OrderNo,
+  OrderNotFoundError,
+  OrderStatusInvalidError,
+  OrderUpdateFailedError,
+} from '../domain';
 import { OrderRepository } from '../repository';
 
 export interface OrderUseCaseDeps {
@@ -61,7 +66,7 @@ export class OrderUseCase {
       }
 
       const order = await this.deps.orderRepo.create(tx, {
-        orderNo: this.createOrderNo(),
+        orderNo: OrderNo.create(),
         userId,
         productId: product.id,
         productNameSnapshot: product.name,
@@ -219,24 +224,17 @@ export class OrderUseCase {
     });
   }
 
-  private pad(value: number, length = 2) {
-    return value.toString().padStart(length, '0');
+  /**
+   * 管理员 - 订单列表
+   */
+  pageManage(query: OrderPageQuery) {
+    return this.deps.orderRepo.pageManage(query);
   }
-  private createOrderNo() {
-    const date = new Date();
 
-    const timestamp = [
-      date.getFullYear(),
-      this.pad(date.getMonth() + 1),
-      this.pad(date.getDate()),
-      this.pad(date.getHours()),
-      this.pad(date.getMinutes()),
-      this.pad(date.getSeconds()),
-      this.pad(date.getMilliseconds(), 3),
-    ].join('');
-
-    const random = crypto.randomUUID().replaceAll('-', '').slice(0, 10).toUpperCase();
-
-    return `ORD${timestamp}${random}`;
+  /**
+   * 用户订单列表
+   */
+  pageMine(query: OrderPageQuery) {
+    return this.deps.orderRepo.pageMine(query);
   }
 }

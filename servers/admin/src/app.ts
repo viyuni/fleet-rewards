@@ -1,7 +1,7 @@
-import { config } from './config';
 import { initDefaultAdmin } from './context';
-import { logger } from './logger';
 import { app } from './server';
+import { config } from './utils/config';
+import { logger } from './utils/logger';
 
 await initDefaultAdmin();
 

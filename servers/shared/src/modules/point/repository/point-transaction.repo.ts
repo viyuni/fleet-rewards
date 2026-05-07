@@ -1,15 +1,8 @@
 import type { PointTransactionPageQuery } from '@internal/shared';
 import type { DbExecutor, DbTransaction } from '@server/db';
-import {
-  defineSelectColumns,
-  eqIfDefined,
-  gteIfDefined,
-  lteIfDefined,
-  PageBuilder,
-  parseDate,
-} from '@server/db/helper';
+import { defineSelectColumns, parseDate, QueryPageBuilder } from '@server/db/helper';
 import { pointTransactions } from '@server/db/schema';
-import { and, desc, eq } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 
 import { PointTransactionNotFoundError } from '../domain';
 
@@ -55,33 +48,66 @@ export class PointTransactionRepository {
     });
   }
 
-  pageBuilder(query: PointTransactionPageQuery) {
-    return new PageBuilder(this.db, pointTransactions)
-      .where(
-        and(
-          eqIfDefined(pointTransactions.userId, query.userId),
-          eqIfDefined(pointTransactions.type, query.type),
-          eqIfDefined(pointTransactions.pointTypeId, query.pointTypeId),
-          gteIfDefined(pointTransactions.createdAt, parseDate(query.startTime)),
-          lteIfDefined(pointTransactions.createdAt, parseDate(query.endTime)),
-        ),
-      )
-      .orderBy(desc(pointTransactions.createdAt))
+  pageManage(query: PointTransactionPageQuery) {
+    return new QueryPageBuilder(this.db, pointTransactions, this.db.query.pointTransactions)
+      .pageSize(query.pageSize)
       .page(query.page)
-      .pageSize(query.pageSize);
+      .where({
+        userId: query.userId,
+        type: query.type,
+        pointTypeId: query.pointTypeId,
+        createdAt: {
+          gte: parseDate(query.startTime),
+          lte: parseDate(query.endTime),
+        },
+      })
+      .query((findMany, { where, limit, offset }) =>
+        findMany({
+          where,
+          limit,
+          offset,
+          orderBy: {
+            createdAt: 'desc',
+          },
+        }),
+      )
+      .paginate();
   }
 
-  page(query: PointTransactionPageQuery) {
-    return this.pageBuilder(query).paginate();
-  }
-
-  pageByUserId(userId: string, query: PointTransactionPageQuery) {
-    return this.pageBuilder({
-      ...query,
-      userId,
-    })
-      .orderBy(desc(pointTransactions.createdAt))
-      .columns(userPointTransactionSelectCols)
+  pageMine(query: PointTransactionPageQuery) {
+    return new QueryPageBuilder(this.db, pointTransactions, this.db.query.pointTransactions)
+      .pageSize(query.pageSize)
+      .page(query.page)
+      .where({
+        userId: query.userId,
+        type: query.type,
+        pointTypeId: query.pointTypeId,
+        createdAt: {
+          gte: parseDate(query.startTime),
+          lte: parseDate(query.endTime),
+        },
+      })
+      .query((findMany, { where, limit, offset }) =>
+        findMany({
+          where,
+          limit,
+          offset,
+          columns: {
+            id: true,
+            pointTypeNameSnapshot: true,
+            type: true,
+            delta: true,
+            balanceBefore: true,
+            balanceAfter: true,
+            sourceType: true,
+            remark: true,
+            createdAt: true,
+          },
+          orderBy: {
+            createdAt: 'desc',
+          },
+        }),
+      )
       .paginate();
   }
 }

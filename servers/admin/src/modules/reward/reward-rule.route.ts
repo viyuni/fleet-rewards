@@ -1,7 +1,6 @@
 import {
   createRewardRuleSchema,
   rewardRuleIdParamsSchema,
-  rewardRulePageQuerySchema,
   updateRewardRuleSchema,
 } from '@internal/shared';
 import { RewardErrors } from '@server/shared/reward';
@@ -20,11 +19,10 @@ export const rewardRuleRoute = new Elysia({
   .error(RewardErrors)
   .get(
     '/',
-    ({ query, rewardRuleUseCase }) => {
-      return rewardRuleUseCase.page(query);
+    ({ rewardRuleUseCase }) => {
+      return rewardRuleUseCase.listManage();
     },
     {
-      query: rewardRulePageQuerySchema,
       requiredAuth: true,
       detail: {
         description: '积分奖励规则列表',

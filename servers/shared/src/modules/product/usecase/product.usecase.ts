@@ -55,12 +55,7 @@ export class ProductUseCase {
     ProductInputPolicy.assertValid(productData);
 
     const { cover, ...data } = productData;
-
-    let coverName: string | undefined;
-
-    if (cover) {
-      coverName = await this.deps.imageUseCase.upload(cover).then(res => res.filename);
-    }
+    const coverName = await this.deps.imageUseCase.save(cover);
 
     return this.deps.productRepo.create({ ...data, cover: coverName });
   }
@@ -72,12 +67,7 @@ export class ProductUseCase {
     ProductInputPolicy.assertValid(productData);
 
     const { cover, ...data } = productData;
-
-    let coverName: string | undefined;
-
-    if (cover) {
-      coverName = await this.deps.imageUseCase.upload(cover).then(res => res.filename);
-    }
+    const coverName = await this.deps.imageUseCase.save(cover);
 
     return this.deps.productRepo.update(id, { ...data, cover: coverName });
   }
@@ -108,6 +98,12 @@ export class ProductUseCase {
     return this.deps.productRepo.updateStatus(id, 'disabled');
   }
 
+  /**
+   * 查询可兑换商品并加行锁
+   *
+   * 用于兑换、扣减库存等需要并发保护的场景。
+   * 如果商品不存在或商品状态不可用，则抛出业务异常。
+   */
   async requireByIdForUpdate(tx: DbTransaction, id: string) {
     const product = await this.deps.productRepo.findByIdForUpdate(tx, id);
 
@@ -132,6 +128,7 @@ export class ProductUseCase {
     let updateProduct: Product;
 
     if (input.delta > 0) {
+      // 执行增加
       updateProduct = await this.deps.productRepo.increaseStock(tx, {
         productId: product.id,
         amount: input.delta,
@@ -143,12 +140,14 @@ export class ProductUseCase {
       // 确保库存充足
       StockPolicy.assertSufficientStock(product, amount);
 
+      // 执行扣除
       updateProduct = await this.deps.productRepo.decreaseStock(tx, {
         productId: product.id,
         amount,
       });
     }
 
+    // 记录库存变动
     const movement = await this.deps.stockMovementRepo.create(
       {
         productId: input.productId,
@@ -201,10 +200,16 @@ export class ProductUseCase {
     });
   }
 
+  /**
+   * 管理员 - 商品列表
+   */
   pageManage(query: ProductPageQuery) {
     return this.deps.productRepo.pageManage(query);
   }
 
+  /**
+   * 兑换 - 商品列表
+   */
   pageRedeem(query: PageQuery) {
     return this.deps.productRepo.pageRedeem(query);
   }

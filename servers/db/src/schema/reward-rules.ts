@@ -63,7 +63,7 @@ export const rewardRules = pgTable(
     /**
      * 描述
      */
-    remark: text('remark'),
+    description: text('description'),
 
     /**
      * 例如:

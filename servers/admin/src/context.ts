@@ -1,6 +1,6 @@
 import { createAppContext } from '@server/shared/context';
 
-import { config } from '#server/admin/config';
+import { config } from '#server/admin/utils';
 
 import { db } from './db';
 import { AdminRepository } from './modules/admin/repository';

@@ -1,8 +1,4 @@
-import type {
-  CreateRewardRuleBody,
-  RewardRulePageQuery,
-  UpdateRewardRuleBody,
-} from '@internal/shared';
+import type { CreateRewardRuleBody, UpdateRewardRuleBody } from '@internal/shared';
 import type { InsertRewardRule, UpdateRewardRule } from '@server/db/schema';
 
 import { PointTypeUseCase } from '#server/shared/modules/point';
@@ -17,10 +13,6 @@ export interface RewardRuleUseCaseDeps {
 
 export class RewardRuleUseCase {
   constructor(private readonly deps: RewardRuleUseCaseDeps) {}
-
-  page(query: RewardRulePageQuery = {}) {
-    return this.deps.rewardRuleRepo.pageBuilder(query).paginate();
-  }
 
   async get(id: string) {
     const rule = await this.deps.rewardRuleRepo.findById(id);
@@ -119,5 +111,13 @@ export class RewardRuleUseCase {
 
   private parseDate(value: number | undefined) {
     return value === undefined ? undefined : new Date(value);
+  }
+
+  listManage() {
+    return this.deps.rewardRuleRepo.listManage();
+  }
+
+  listVisible() {
+    return this.deps.rewardRuleRepo.listVisible();
   }
 }
