@@ -1,4 +1,8 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { useLogin } from '#web/admin/features/auth/mutations';
+
+const { mutate: login } = useLogin();
+</script>
 
 <template>
   <div class="flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
@@ -10,7 +14,7 @@
       >
         <ViyuniLogo />
       </a>
-      <LoginForm />
+      <LoginForm @submit="data => login(data)" />
     </div>
 
     <FluidCursor class="-z-1 opacity-50" />

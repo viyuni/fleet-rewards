@@ -47,6 +47,13 @@ export const adminUpdateSchema = type({
 
 export type AdminUpdateBody = typeof adminUpdateSchema.infer;
 
+export const adminUpdatePasswordSchema = type({
+  oldPassword: passwordSchema,
+  newPassword: passwordSchema,
+});
+
+export type AdminUpdatePasswordBody = typeof adminUpdatePasswordSchema.infer;
+
 /**
  * 管理员分页查询 Schema
  */

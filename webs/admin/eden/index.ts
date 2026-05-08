@@ -7,7 +7,4 @@ if (!import.meta.env.VITE_SERVER_BASE_URL)
 export const api = treaty<App>(import.meta.env.VITE_SERVER_BASE_URL, {
   throwHttpError: true,
   parseDate: false,
-  headers: {
-    Authorization: 'Bearer $token',
-  },
 });

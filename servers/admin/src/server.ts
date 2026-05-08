@@ -4,7 +4,6 @@ import { health } from '@server/shared/health';
 import { Elysia } from 'elysia';
 
 import { version } from '../package.json' with { type: 'json' };
-import { appContext } from './context';
 import { admin } from './modules/admin';
 import { auth } from './modules/auth';
 import { email } from './modules/email/index';
@@ -14,15 +13,9 @@ import { product } from './modules/product';
 import { reward } from './modules/reward';
 import { users } from './modules/users';
 
-export const app = setupApp(
-  new Elysia({
-    name: 'AdminServer',
-  }),
-  {
-    title: 'Viyuni Guard Rewards',
-    version,
-  },
-)
+export const routes = new Elysia({
+  name: 'AdminServer',
+})
   .use(
     cors({
       origin: true,
@@ -30,7 +23,6 @@ export const app = setupApp(
       credentials: true,
     }),
   )
-  .use(appContext)
   .use(auth)
   .use(admin)
   .use(point)
@@ -41,3 +33,8 @@ export const app = setupApp(
   .use(email)
   .use(health)
   .get('/', () => 'Viyuni guard rewards server running... :)', { tags: ['Index'] });
+
+export const app = setupApp(routes, {
+  title: 'Viyuni Guard Rewards',
+  version,
+});

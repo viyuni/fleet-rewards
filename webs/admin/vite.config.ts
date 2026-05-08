@@ -33,17 +33,24 @@ export default defineConfig({
           imports: ['toast'],
         },
         {
-          from: './src/lib/api.ts',
-          imports: ['api'],
+          from: '@pinia/colada',
+          imports: [
+            'defineMutation',
+            'defineQuery',
+            'defineQueryOptions',
+            'useQuery',
+            'useMutation',
+            'useInfiniteQuery',
+          ],
         },
       ],
       dts: './.types/auto-imports.d.ts',
-      vueTemplate: true,
     }),
   ],
   resolve: {
     alias: {
-      '#web-admin': '/src',
+      '#eden': fileURLToPath(new URL('./eden', import.meta.url)),
+      '#web/admin': '/src',
       '#ui': fileURLToPath(new URL('../ui/src', import.meta.url)),
     },
   },

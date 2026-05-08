@@ -2,25 +2,31 @@ import type { AdminPageQuery, AdminUpdateBody } from '@internal/shared';
 import type { DbExecutor } from '@server/db';
 import { QueryPageBuilder } from '@server/db/helper';
 import { admins, type InsertAdmin } from '@server/db/schema';
-import { BaseErrors } from '@server/shared';
+import { BadRequestError, BaseErrors } from '@server/shared';
 import { and, eq } from 'drizzle-orm';
 
 export class AdminRepository {
   constructor(private db: DbExecutor) {}
 
-  async findById(adminId: string) {
-    const admin = await this.db.query.admins.findFirst({
+  async findActiveById(adminId: string) {
+    return await this.db.query.admins.findFirst({
       where: {
         id: adminId,
         status: 'active',
       },
     });
-
-    return admin;
   }
 
-  async findInfoById(adminId: string) {
-    const admin = await this.db.query.admins.findFirst({
+  async findById(adminId: string) {
+    return this.db.query.admins.findFirst({
+      where: {
+        id: adminId,
+      },
+    });
+  }
+
+  async findActiveInfoById(adminId: string) {
+    return await this.db.query.admins.findFirst({
       where: {
         id: adminId,
         status: 'active',
@@ -33,11 +39,9 @@ export class AdminRepository {
         lastLoginAt: true,
       },
     });
-
-    return admin ?? null;
   }
 
-  async findByBiliUid(uid: string) {
+  async findByUid(uid: string) {
     return await this.db.query.admins.findFirst({
       where: {
         uid,
@@ -79,7 +83,7 @@ export class AdminRepository {
       .where(and(eq(admins.id, id)))
       .returning();
 
-    return admin ?? null;
+    return admin;
   }
 
   async update(id: string, input: AdminUpdateBody) {
@@ -98,7 +102,23 @@ export class AdminRepository {
         updatedAt: admins.updatedAt,
       });
 
-    return admin ?? null;
+    return admin;
+  }
+
+  async updatePassword(id: string, passwordHash: string) {
+    const [admin] = await this.db
+      .update(admins)
+      .set({ passwordHash })
+      .where(and(eq(admins.id, id), eq(admins.status, 'active')))
+      .returning({
+        id: admins.id,
+        uid: admins.uid,
+        username: admins.username,
+      });
+
+    if (!admin) {
+      throw new BadRequestError('密码更新失败');
+    }
   }
 
   async ban(id: string) {
@@ -112,7 +132,7 @@ export class AdminRepository {
         role: admins.role,
       });
 
-    return admin ?? null;
+    return admin;
   }
 
   async restore(id: string) {
@@ -126,7 +146,7 @@ export class AdminRepository {
         role: admins.role,
       });
 
-    return admin ?? null;
+    return admin;
   }
 
   page(query: AdminPageQuery) {

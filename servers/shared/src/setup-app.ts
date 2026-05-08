@@ -34,11 +34,11 @@ export function setupApp<T extends AnyElysia>(app: T, documentationInfo?: InfoOb
           info: documentationInfo,
           components: {
             securitySchemes: {
-              requiredAuth: {
+              Authorization: {
                 type: 'apiKey',
                 in: 'cookie',
-                name: 'auth_token',
-                description: 'JWT Cookie，也兼容 Authorization Bearer 和 X-API-Key',
+                name: 'authToken',
+                description: 'JWT Cookie',
               },
             },
           },

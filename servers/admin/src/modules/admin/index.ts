@@ -2,6 +2,7 @@ import {
   adminCreateSchema,
   adminIdParamsSchema,
   adminPageQuerySchema,
+  adminUpdatePasswordSchema,
   adminUpdateSchema,
   superAdminUpdateSchema,
 } from '@internal/shared/schema';
@@ -79,4 +80,28 @@ export const admin = new Elysia({
       tags: ['Admin'],
       description: '解封普通管理员',
     },
-  });
+  })
+  .patch(
+    '/updatePassword',
+    ({ auth: { id: adminId }, body, adminUseCase }) => adminUseCase.updatePassword(adminId, body),
+    {
+      body: adminUpdatePasswordSchema,
+      requiredAuth: true,
+      detail: {
+        tags: ['Admin'],
+        description: '修改管理员密码',
+      },
+    },
+  )
+  .patch(
+    '/:id/resetPassword',
+    ({ params, adminUseCase }) => adminUseCase.resetPassword(params.id),
+    {
+      params: adminIdParamsSchema,
+      requiredSuperAdminAuth: true,
+      detail: {
+        tags: ['Admin'],
+        description: '重置普通管理员密码',
+      },
+    },
+  );

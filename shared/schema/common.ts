@@ -1,4 +1,4 @@
-import { type } from 'arktype';
+import { Type, type } from 'arktype';
 
 /**
  * 用户名 Schema
@@ -8,12 +8,14 @@ export const usernameSchema = type('3 <= string <= 32 & /^[A-Za-z0-9_-]+$/').des
 /**
  * B站用户 UID Schema
  */
-export const biliUidSchema = type('4 <= string <= 32 & /^[0-9]+$/').describe('B站用户 UID');
+export const biliUidSchema: Type<string> = type('string')
+  .to('4 <= string <= 32 & /^[0-9]+$/')
+  .describe('B站用户 UID');
 
 /**
  * 密码 Schema
  */
-export const passwordSchema = type('/^(?=.*[A-Za-z])(?=.*\\d).{8,32}$/').describe('密码');
+export const passwordSchema = type('/^(?=.*[A-Za-z])(?=.*\\d).{12,32}$/').describe('密码');
 
 /**
  * 路由参数 ID Schema

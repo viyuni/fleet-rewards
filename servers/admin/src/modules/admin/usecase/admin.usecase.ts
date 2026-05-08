@@ -1,8 +1,14 @@
-import type { AdminCreateBody, AdminPageQuery, AdminUpdateBody } from '@internal/shared';
+import type {
+  AdminCreateBody,
+  AdminPageQuery,
+  AdminUpdateBody,
+  AdminUpdatePasswordBody,
+} from '@internal/shared';
 import type { AdminRole } from '@server/db/schema';
-import { UnauthorizedError } from '@server/shared';
+import { InvalidCredentialsError, UnauthorizedError } from '@server/shared';
+import { PasswordUtil } from '@server/shared/utils';
 
-import { logger } from '#server/admin/utils';
+import { config, logger } from '#server/admin/utils';
 
 import {
   AdminAlreadyExistsError,
@@ -19,7 +25,7 @@ export class AdminUseCase {
   constructor(private readonly deps: AdminUseCaseDeps) {}
 
   async me(userId: string) {
-    const admin = await this.deps.adminRepo.findInfoById(userId);
+    const admin = await this.deps.adminRepo.findActiveInfoById(userId);
 
     if (!admin) {
       throw new UnauthorizedError();
@@ -45,7 +51,7 @@ export class AdminUseCase {
   }
 
   private async updateAdmin(id: string, body: AdminUpdateBody) {
-    const admin = await this.deps.adminRepo.findById(id);
+    const admin = await this.deps.adminRepo.findActiveById(id);
 
     if (!admin) {
       throw new AdminNotFoundError();
@@ -68,8 +74,42 @@ export class AdminUseCase {
     return updated;
   }
 
-  async ban(id: string) {
+  async requireAvailableById(id: string) {
     const admin = await this.deps.adminRepo.findById(id);
+
+    if (!admin) {
+      throw new AdminNotFoundError();
+    }
+
+    return admin;
+  }
+
+  async updatePassword(id: string, data: AdminUpdatePasswordBody) {
+    const admin = await this.requireAvailableById(id);
+
+    const isValidPassword = await PasswordUtil.verify(data.oldPassword, admin.passwordHash);
+
+    if (!isValidPassword) {
+      throw new InvalidCredentialsError();
+    }
+
+    const passwordHash = await PasswordUtil.hash(data.newPassword);
+    await this.deps.adminRepo.updatePassword(id, passwordHash);
+  }
+
+  async resetPassword(id: string) {
+    const admin = await this.requireAvailableById(id);
+
+    const password = PasswordUtil.generate();
+    const passwordHash = await PasswordUtil.hash(password);
+
+    await this.deps.adminRepo.updatePassword(admin.id, passwordHash);
+
+    return password;
+  }
+
+  async ban(id: string) {
+    const admin = await this.deps.adminRepo.findActiveById(id);
 
     if (!admin) {
       throw new AdminNotFoundError();
@@ -105,16 +145,13 @@ export class AdminUseCase {
   }
 
   private async createAdmin(body: AdminCreateBody, role: AdminRole = 'admin') {
-    const existingBiliUidAdmin = await this.deps.adminRepo.findByBiliUid(body.uid);
+    const existingBiliUidAdmin = await this.deps.adminRepo.findByUid(body.uid);
 
     if (existingBiliUidAdmin) {
       throw new AdminAlreadyExistsError('管理员 B站 UID 已存在');
     }
 
-    const passwordHash = await Bun.password.hash(body.password, {
-      algorithm: 'bcrypt',
-      cost: 12,
-    });
+    const passwordHash = await PasswordUtil.hash(body.password);
 
     const admin = await this.deps.adminRepo.create({
       uid: body.uid,
@@ -136,33 +173,31 @@ export class AdminUseCase {
     };
   }
 
-  static DEFAULT_ADMIN: { uid: `${number}`; username: string } = {
-    uid: `0721`,
-    username: `Admin`,
-  };
-
   async initDefaultAdmin() {
-    const { uid, username } = AdminUseCase.DEFAULT_ADMIN;
-    const existing = await this.deps.adminRepo.findByBiliUid(uid);
+    const {
+      SUPER_ADMIN_UID: uid,
+      SUPER_ADMIN_USERNAME: username,
+      SUPER_ADMIN_PASSWORD: password,
+    } = config;
+
+    const existing = await this.deps.adminRepo.findByUid(uid);
 
     if (existing) {
       return;
     }
 
-    const radomPassword = crypto.randomUUID().split('-').join('').slice(0, 16);
-
     await this.createAdmin(
       {
         uid,
-        username: username,
-        password: radomPassword,
+        username,
+        password,
         remark: 'Default Admin',
       },
       'superAdmin',
     );
 
     logger.info(
-      `Creating default admin, UID: ${uid}, UserName: ${username}, Password: ${radomPassword}`,
+      `Creating default admin, UID: ${uid}, UserName: ${username}, Password: ${password}`,
     );
   }
 }

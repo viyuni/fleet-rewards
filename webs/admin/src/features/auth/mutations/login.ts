@@ -1,0 +1,29 @@
+import type { AdminLoginBody } from '@internal/shared/schema';
+import { defineMutation, useMutation } from '@pinia/colada';
+
+import { api } from '#eden';
+
+import { useAuthStore } from '../../store';
+
+export const useLogin = defineMutation(() => {
+  const { updateUser } = useAuthStore();
+  const router = useRouter();
+
+  return useMutation({
+    meta: {
+      showToast: true,
+      successMessage: '登录成功',
+    },
+    mutation(body: AdminLoginBody) {
+      return api.auth.login.post(body);
+    },
+    onSuccess({ data }) {
+      if (data) {
+        updateUser(data);
+        router.push({
+          name: '/app/dashboard/',
+        });
+      }
+    },
+  });
+});

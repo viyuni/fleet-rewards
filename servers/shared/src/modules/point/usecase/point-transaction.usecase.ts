@@ -79,7 +79,7 @@ export class PointTransactionUseCase {
         return '订单退款';
 
       case POINT_CHANGE_SOURCE_TYPE.AdminAdjustment:
-        return input.delta >= 0 ? '管理员补发' : '管理员扣减';
+        return input.delta >= 0 ? '管理员发放' : '管理员扣减';
 
       case POINT_CHANGE_SOURCE_TYPE.Reversal:
         return '积分冲正';

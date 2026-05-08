@@ -7,6 +7,7 @@ import type {
 import type { DbExecutor } from '@server/db';
 
 import { InvalidCredentialsError } from '#server/shared/errors';
+import { PasswordUtil } from '#server/shared/utils';
 
 import {
   UserAlreadyRegisteredError,
@@ -30,6 +31,10 @@ export class UserUseCase {
   async requireAvailableById(userId: string, db?: DbExecutor) {
     const user = await this.deps.userRepo.findById(userId, db);
 
+    if (!user) {
+      throw new UserNotFoundError();
+    }
+
     UserPolicy.assertAvailable(user);
 
     return user;
@@ -40,6 +45,10 @@ export class UserUseCase {
    */
   async requireAvailableByBiliUid(biliUid: string, db?: DbExecutor) {
     const user = await this.deps.userRepo.findByBiliUid(biliUid, db);
+
+    if (!user) {
+      throw new UserNotFoundError();
+    }
 
     UserPolicy.assertAvailable(user);
 
@@ -53,7 +62,7 @@ export class UserUseCase {
     const user = await this.deps.userRepo.findDetailById(userId);
 
     if (!user) {
-      return null;
+      throw new UserNotFoundError();
     }
 
     const { phoneEncrypted, emailEncrypted, addressEncrypted, ...profile } = user;
@@ -127,10 +136,7 @@ export class UserUseCase {
       throw new UserAlreadyRegisteredError();
     }
 
-    const passwordHash = await Bun.password.hash(data.password, {
-      algorithm: 'bcrypt',
-      cost: 12,
-    });
+    const passwordHash = await PasswordUtil.hash(data.password);
 
     const user = await this.deps.userRepo.create({
       ...data,
@@ -167,20 +173,13 @@ export class UserUseCase {
   async updatePassword(data: UpdateUserPasswordBody) {
     const user = await this.requireAvailableByBiliUid(data.biliUid);
 
-    const isValidPassword = await Bun.password.verify(
-      data.oldPassword,
-      user.passwordHash,
-      'bcrypt',
-    );
+    const isValidPassword = await PasswordUtil.verify(data.oldPassword, user.passwordHash);
 
     if (!isValidPassword) {
       throw new InvalidCredentialsError();
     }
 
-    const passwordHash = await Bun.password.hash(data.newPassword, {
-      algorithm: 'bcrypt',
-      cost: 12,
-    });
+    const passwordHash = await PasswordUtil.hash(data.newPassword);
 
     await this.deps.userRepo.updatePassword(user.id, passwordHash);
   }
@@ -191,11 +190,8 @@ export class UserUseCase {
    * - 账号不会退出
    */
   async resetPassword(userId: string) {
-    const radomPassword = crypto.randomUUID().split('-').join('').slice(0, 16);
-    const passwordHash = await Bun.password.hash(radomPassword, {
-      algorithm: 'bcrypt',
-      cost: 12,
-    });
+    const radomPassword = PasswordUtil.generate();
+    const passwordHash = await PasswordUtil.hash(radomPassword);
 
     await this.deps.userRepo.updatePassword(userId, passwordHash);
 

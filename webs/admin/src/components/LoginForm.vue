@@ -1,7 +1,18 @@
 <script setup lang="ts">
-defineEmits<{
-  submit: [data: { biliUid: string; password: string }];
+import { toast } from 'vue-sonner';
+
+const emit = defineEmits<{
+  submit: [data: { uid: string; password: string }];
 }>();
+
+const formData = reactive({
+  uid: '',
+  password: '',
+});
+
+function handleSubmit() {
+  emit('submit', toRaw(formData));
+}
 
 function handleNotImplemented(e: Event) {
   toast.error('Not implemented 🤣');
@@ -16,7 +27,7 @@ function handleNotImplemented(e: Event) {
         <CardDescription> Login with your Bilibili account </CardDescription>
       </CardHeader>
       <CardContent>
-        <form @submit.prevent="$emit('submit', { biliUid: '1', password: '123456' })">
+        <form @submit.prevent="handleSubmit">
           <FieldGroup>
             <Field>
               <Button variant="outline" type="button" @click="handleNotImplemented">
@@ -29,7 +40,7 @@ function handleNotImplemented(e: Event) {
             </FieldSeparator>
             <Field>
               <FieldLabel for="uid"> UID </FieldLabel>
-              <Input id="uid" type="number" placeholder="90424564xxx" required />
+              <Input id="uid" placeholder="90424564xxx" required v-model="formData.uid" />
             </Field>
             <Field>
               <div class="flex items-center">
@@ -42,7 +53,7 @@ function handleNotImplemented(e: Event) {
                   Forgot your password?
                 </a>
               </div>
-              <Input id="password" type="password" required />
+              <Input id="password" type="password" required v-model="formData.password" />
             </Field>
             <Field>
               <Button type="submit"> Login </Button>

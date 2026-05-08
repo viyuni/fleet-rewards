@@ -2,7 +2,10 @@ import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
 
 import { createDatabase, type DbClient } from '@server/db';
 import { admins } from '@server/db/schema';
+import { PasswordUtil } from '@server/shared/utils';
 import { eq, inArray, like } from 'drizzle-orm';
+
+import { config } from '#server/admin/utils';
 
 import { AdminNotFoundError, AdminSuperAdminCannotBeBannedError } from '../domain/errors';
 import { AdminRepository } from '../repository';
@@ -13,7 +16,6 @@ const describeWithDatabase = testDatabaseUrl ? describe : describe.skip;
 
 let db: DbClient;
 const batches = new Set<string>();
-const originalDefaultAdmin = AdminUseCase.DEFAULT_ADMIN;
 
 function newBatch() {
   const batch = `admin_test_${crypto.randomUUID().slice(0, 8)}`;
@@ -40,10 +42,7 @@ async function seedAdmin(input: {
       username: input.username,
       role: input.role ?? 'admin',
       status: input.status ?? 'active',
-      passwordHash: await Bun.password.hash('password123', {
-        algorithm: 'bcrypt',
-        cost: 4,
-      }),
+      passwordHash: await PasswordUtil.hash('password123'),
     })
     .returning();
 
@@ -79,8 +78,6 @@ beforeEach(() => {
 });
 
 afterEach(async () => {
-  AdminUseCase.DEFAULT_ADMIN = originalDefaultAdmin;
-
   if (!db) return;
 
   try {
@@ -130,7 +127,7 @@ describeWithDatabase('AdminUseCase 真实数据库', () => {
     expect(updated).toMatchObject({
       id: seeded.id,
       username: `${batch}_updated`,
-      remark: 'updated remark',
+      remark: null,
     });
   });
 
@@ -150,8 +147,33 @@ describeWithDatabase('AdminUseCase 真实数据库', () => {
     expect(updated).toMatchObject({
       id: seeded.id,
       username: `${batch}_self_updated`,
-      remark: 'self updated remark',
+      remark: null,
     });
+  });
+
+  it('管理员修改密码时会校验旧密码', async () => {
+    const batch = newBatch();
+    const useCase = createUseCase();
+    const seeded = await seedAdmin({
+      uid: `${Date.now()}10`,
+      username: `${batch}_password`,
+      role: 'admin',
+    });
+
+    await expect(
+      useCase.updatePassword(seeded.id, {
+        oldPassword: 'wrongPassword123',
+        newPassword: 'newPassword123',
+      }),
+    ).rejects.toThrow();
+
+    const row = await db.query.admins.findFirst({
+      where: {
+        id: seeded.id,
+      },
+    });
+
+    expect(await PasswordUtil.verify('password123', row!.passwordHash)).toBe(true);
   });
 
   it('更新管理员为重复 username 时会抛出错误', async () => {
@@ -181,16 +203,11 @@ describeWithDatabase('AdminUseCase 真实数据库', () => {
     const batch = newBatch();
     const useCase = createUseCase();
 
-    AdminUseCase.DEFAULT_ADMIN = {
-      uid: `${Date.now()}02` as unknown as `${number}`,
-      username: `${batch}_default`,
-    };
-
     await useCase.initDefaultAdmin();
 
     const row = await db.query.admins.findFirst({
       where: {
-        username: `${batch}_default`,
+        uid: config.SUPER_ADMIN_UID,
       },
     });
 
@@ -202,15 +219,10 @@ describeWithDatabase('AdminUseCase 真实数据库', () => {
     const batch = newBatch();
     const useCase = createUseCase();
     const existingSuperAdmin = await findSuperAdmin();
-    const defaultAdmin = {
-      uid: (existingSuperAdmin?.uid ?? `${Date.now()}03`) as unknown as `${number}`,
-      username: existingSuperAdmin?.username ?? `${batch}_existing_default`,
-    };
-
-    AdminUseCase.DEFAULT_ADMIN = defaultAdmin;
     if (!existingSuperAdmin) {
       await seedAdmin({
-        ...defaultAdmin,
+        uid: config.SUPER_ADMIN_UID,
+        username: `${batch}_existing_default`,
         role: 'superAdmin',
       });
     }
@@ -220,7 +232,7 @@ describeWithDatabase('AdminUseCase 真实数据库', () => {
     const rows = await db
       .select({ id: admins.id })
       .from(admins)
-      .where(eq(admins.uid, defaultAdmin.uid));
+      .where(eq(admins.uid, config.SUPER_ADMIN_UID));
 
     expect(rows.length).toBe(1);
   });

@@ -12,7 +12,17 @@
     // Specified here to keep it out of the root directory.
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
 
-    "types": ["@web/ui/types"]
+    "types": ["@web/ui/types"],
+    "paths": {
+      "#eden": ["./eden/index.ts"],
+      "#server/admin/*": ["../../servers/admin/src/*"],
+      "#server/shared/*": ["../../servers/shared/src/*"],
+      "#shared/*": ["../../shared/src/*"],
+      "#ui/*": ["../ui/src/*"],
+      "#web/admin/*": ["./src/*"],
+      "#web/user/*": ["../user/src/*"],
+      "elysia": ["../../servers/shared/node_modules/elysia"]
+    }
   },
   "vueCompilerOptions": {
     "plugins": ["vue-router/volar/sfc-route-blocks", "vue-router/volar/sfc-typed-router"]

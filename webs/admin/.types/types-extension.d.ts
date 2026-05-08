@@ -20,11 +20,11 @@ declare module 'vue-router' {
 
 declare module '@pinia/colada' {
   interface TypesConfig {
-    queryMeta: {
-      errorMessage?: string;
-    };
+    queryMeta: {};
     mutationMeta: {
       showToast?: boolean;
+      errorMessage?: string;
+      successMessage?: string;
     };
   }
 }
