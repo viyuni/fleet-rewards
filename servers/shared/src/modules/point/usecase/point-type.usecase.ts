@@ -1,4 +1,4 @@
-import type { CreatePointTypeBody, UpdatePointTypeBody } from '@internal/shared/schema';
+import type { CreatePointTypeBody, UpdatePointTypeBody } from '@internal/shared/point-type';
 import type { DbExecutor } from '@server/db';
 
 import { PointTypeNameExistsError, PointTypeNotFoundError, PointTypePolicy } from '../domain';
@@ -11,8 +11,8 @@ export interface PointTypeUseCaseDeps {
 export class PointTypeUseCase {
   constructor(private readonly deps: PointTypeUseCaseDeps) {}
 
-  async get(id: string) {
-    const pointType = await this.deps.pointTypeRepo.findById(id);
+  async get(pointTypeId: string) {
+    const pointType = await this.deps.pointTypeRepo.findById(pointTypeId);
 
     if (!pointType) {
       throw new PointTypeNotFoundError();
@@ -21,8 +21,8 @@ export class PointTypeUseCase {
     return pointType;
   }
 
-  async requireAvailableById(id: string, db?: DbExecutor) {
-    const pointType = await this.deps.pointTypeRepo.findById(id, db);
+  async requireAvailableById(pointTypeId: string, db?: DbExecutor) {
+    const pointType = await this.deps.pointTypeRepo.findById(pointTypeId, db);
 
     PointTypePolicy.assertAvailable(pointType);
 
@@ -39,18 +39,18 @@ export class PointTypeUseCase {
     return this.deps.pointTypeRepo.create(data);
   }
 
-  async update(id: string, data: UpdatePointTypeBody) {
-    const pointType = await this.deps.pointTypeRepo.findById(id);
+  async update(pointTypeId: string, data: UpdatePointTypeBody) {
+    const pointType = await this.deps.pointTypeRepo.findById(pointTypeId);
 
     if (!pointType) {
       throw new PointTypeNotFoundError();
     }
 
-    return this.deps.pointTypeRepo.update(id, data);
+    return this.deps.pointTypeRepo.update(pointTypeId, data);
   }
 
-  async enable(id: string) {
-    const pointType = await this.deps.pointTypeRepo.findById(id);
+  async enable(pointTypeId: string) {
+    const pointType = await this.deps.pointTypeRepo.findById(pointTypeId);
 
     if (!pointType) {
       throw new PointTypeNotFoundError();
@@ -60,11 +60,11 @@ export class PointTypeUseCase {
       return pointType;
     }
 
-    return this.deps.pointTypeRepo.updateStatus(id, 'active');
+    return this.deps.pointTypeRepo.updateStatus(pointTypeId, 'active');
   }
 
-  async disable(id: string) {
-    const pointType = await this.deps.pointTypeRepo.findById(id);
+  async disable(pointTypeId: string) {
+    const pointType = await this.deps.pointTypeRepo.findById(pointTypeId);
 
     if (!pointType) {
       throw new PointTypeNotFoundError();
@@ -74,7 +74,7 @@ export class PointTypeUseCase {
       return pointType;
     }
 
-    return this.deps.pointTypeRepo.updateStatus(id, 'disabled');
+    return this.deps.pointTypeRepo.updateStatus(pointTypeId, 'disabled');
   }
 
   list() {

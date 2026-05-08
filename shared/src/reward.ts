@@ -4,7 +4,7 @@ import { type } from 'arktype';
  * 积分奖励规则 ID Params Schema。
  */
 export const rewardRuleIdParamsSchema = type({
-  id: type('string').describe('积分奖励规则 ID'),
+  rewardRuleId: type('string').describe('积分奖励规则 ID'),
 });
 
 export type RewardRuleIdParams = typeof rewardRuleIdParamsSchema.infer;

@@ -13,7 +13,7 @@ export type AdminRole = typeof adminRoleSchema.infer;
  * 管理员 ID Params Schema
  */
 export const adminIdParamsSchema = type({
-  id: type('string').describe('管理员 ID'),
+  adminId: type('string').describe('管理员 ID'),
 });
 
 /**

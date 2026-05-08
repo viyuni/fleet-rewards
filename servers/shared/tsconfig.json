@@ -1,7 +1,7 @@
 {
   "$schema": "https://www.schemastore.org/tsconfig",
   "extends": ["../../shared/tsconfig/common.json"],
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "./env.d.ts"],
   "compilerOptions": {
     "lib": ["ESNext"],
     "target": "ESNext",

@@ -1,4 +1,4 @@
-import { adjustBalanceSchema } from '@internal/shared/schema';
+import { adjustBalanceSchema } from '@internal/shared/point-account';
 import Elysia from 'elysia';
 
 import { appContext } from '../../context';

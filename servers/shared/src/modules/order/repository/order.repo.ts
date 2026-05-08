@@ -1,4 +1,4 @@
-import type { OrderPageQuery } from '@internal/shared/schema';
+import type { OrderPageQuery } from '@internal/shared/order';
 import type { DbExecutor, DbTransaction } from '@server/db';
 import { parseDate, QueryPageBuilder } from '@server/db/helper';
 import { orders, type InsertOrder, type UpdateOrder } from '@server/db/schema';
@@ -89,10 +89,10 @@ export class OrderRepository {
       .paginate();
   }
 
-  async findById(id: string, db: DbExecutor = this.db) {
+  async findById(orderId: string, db: DbExecutor = this.db) {
     return await db.query.orders.findFirst({
       where: {
-        id,
+        id: orderId,
       },
     });
   }
@@ -103,11 +103,11 @@ export class OrderRepository {
     return row;
   }
 
-  async update(id: string, data: UpdateOrder, db: DbExecutor = this.db) {
+  async update(orderId: string, data: UpdateOrder, db: DbExecutor = this.db) {
     const [row] = await db
       .update(orders)
       .set(data)
-      .where(and(eq(orders.id, id)))
+      .where(and(eq(orders.id, orderId)))
       .returning();
 
     return row ?? null;

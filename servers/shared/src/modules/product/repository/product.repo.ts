@@ -1,4 +1,5 @@
-import type { PageQuery, ProductPageQuery } from '@internal/shared';
+import type { PageQuery } from '@internal/shared/common';
+import type { ProductPageQuery } from '@internal/shared/product';
 import type { DbExecutor, DbTransaction } from '@server/db';
 import { deletedAtIsNull, QueryPageBuilder } from '@server/db/helper';
 import {
@@ -17,10 +18,10 @@ export class ProductRepository {
   /**
    * 获取指定 ID 的商品
    */
-  async findById(id: string, db: DbExecutor = this.db) {
+  async findById(productId: string, db: DbExecutor = this.db) {
     return await db.query.products.findFirst({
       where: {
-        id,
+        id: productId,
         deletedAt: {
           isNull: true,
         },
@@ -40,11 +41,11 @@ export class ProductRepository {
   /**
    * 更新商品
    */
-  async update(id: string, data: UpdateProduct, db: DbExecutor = this.db) {
+  async update(productId: string, data: UpdateProduct, db: DbExecutor = this.db) {
     const [row] = await db
       .update(products)
       .set(data)
-      .where(and(eq(products.id, id), deletedAtIsNull(products)))
+      .where(and(eq(products.id, productId), deletedAtIsNull(products)))
       .returning();
 
     return row ?? null;
@@ -53,17 +54,17 @@ export class ProductRepository {
   /**
    * 更新商品状态
    */
-  async updateStatus(id: string, status: ProductStatus, db: DbExecutor = this.db) {
-    return this.update(id, { status }, db);
+  async updateStatus(productId: string, status: ProductStatus, db: DbExecutor = this.db) {
+    return this.update(productId, { status }, db);
   }
 
-  async delete(id: string, db: DbExecutor = this.db) {
+  async delete(productId: string, db: DbExecutor = this.db) {
     const [row] = await db
       .update(products)
       .set({
         deletedAt: new Date(),
       })
-      .where(and(eq(products.id, id), deletedAtIsNull(products)))
+      .where(and(eq(products.id, productId), deletedAtIsNull(products)))
       .returning();
 
     return row ?? null;
@@ -72,11 +73,11 @@ export class ProductRepository {
   /**
    * 行锁商品并返回查询结果
    */
-  async findByIdForUpdate(tx: DbTransaction, id: string) {
+  async findByIdForUpdate(tx: DbTransaction, productId: string) {
     const [product] = await tx
       .select()
       .from(products)
-      .where(and(eq(products.id, id), deletedAtIsNull(products)))
+      .where(and(eq(products.id, productId), deletedAtIsNull(products)))
       .for('update');
 
     return product;

@@ -6,7 +6,7 @@ import { biliUidSchema, pageQuerySchema, passwordSchema, usernameSchema } from '
  * User ID Params Schema。
  */
 export const userIdParamsSchema = type({
-  id: type('string').describe('用户 ID'),
+  userId: type('string').describe('用户 ID'),
 });
 
 export type UserIdParams = typeof userIdParamsSchema.infer;

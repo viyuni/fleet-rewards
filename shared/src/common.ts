@@ -28,8 +28,10 @@ export const idParamSchema = type({
  * 分页查询参数 Schema
  */
 export const pageQuerySchema = type({
-  'page?': type('number.integer >= 1').describe('页码'),
-  'pageSize?': type('1 <= number.integer <= 50').describe('每页数量'),
+  'page?': type('string.integer.parse').pipe(type('number.integer >= 1')).describe('页码'),
+  'pageSize?': type('string.integer.parse')
+    .pipe(type('1 <= number.integer <= 50'))
+    .describe('每页数量'),
 });
 
 export type PageQuery = typeof pageQuerySchema.infer;
@@ -40,8 +42,8 @@ export type PageQuery = typeof pageQuerySchema.infer;
  * 时间戳单位：毫秒
  */
 export const dateRangeQuerySchema = type({
-  'startTime?': type('number.integer').describe('开始时间戳'),
-  'endTime?': type('number.integer').describe('结束时间戳'),
+  'startTime?': type('string.integer.parse').describe('开始时间戳'),
+  'endTime?': type('string.integer.parse').describe('结束时间戳'),
 });
 
 export type DateRangeQuery = typeof dateRangeQuerySchema.infer;

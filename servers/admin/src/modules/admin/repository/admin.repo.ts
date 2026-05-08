@@ -1,4 +1,4 @@
-import type { AdminPageQuery, AdminUpdateBody } from '@internal/shared';
+import type { AdminPageQuery, AdminUpdateBody } from '@internal/shared/admin';
 import type { DbExecutor } from '@server/db';
 import { QueryPageBuilder } from '@server/db/helper';
 import { admins, type InsertAdmin } from '@server/db/schema';
@@ -76,21 +76,21 @@ export class AdminRepository {
     return admin;
   }
 
-  async updateLastLoginAt(id: string, lastLoginAt = new Date()) {
+  async updateLastLoginAt(adminId: string, lastLoginAt = new Date()) {
     const [admin] = await this.db
       .update(admins)
       .set({ lastLoginAt })
-      .where(and(eq(admins.id, id)))
+      .where(and(eq(admins.id, adminId)))
       .returning();
 
     return admin;
   }
 
-  async update(id: string, input: AdminUpdateBody) {
+  async update(adminId: string, input: AdminUpdateBody) {
     const [admin] = await this.db
       .update(admins)
       .set(input)
-      .where(and(eq(admins.id, id), eq(admins.status, 'active')))
+      .where(and(eq(admins.id, adminId), eq(admins.status, 'active')))
       .returning({
         id: admins.id,
         uid: admins.uid,
@@ -105,11 +105,11 @@ export class AdminRepository {
     return admin;
   }
 
-  async updatePassword(id: string, passwordHash: string) {
+  async updatePassword(adminId: string, passwordHash: string) {
     const [admin] = await this.db
       .update(admins)
       .set({ passwordHash })
-      .where(and(eq(admins.id, id), eq(admins.status, 'active')))
+      .where(and(eq(admins.id, adminId), eq(admins.status, 'active')))
       .returning({
         id: admins.id,
         uid: admins.uid,
@@ -121,11 +121,11 @@ export class AdminRepository {
     }
   }
 
-  async ban(id: string) {
+  async ban(adminId: string) {
     const [admin] = await this.db
       .update(admins)
       .set({ status: 'disabled' })
-      .where(and(eq(admins.id, id), eq(admins.role, 'admin'), eq(admins.status, 'active')))
+      .where(and(eq(admins.id, adminId), eq(admins.role, 'admin'), eq(admins.status, 'active')))
       .returning({
         id: admins.id,
         status: admins.status,
@@ -135,11 +135,11 @@ export class AdminRepository {
     return admin;
   }
 
-  async restore(id: string) {
+  async restore(adminId: string) {
     const [admin] = await this.db
       .update(admins)
       .set({ status: 'active' })
-      .where(and(eq(admins.id, id), eq(admins.role, 'admin'), eq(admins.status, 'disabled')))
+      .where(and(eq(admins.id, adminId), eq(admins.role, 'admin'), eq(admins.status, 'disabled')))
       .returning({
         id: admins.id,
         status: admins.status,

@@ -1,4 +1,4 @@
-import type { StockMovementPageQuery } from '@internal/shared';
+import type { StockMovementPageQuery } from '@internal/shared/stock';
 
 import { StockMovementRepository } from '../repository';
 

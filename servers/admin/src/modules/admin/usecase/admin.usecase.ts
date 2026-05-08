@@ -3,7 +3,7 @@ import type {
   AdminPageQuery,
   AdminUpdateBody,
   AdminUpdatePasswordBody,
-} from '@internal/shared';
+} from '@internal/shared/admin';
 import type { AdminRole } from '@server/db/schema';
 import { InvalidCredentialsError, UnauthorizedError } from '@server/shared';
 import { PasswordUtil } from '@server/shared/utils';
@@ -24,8 +24,8 @@ interface AdminUseCaseDeps {
 export class AdminUseCase {
   constructor(private readonly deps: AdminUseCaseDeps) {}
 
-  async me(userId: string) {
-    const admin = await this.deps.adminRepo.findActiveInfoById(userId);
+  async me(adminId: string) {
+    const admin = await this.deps.adminRepo.findActiveInfoById(adminId);
 
     if (!admin) {
       throw new UnauthorizedError();
@@ -42,16 +42,16 @@ export class AdminUseCase {
     return this.deps.adminRepo.page(query);
   }
 
-  async update(id: string, body: AdminUpdateBody) {
-    return this.updateAdmin(id, body);
+  async update(adminId: string, body: AdminUpdateBody) {
+    return this.updateAdmin(adminId, body);
   }
 
-  async updateMe(userId: string, body: AdminUpdateBody) {
-    return this.updateAdmin(userId, body);
+  async updateMe(adminId: string, body: AdminUpdateBody) {
+    return this.updateAdmin(adminId, body);
   }
 
-  private async updateAdmin(id: string, body: AdminUpdateBody) {
-    const admin = await this.deps.adminRepo.findActiveById(id);
+  private async updateAdmin(adminId: string, body: AdminUpdateBody) {
+    const admin = await this.deps.adminRepo.findActiveById(adminId);
 
     if (!admin) {
       throw new AdminNotFoundError();
@@ -65,7 +65,7 @@ export class AdminUseCase {
       }
     }
 
-    const updated = await this.deps.adminRepo.update(id, body);
+    const updated = await this.deps.adminRepo.update(adminId, body);
 
     if (!updated) {
       throw new AdminNotFoundError();
@@ -74,8 +74,8 @@ export class AdminUseCase {
     return updated;
   }
 
-  async requireAvailableById(id: string) {
-    const admin = await this.deps.adminRepo.findById(id);
+  async requireAvailableById(adminId: string) {
+    const admin = await this.deps.adminRepo.findById(adminId);
 
     if (!admin) {
       throw new AdminNotFoundError();
@@ -84,8 +84,8 @@ export class AdminUseCase {
     return admin;
   }
 
-  async updatePassword(id: string, data: AdminUpdatePasswordBody) {
-    const admin = await this.requireAvailableById(id);
+  async updatePassword(adminId: string, data: AdminUpdatePasswordBody) {
+    const admin = await this.requireAvailableById(adminId);
 
     const isValidPassword = await PasswordUtil.verify(data.oldPassword, admin.passwordHash);
 
@@ -94,11 +94,11 @@ export class AdminUseCase {
     }
 
     const passwordHash = await PasswordUtil.hash(data.newPassword);
-    await this.deps.adminRepo.updatePassword(id, passwordHash);
+    await this.deps.adminRepo.updatePassword(adminId, passwordHash);
   }
 
-  async resetPassword(id: string) {
-    const admin = await this.requireAvailableById(id);
+  async resetPassword(adminId: string) {
+    const admin = await this.requireAvailableById(adminId);
 
     const password = PasswordUtil.generate();
     const passwordHash = await PasswordUtil.hash(password);
@@ -108,8 +108,8 @@ export class AdminUseCase {
     return password;
   }
 
-  async ban(id: string) {
-    const admin = await this.deps.adminRepo.findActiveById(id);
+  async ban(adminId: string) {
+    const admin = await this.deps.adminRepo.findActiveById(adminId);
 
     if (!admin) {
       throw new AdminNotFoundError();
@@ -119,7 +119,7 @@ export class AdminUseCase {
       throw new AdminSuperAdminCannotBeBannedError();
     }
 
-    const banned = await this.deps.adminRepo.ban(id);
+    const banned = await this.deps.adminRepo.ban(adminId);
 
     if (!banned) {
       throw new AdminNotFoundError();
@@ -128,14 +128,14 @@ export class AdminUseCase {
     return banned;
   }
 
-  async restore(id: string) {
-    const admin = await this.deps.adminRepo.findById(id);
+  async restore(adminId: string) {
+    const admin = await this.deps.adminRepo.findById(adminId);
 
     if (!admin) {
       throw new AdminNotFoundError();
     }
 
-    const restored = await this.deps.adminRepo.restore(id);
+    const restored = await this.deps.adminRepo.restore(adminId);
 
     if (!restored) {
       throw new AdminNotFoundError();

@@ -4,13 +4,14 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/eden.ts"
+    ".": "./dist/eden.d.mts"
   },
   "scripts": {
-    "dev": "bun --cwd .. --env-file=servers/admin/.env --watch servers/admin/src/app.ts",
+    "dev": "bun  --env-file=.env --watch src/app.ts",
     "test": "NODE_ENV=development bun --env-file=.env test --pass-with-no-tests",
     "typecheck": "tsgo --build",
-    "check": "vpr typecheck && vp lint && vp fmt"
+    "check": "vpr typecheck && vp lint && vp fmt",
+    "generate:dts": "vp pack"
   },
   "dependencies": {
     "@elysia/cors": "^1.4.2",

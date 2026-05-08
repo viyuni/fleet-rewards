@@ -1,8 +1,8 @@
+import type { ReversalPointTransactionBody } from '@internal/shared/point-account';
 import type {
   PointTransactionPageQuery,
   PointTransactionType,
-  ReversalPointTransactionBody,
-} from '@internal/shared';
+} from '@internal/shared/point-transaction';
 import type { DbClient } from '@server/db';
 
 import { POINT_CHANGE_SOURCE_TYPE, PointTransactionAlreadyReversedError } from '../domain';

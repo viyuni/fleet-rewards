@@ -1,4 +1,4 @@
-import type { UpdateUserBody, UserPageQuery } from '@internal/shared';
+import type { UpdateUserBody, UserPageQuery } from '@internal/shared/user';
 import type { DbExecutor } from '@server/db';
 import { defineSelectColumns, QueryPageBuilder } from '@server/db/helper';
 import type { InsertUser } from '@server/db/schema';

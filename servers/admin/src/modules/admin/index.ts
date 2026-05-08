@@ -5,7 +5,7 @@ import {
   adminUpdatePasswordSchema,
   adminUpdateSchema,
   superAdminUpdateSchema,
-} from '@internal/shared/schema';
+} from '@internal/shared/admin';
 import Elysia from 'elysia';
 
 import { appContext } from '#server/admin/context';
@@ -56,16 +56,20 @@ export const admin = new Elysia({
       description: '创建管理员',
     },
   })
-  .patch('/:id', ({ params, body, adminUseCase }) => adminUseCase.update(params.id, body), {
-    body: superAdminUpdateSchema,
-    params: adminIdParamsSchema,
-    requiredSuperAdminAuth: true,
-    detail: {
-      tags: ['Admin'],
-      description: '超级管理员更新管理员信息',
+  .patch(
+    '/:adminId',
+    ({ params, body, adminUseCase }) => adminUseCase.update(params.adminId, body),
+    {
+      body: superAdminUpdateSchema,
+      params: adminIdParamsSchema,
+      requiredSuperAdminAuth: true,
+      detail: {
+        tags: ['Admin'],
+        description: '超级管理员更新管理员信息',
+      },
     },
-  })
-  .patch('/:id/ban', ({ params, adminUseCase }) => adminUseCase.ban(params.id), {
+  )
+  .patch('/:adminId/ban', ({ params, adminUseCase }) => adminUseCase.ban(params.adminId), {
     params: adminIdParamsSchema,
     requiredSuperAdminAuth: true,
     detail: {
@@ -73,7 +77,7 @@ export const admin = new Elysia({
       description: '封禁普通管理员',
     },
   })
-  .patch('/:id/restore', ({ params, adminUseCase }) => adminUseCase.restore(params.id), {
+  .patch('/:adminId/restore', ({ params, adminUseCase }) => adminUseCase.restore(params.adminId), {
     params: adminIdParamsSchema,
     requiredSuperAdminAuth: true,
     detail: {
@@ -94,8 +98,8 @@ export const admin = new Elysia({
     },
   )
   .patch(
-    '/:id/resetPassword',
-    ({ params, adminUseCase }) => adminUseCase.resetPassword(params.id),
+    '/:adminId/resetPassword',
+    ({ params, adminUseCase }) => adminUseCase.resetPassword(params.adminId),
     {
       params: adminIdParamsSchema,
       requiredSuperAdminAuth: true,

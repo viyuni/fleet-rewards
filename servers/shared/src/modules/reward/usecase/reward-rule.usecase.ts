@@ -1,4 +1,4 @@
-import type { CreateRewardRuleBody, UpdateRewardRuleBody } from '@internal/shared';
+import type { CreateRewardRuleBody, UpdateRewardRuleBody } from '@internal/shared/reward';
 import type { InsertRewardRule, UpdateRewardRule } from '@server/db/schema';
 
 import { PointTypeUseCase } from '#server/shared/modules/point';
@@ -14,8 +14,8 @@ export interface RewardRuleUseCaseDeps {
 export class RewardRuleUseCase {
   constructor(private readonly deps: RewardRuleUseCaseDeps) {}
 
-  async get(id: string) {
-    const rule = await this.deps.rewardRuleRepo.findById(id);
+  async get(rewardRuleId: string) {
+    const rule = await this.deps.rewardRuleRepo.findById(rewardRuleId);
 
     if (!rule) {
       throw new RewardRuleNotFoundError();
@@ -36,8 +36,8 @@ export class RewardRuleUseCase {
     return rule;
   }
 
-  async update(id: string, ruleData: UpdateRewardRuleBody) {
-    const current = await this.get(id);
+  async update(rewardRuleId: string, ruleData: UpdateRewardRuleBody) {
+    const current = await this.get(rewardRuleId);
 
     if (ruleData.pointTypeId) {
       await this.deps.pointTypeUseCase.requireAvailableById(ruleData.pointTypeId);
@@ -50,7 +50,7 @@ export class RewardRuleUseCase {
       endsAt: update.endsAt ?? current.endsAt,
     });
 
-    const rule = await this.deps.rewardRuleRepo.update(id, update);
+    const rule = await this.deps.rewardRuleRepo.update(rewardRuleId, update);
 
     if (!rule) {
       throw new RewardRuleNotFoundError();
@@ -59,8 +59,8 @@ export class RewardRuleUseCase {
     return rule;
   }
 
-  async enable(id: string) {
-    const rule = await this.deps.rewardRuleRepo.updateEnabled(id, true);
+  async enable(rewardRuleId: string) {
+    const rule = await this.deps.rewardRuleRepo.updateEnabled(rewardRuleId, true);
 
     if (!rule) {
       throw new RewardRuleNotFoundError();
@@ -69,8 +69,8 @@ export class RewardRuleUseCase {
     return rule;
   }
 
-  async disable(id: string) {
-    const rule = await this.deps.rewardRuleRepo.updateEnabled(id, false);
+  async disable(rewardRuleId: string) {
+    const rule = await this.deps.rewardRuleRepo.updateEnabled(rewardRuleId, false);
 
     if (!rule) {
       throw new RewardRuleNotFoundError();
@@ -79,8 +79,8 @@ export class RewardRuleUseCase {
     return rule;
   }
 
-  async remove(id: string) {
-    const rule = await this.deps.rewardRuleRepo.delete(id);
+  async remove(rewardRuleId: string) {
+    const rule = await this.deps.rewardRuleRepo.delete(rewardRuleId);
 
     if (!rule) {
       throw new RewardRuleNotFoundError();

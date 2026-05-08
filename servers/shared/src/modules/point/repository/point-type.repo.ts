@@ -10,11 +10,11 @@ import { eq } from 'drizzle-orm';
 export class PointTypeRepository {
   constructor(private readonly db: DbExecutor) {}
 
-  async findById(id: string, db: DbExecutor = this.db) {
+  async findById(pointTypeId: string, db: DbExecutor = this.db) {
     return (
       (await db.query.pointTypes.findFirst({
         where: {
-          id,
+          id: pointTypeId,
         },
       })) ?? null
     );
@@ -35,19 +35,23 @@ export class PointTypeRepository {
     return row ?? null;
   }
 
-  async update(id: string, data: UpdatePointType, db: DbExecutor = this.db) {
-    const [row] = await db.update(pointTypes).set(data).where(eq(pointTypes.id, id)).returning();
+  async update(pointTypeId: string, data: UpdatePointType, db: DbExecutor = this.db) {
+    const [row] = await db
+      .update(pointTypes)
+      .set(data)
+      .where(eq(pointTypes.id, pointTypeId))
+      .returning();
 
     return row ?? null;
   }
 
-  async updateStatus(id: string, status: PointType['status'], db: DbExecutor = this.db) {
+  async updateStatus(pointTypeId: string, status: PointType['status'], db: DbExecutor = this.db) {
     const [row] = await db
       .update(pointTypes)
       .set({
         status,
       })
-      .where(eq(pointTypes.id, id))
+      .where(eq(pointTypes.id, pointTypeId))
       .returning();
 
     return row ?? null;

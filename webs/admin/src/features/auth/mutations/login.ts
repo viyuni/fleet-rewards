@@ -1,4 +1,4 @@
-import type { AdminLoginBody } from '@internal/shared/schema';
+import type { AdminLoginBody } from '@internal/shared/admin';
 import { defineMutation, useMutation } from '@pinia/colada';
 
 import { api } from '#eden';

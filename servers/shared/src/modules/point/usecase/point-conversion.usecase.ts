@@ -2,7 +2,7 @@ import type {
   ConvertPointBody,
   CreatePointConversionRuleBody,
   UpdatePointConversionRuleBody,
-} from '@internal/shared/schema';
+} from '@internal/shared/point-conversion';
 import type { DbClient } from '@server/db';
 import type { InsertPointConversionRule, UpdatePointConversionRule } from '@server/db/schema';
 
@@ -31,8 +31,8 @@ export class PointConversionUseCase {
     return this.deps.pointConversionRuleRepo.list();
   }
 
-  async get(id: string) {
-    const rule = await this.deps.pointConversionRuleRepo.findById(id);
+  async get(pointConversionRuleId: string) {
+    const rule = await this.deps.pointConversionRuleRepo.findById(pointConversionRuleId);
 
     if (!rule) {
       throw new PointConversionRuleNotFoundError();
@@ -49,8 +49,8 @@ export class PointConversionUseCase {
     return this.deps.pointConversionRuleRepo.create(this.toInsertRule(ruleData));
   }
 
-  async update(id: string, ruleData: UpdatePointConversionRuleBody) {
-    const current = await this.get(id);
+  async update(pointConversionRuleId: string, ruleData: UpdatePointConversionRuleBody) {
+    const current = await this.get(pointConversionRuleId);
     const next = {
       ...current,
       ...this.toUpdateRule(ruleData),
@@ -62,27 +62,30 @@ export class PointConversionUseCase {
       await this.ensurePointTypesAvailable(next.fromPointTypeId, next.toPointTypeId);
     }
 
-    return this.deps.pointConversionRuleRepo.update(id, this.toUpdateRule(ruleData));
+    return this.deps.pointConversionRuleRepo.update(
+      pointConversionRuleId,
+      this.toUpdateRule(ruleData),
+    );
   }
 
-  async enable(id: string) {
-    const rule = await this.get(id);
+  async enable(pointConversionRuleId: string) {
+    const rule = await this.get(pointConversionRuleId);
 
     if (rule.enabled) {
       return rule;
     }
 
-    return this.deps.pointConversionRuleRepo.updateEnabled(id, true);
+    return this.deps.pointConversionRuleRepo.updateEnabled(pointConversionRuleId, true);
   }
 
-  async disable(id: string) {
-    const rule = await this.get(id);
+  async disable(pointConversionRuleId: string) {
+    const rule = await this.get(pointConversionRuleId);
 
     if (!rule.enabled) {
       return rule;
     }
 
-    return this.deps.pointConversionRuleRepo.updateEnabled(id, false);
+    return this.deps.pointConversionRuleRepo.updateEnabled(pointConversionRuleId, false);
   }
 
   async convert(conversionData: ConvertPointBody) {

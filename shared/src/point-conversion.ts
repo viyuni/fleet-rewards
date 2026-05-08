@@ -6,7 +6,7 @@ import { nonceBodySchema } from './common';
  * 积分转换规则 ID Params Schema。
  */
 export const pointConversionRuleIdParamsSchema = type({
-  id: type('string').describe('积分转换规则 ID'),
+  pointConversionRuleId: type('string').describe('积分转换规则 ID'),
 });
 
 export type PointConversionRuleIdParams = typeof pointConversionRuleIdParamsSchema.infer;

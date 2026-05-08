@@ -6,7 +6,7 @@ import { keywordQuerySchema, pageQuerySchema } from './common';
  * 商品 ID Params Schema。
  */
 export const productIdParamsSchema = type({
-  id: type('string').describe('商品 ID'),
+  productId: type('string').describe('商品 ID'),
 });
 
 export type ProductIdParams = typeof productIdParamsSchema.infer;

@@ -2,7 +2,7 @@ import {
   orderIdParamsSchema,
   orderPageQuerySchema,
   refundOrderSchema,
-} from '@internal/shared/schema';
+} from '@internal/shared/order';
 import Elysia from 'elysia';
 
 import { appContext } from '#server/admin/context';
@@ -30,9 +30,9 @@ export const order = new Elysia({
     },
   )
   .get(
-    '/:id',
+    '/:orderId',
     ({ params, orderUseCase }) => {
-      return orderUseCase.get(params.id);
+      return orderUseCase.get(params.orderId);
     },
     {
       params: orderIdParamsSchema,
@@ -43,9 +43,9 @@ export const order = new Elysia({
     },
   )
   .patch(
-    '/:id/complete',
+    '/:orderId/complete',
     async ({ params, orderUseCase }) => {
-      const { id, status } = await orderUseCase.complete(params.id);
+      const { id, status } = await orderUseCase.complete(params.orderId);
 
       return {
         id,
@@ -61,9 +61,9 @@ export const order = new Elysia({
     },
   )
   .patch(
-    '/:id/refund',
+    '/:orderId/refund',
     async ({ body, params, orderUseCase }) => {
-      const { id, status } = await orderUseCase.refund(params.id, body);
+      const { id, status } = await orderUseCase.refund(params.orderId, body);
 
       return {
         id,

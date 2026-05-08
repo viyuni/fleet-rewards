@@ -4,7 +4,7 @@ import { type } from 'arktype';
  * 积分类型 ID Params Schema。
  */
 export const pointTypeIdParamsSchema = type({
-  id: 'string',
+  pointTypeId: type('string').describe('积分类型 ID'),
 });
 
 export type PointTypeIdParams = typeof pointTypeIdParamsSchema.infer;

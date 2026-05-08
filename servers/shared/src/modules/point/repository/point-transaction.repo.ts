@@ -1,23 +1,10 @@
-import type { PointTransactionPageQuery } from '@internal/shared';
+import type { PointTransactionPageQuery } from '@internal/shared/point-transaction';
 import type { DbExecutor, DbTransaction } from '@server/db';
-import { defineSelectColumns, parseDate, QueryPageBuilder } from '@server/db/helper';
+import { parseDate, QueryPageBuilder } from '@server/db/helper';
 import { pointTransactions } from '@server/db/schema';
 import { eq } from 'drizzle-orm';
 
 import { PointTransactionNotFoundError } from '../domain';
-
-const userPointTransactionSelectCols = defineSelectColumns(
-  pointTransactions,
-  ({ pointTypeNameSnapshot, type, delta, balanceBefore, balanceAfter, remark, createdAt }) => ({
-    pointTypeNameSnapshot,
-    type,
-    delta,
-    balanceBefore,
-    balanceAfter,
-    remark,
-    createdAt,
-  }),
-);
 
 export class PointTransactionRepository {
   constructor(private readonly db: DbExecutor) {}

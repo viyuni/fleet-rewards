@@ -10,11 +10,16 @@ import { and, desc, eq } from 'drizzle-orm';
 export class PointConversionRuleRepository {
   constructor(private readonly db: DbExecutor) {}
 
-  async findById(id: string, db: DbExecutor = this.db) {
+  async findById(pointConversionRuleId: string, db: DbExecutor = this.db) {
     const [row] = await db
       .select()
       .from(pointConversionRules)
-      .where(and(eq(pointConversionRules.id, id), deletedAtIsNull(pointConversionRules)))
+      .where(
+        and(
+          eq(pointConversionRules.id, pointConversionRuleId),
+          deletedAtIsNull(pointConversionRules),
+        ),
+      )
       .limit(1);
 
     return row ?? null;
@@ -25,18 +30,27 @@ export class PointConversionRuleRepository {
     return row ?? null;
   }
 
-  async update(id: string, data: UpdatePointConversionRule, db: DbExecutor = this.db) {
+  async update(
+    pointConversionRuleId: string,
+    data: UpdatePointConversionRule,
+    db: DbExecutor = this.db,
+  ) {
     const [row] = await db
       .update(pointConversionRules)
       .set(data)
-      .where(and(eq(pointConversionRules.id, id), deletedAtIsNull(pointConversionRules)))
+      .where(
+        and(
+          eq(pointConversionRules.id, pointConversionRuleId),
+          deletedAtIsNull(pointConversionRules),
+        ),
+      )
       .returning();
 
     return row ?? null;
   }
 
-  async updateEnabled(id: string, enabled: boolean, db: DbExecutor = this.db) {
-    return this.update(id, { enabled }, db);
+  async updateEnabled(pointConversionRuleId: string, enabled: boolean, db: DbExecutor = this.db) {
+    return this.update(pointConversionRuleId, { enabled }, db);
   }
 
   list(db: DbExecutor = this.db) {

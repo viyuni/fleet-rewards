@@ -1,10 +1,10 @@
+import type { PageQuery } from '@internal/shared/common';
 import type {
   CreateProductBody,
-  PageQuery,
   ProductPageQuery,
-  StockAdjustmentBody,
   UpdateProductBody,
-} from '@internal/shared/schema';
+} from '@internal/shared/product';
+import type { StockAdjustmentBody } from '@internal/shared/stock';
 import type { DbClient, DbTransaction } from '@server/db';
 import type { Product } from '@server/db/schema';
 
@@ -37,8 +37,8 @@ export class ProductUseCase {
   /**
    * 获取商品信息
    */
-  async get(id: string) {
-    const product = await this.deps.productRepo.findById(id);
+  async get(productId: string) {
+    const product = await this.deps.productRepo.findById(productId);
 
     if (!product) {
       throw new ProductNotFoundError();
@@ -63,39 +63,39 @@ export class ProductUseCase {
   /**
    * 更新商品
    */
-  async update(id: string, productData: UpdateProductBody) {
+  async update(productId: string, productData: UpdateProductBody) {
     ProductInputPolicy.assertValid(productData);
 
     const { cover, ...data } = productData;
     const coverName = await this.deps.imageUseCase.save(cover);
 
-    return this.deps.productRepo.update(id, { ...data, cover: coverName });
+    return this.deps.productRepo.update(productId, { ...data, cover: coverName });
   }
 
   /**
    * 上架商品
    */
-  async active(id: string) {
-    const product = await this.get(id);
+  async active(productId: string) {
+    const product = await this.get(productId);
 
     if (product.status === 'active') {
       return product;
     }
 
-    return this.deps.productRepo.updateStatus(id, 'active');
+    return this.deps.productRepo.updateStatus(productId, 'active');
   }
 
   /**
    * 下架商品
    */
-  async disable(id: string) {
-    const product = await this.get(id);
+  async disable(productId: string) {
+    const product = await this.get(productId);
 
     if (product.status === 'disabled') {
       return product;
     }
 
-    return this.deps.productRepo.updateStatus(id, 'disabled');
+    return this.deps.productRepo.updateStatus(productId, 'disabled');
   }
 
   /**
@@ -104,8 +104,8 @@ export class ProductUseCase {
    * 用于兑换、扣减库存等需要并发保护的场景。
    * 如果商品不存在或商品状态不可用，则抛出业务异常。
    */
-  async requireByIdForUpdate(tx: DbTransaction, id: string) {
-    const product = await this.deps.productRepo.findByIdForUpdate(tx, id);
+  async requireByIdForUpdate(tx: DbTransaction, productId: string) {
+    const product = await this.deps.productRepo.findByIdForUpdate(tx, productId);
 
     if (!product) {
       throw new ProductNotFoundError();

@@ -1,3 +1,3 @@
-import { routes } from './server';
+import { app } from './app';
 
-export type App = typeof routes;
+export type App = typeof app;

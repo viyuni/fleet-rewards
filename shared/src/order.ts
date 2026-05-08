@@ -11,7 +11,7 @@ import {
  * 订单 ID Params Schema
  */
 export const orderIdParamsSchema = type({
-  id: type('string').describe('订单ID'),
+  orderId: type('string').describe('订单ID'),
 });
 
 /**

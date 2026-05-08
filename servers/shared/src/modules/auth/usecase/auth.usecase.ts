@@ -1,19 +1,7 @@
 import { UnauthorizedError } from '@server/shared';
 import { SignJWT, jwtVerify } from 'jose';
 
-export interface AuthPayload {
-  /**
-   * 登录账号 ID
-   */
-  id: string;
-
-  /**
-   * 登录账号角色
-   *
-   * 默认为 `user` (undefined)
-   */
-  role?: 'user' | 'admin' | 'superAdmin';
-}
+import type { AuthPayload } from '../domain';
 
 export class AuthUseCase {
   private encodedSecret: Uint8Array<ArrayBuffer>;

@@ -1,4 +1,4 @@
-import type { StockMovementPageQuery } from '@internal/shared/schema';
+import type { StockMovementPageQuery } from '@internal/shared/stock';
 import type { DbExecutor } from '@server/db';
 import { parseDate, QueryPageBuilder } from '@server/db/helper';
 import { productStockMovements, type InsertProductStockMovement } from '@server/db/schema';

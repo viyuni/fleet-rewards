@@ -5,8 +5,18 @@
   "module": "schema/index.ts",
   "exports": {
     ".": "./index.ts",
-    "./schema": "./schema/index.ts",
-    "./tsconfig/common": "./tsconfig/common.json"
+    "./tsconfig/common": "./tsconfig/common.json",
+    "./common": "./src/common.ts",
+    "./admin": "./src/admin.ts",
+    "./user": "./src/user.ts",
+    "./reward": "./src/reward.ts",
+    "./product": "./src/product.ts",
+    "./stock": "./src/stock.ts",
+    "./order": "./src/order.ts",
+    "./point-type": "./src/point-type.ts",
+    "./point-account": "./src/point-account.ts",
+    "./point-transaction": "./src/point-transaction.ts",
+    "./point-conversion": "./src/point-conversion.ts"
   },
   "scripts": {
     "typecheck": "tsgo --build"

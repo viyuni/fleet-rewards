@@ -1,4 +1,4 @@
-import type { AdminLoginBody } from '@internal/shared/schema';
+import type { AdminLoginBody } from '@internal/shared/admin';
 import type { DbExecutor } from '@server/db';
 import { InvalidCredentialsError } from '@server/shared';
 import type { AuthUseCase } from '@server/shared/auth';

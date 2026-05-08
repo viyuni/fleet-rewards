@@ -1,4 +1,4 @@
-import { adminLoginSchema } from '@internal/shared/schema';
+import { adminLoginSchema } from '@internal/shared/admin';
 import { AUTH_COOKIE_NAME, AUTH_COOKIE_OPTIONS } from '@server/shared/auth';
 import Elysia from 'elysia';
 

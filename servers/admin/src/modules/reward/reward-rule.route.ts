@@ -2,7 +2,7 @@ import {
   createRewardRuleSchema,
   rewardRuleIdParamsSchema,
   updateRewardRuleSchema,
-} from '@internal/shared';
+} from '@internal/shared/reward';
 import { RewardErrors } from '@server/shared/reward';
 import Elysia from 'elysia';
 
@@ -30,9 +30,9 @@ export const rewardRuleRoute = new Elysia({
     },
   )
   .get(
-    '/:id',
+    '/:rewardRuleId',
     ({ params, rewardRuleUseCase }) => {
-      return rewardRuleUseCase.get(params.id);
+      return rewardRuleUseCase.get(params.rewardRuleId);
     },
     {
       params: rewardRuleIdParamsSchema,
@@ -56,9 +56,9 @@ export const rewardRuleRoute = new Elysia({
     },
   )
   .put(
-    '/:id',
+    '/:rewardRuleId',
     ({ body, params, rewardRuleUseCase }) => {
-      return rewardRuleUseCase.update(params.id, body);
+      return rewardRuleUseCase.update(params.rewardRuleId, body);
     },
     {
       body: updateRewardRuleSchema,
@@ -70,9 +70,9 @@ export const rewardRuleRoute = new Elysia({
     },
   )
   .patch(
-    '/:id/enable',
+    '/:rewardRuleId/enable',
     ({ params, rewardRuleUseCase }) => {
-      return rewardRuleUseCase.enable(params.id);
+      return rewardRuleUseCase.enable(params.rewardRuleId);
     },
     {
       params: rewardRuleIdParamsSchema,
@@ -83,9 +83,9 @@ export const rewardRuleRoute = new Elysia({
     },
   )
   .patch(
-    '/:id/disable',
+    '/:rewardRuleId/disable',
     ({ params, rewardRuleUseCase }) => {
-      return rewardRuleUseCase.disable(params.id);
+      return rewardRuleUseCase.disable(params.rewardRuleId);
     },
     {
       params: rewardRuleIdParamsSchema,
@@ -96,9 +96,9 @@ export const rewardRuleRoute = new Elysia({
     },
   )
   .delete(
-    '/:id',
+    '/:rewardRuleId',
     ({ params, rewardRuleUseCase }) => {
-      return rewardRuleUseCase.remove(params.id);
+      return rewardRuleUseCase.remove(params.rewardRuleId);
     },
     {
       params: rewardRuleIdParamsSchema,

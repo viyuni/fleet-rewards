@@ -5,17 +5,33 @@ const emit = defineEmits<{
   submit: [data: { uid: string; password: string }];
 }>();
 
+import { adminLoginSchema } from '@internal/shared/admin';
+import { useForm } from '@tanstack/vue-form';
+
+const form = useForm({
+  validators: {
+    onSubmit: adminLoginSchema,
+  },
+  defaultValues: {
+    uid: '',
+    password: '',
+  },
+  onSubmit({ value }) {
+    emit('submit', value);
+  },
+});
+
 const formData = reactive({
   uid: '',
   password: '',
 });
 
-function handleSubmit() {
-  emit('submit', toRaw(formData));
-}
-
 function handleNotImplemented(e: Event) {
   toast.error('Not implemented 🤣');
+}
+
+function isInvalid(field: any) {
+  return field.state.meta.isTouched && !field.state.meta.isValid;
 }
 </script>
 
@@ -27,7 +43,7 @@ function handleNotImplemented(e: Event) {
         <CardDescription> Login with your Bilibili account </CardDescription>
       </CardHeader>
       <CardContent>
-        <form @submit.prevent="handleSubmit">
+        <form @submit.prevent="form.handleSubmit">
           <FieldGroup>
             <Field>
               <Button variant="outline" type="button" @click="handleNotImplemented">
@@ -35,26 +51,50 @@ function handleNotImplemented(e: Event) {
                 Login with Bilibili
               </Button>
             </Field>
+
             <FieldSeparator class="*:data-[slot=field-separator-content]:bg-card">
               OR
             </FieldSeparator>
-            <Field>
-              <FieldLabel for="uid"> UID </FieldLabel>
-              <Input id="uid" placeholder="90424564xxx" required v-model="formData.uid" />
-            </Field>
-            <Field>
-              <div class="flex items-center">
-                <FieldLabel for="password"> Password </FieldLabel>
-                <a
-                  href="#"
-                  class="ml-auto text-sm underline-offset-4 hover:underline"
-                  @click="handleNotImplemented"
-                >
-                  Forgot your password?
-                </a>
-              </div>
-              <Input id="password" type="password" required v-model="formData.password" />
-            </Field>
+
+            <form.Field name="uid">
+              <template #default="{ field }">
+                <Field :data-invalid="isInvalid(field)">
+                  <FieldLabel :for="field.name"> UID </FieldLabel>
+                  <Input
+                    :id="field.name"
+                    :name="field.name"
+                    :model-value="field.state.value"
+                    :aria-invalid="isInvalid(field)"
+                    placeholder="90424564xxx"
+                    autocomplete="off"
+                    @blur="field.handleBlur"
+                    @input="field.handleChange($event.target.value)"
+                  />
+                  <FieldError v-if="isInvalid(field)" :errors="field.state.meta.errors" />
+                </Field>
+              </template>
+            </form.Field>
+
+            <form.Field name="password">
+              <template #default="{ field }">
+                <Field :data-invalid="isInvalid(field)">
+                  <FieldLabel for="password"> Password </FieldLabel>
+                  <Input
+                    :id="field.name"
+                    :name="field.name"
+                    :model-value="field.state.value"
+                    :aria-invalid="isInvalid(field)"
+                    type="password"
+                    autocomplete="off"
+                    placeholder="?????"
+                    @blur="field.handleBlur"
+                    @input="field.handleChange($event.target.value)"
+                  />
+                  <FieldError v-if="isInvalid(field)" :errors="field.state.meta.errors" />
+                </Field>
+              </template>
+            </form.Field>
+
             <Field>
               <Button type="submit"> Login </Button>
             </Field>

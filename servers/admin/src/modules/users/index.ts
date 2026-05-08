@@ -1,8 +1,4 @@
-import {
-  userIdParamsSchema,
-  userPageQuerySchema,
-  userRegisterSchema,
-} from '@internal/shared/schema';
+import { userIdParamsSchema, userPageQuerySchema, userRegisterSchema } from '@internal/shared/user';
 import Elysia from 'elysia';
 
 import { appContext } from '#server/admin/context';
@@ -42,9 +38,9 @@ export const users = new Elysia({
     },
   )
   .patch(
-    '/:id/ban',
+    '/:userId/ban',
     async ({ params, userUseCase }) => {
-      const { id, status } = await userUseCase.ban(params.id);
+      const { id, status } = await userUseCase.ban(params.userId);
 
       return {
         id,
@@ -60,9 +56,9 @@ export const users = new Elysia({
     },
   )
   .patch(
-    '/:id/restore',
+    '/:userId/restore',
     async ({ params, userUseCase }) => {
-      const { id, status } = await userUseCase.restore(params.id);
+      const { id, status } = await userUseCase.restore(params.userId);
 
       return {
         id,

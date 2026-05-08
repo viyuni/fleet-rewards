@@ -3,7 +3,7 @@ import type {
   UpdateUserPasswordBody,
   UserPageQuery,
   UserRegisterBody,
-} from '@internal/shared';
+} from '@internal/shared/user';
 import type { DbExecutor } from '@server/db';
 
 import { InvalidCredentialsError } from '#server/shared/errors';
@@ -103,8 +103,8 @@ export class UserUseCase {
   /**
    * 封禁用户
    */
-  async ban(id: string) {
-    const user = await this.deps.userRepo.ban(id);
+  async ban(userId: string) {
+    const user = await this.deps.userRepo.ban(userId);
 
     if (!user) {
       throw new UserNotFoundError();
@@ -116,8 +116,8 @@ export class UserUseCase {
   /**
    * 恢复用户
    */
-  async restore(id: string) {
-    const user = await this.deps.userRepo.restore(id);
+  async restore(userId: string) {
+    const user = await this.deps.userRepo.restore(userId);
 
     if (!user) {
       throw new UserNotFoundError();

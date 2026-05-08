@@ -1,4 +1,4 @@
-import { transactionPageQuerySchema } from '@internal/shared/schema';
+import { transactionPageQuerySchema } from '@internal/shared/point-transaction';
 import Elysia from 'elysia';
 
 import { appContext } from '#server/admin/context';

@@ -2,10 +2,19 @@ import Elysia from 'elysia';
 
 import { UnauthorizedError } from '../../errors';
 import { AUTH_COOKIE_NAME } from './constants';
+import type { AuthPayload } from './domain';
 import type { AuthUseCase } from './usecase';
 
 export * from './usecase';
 export * from './constants';
+
+function setAuth(ctx: unknown, auth: AuthPayload) {
+  Object.assign(ctx as object, { auth });
+}
+
+function getAuth(ctx: unknown) {
+  return (ctx as { auth: AuthPayload }).auth;
+}
 
 export const createAuthGuard = (authUseCase: AuthUseCase) => {
   const authGuard = new Elysia({ name: 'AuthGuard' })
@@ -25,9 +34,8 @@ export const createAuthGuard = (authUseCase: AuthUseCase) => {
           },
         ],
       },
-
-      async resolve({ cookie }) {
-        const token = cookie?.[AUTH_COOKIE_NAME]?.value;
+      async transform(ctx) {
+        const token = ctx.cookie?.[AUTH_COOKIE_NAME]?.value;
 
         if (!token || typeof token !== 'string') {
           throw new UnauthorizedError('Missing auth cookie, api key, or authorization header');
@@ -35,27 +43,31 @@ export const createAuthGuard = (authUseCase: AuthUseCase) => {
 
         const payload = await authUseCase.verify(token);
 
+        setAuth(ctx, {
+          id: payload.id,
+          role: payload.role,
+        });
+      },
+      async resolve(ctx) {
         return {
-          auth: {
-            id: payload.id,
-            role: payload.role,
-          },
+          auth: getAuth(ctx),
         };
       },
     })
     .macro('requiredSuperAdminAuth', {
       requiredAuth: true,
 
-      async resolve({ auth }) {
+      async transform(ctx) {
+        const auth = getAuth(ctx);
+
         if (auth.role !== 'superAdmin') {
           throw new UnauthorizedError('Not super admin');
         }
+      },
 
+      async resolve(ctx) {
         return {
-          auth: {
-            id: auth.id,
-            role: auth.role,
-          },
+          auth: getAuth(ctx) as AuthPayload & { role: 'superAdmin' },
         };
       },
     });

@@ -1,4 +1,4 @@
-import type { CreateOrderBody, OrderPageQuery, RefundOrderBody } from '@internal/shared/schema';
+import type { CreateOrderBody, OrderPageQuery, RefundOrderBody } from '@internal/shared/order';
 import type { DbClient } from '@server/db';
 
 import {
@@ -35,8 +35,8 @@ export interface OrderUseCaseDeps {
 export class OrderUseCase {
   constructor(private readonly deps: OrderUseCaseDeps) {}
 
-  async get(id: string) {
-    const order = await this.deps.orderRepo.findById(id);
+  async get(orderId: string) {
+    const order = await this.deps.orderRepo.findById(orderId);
 
     if (!order) {
       throw new OrderNotFoundError();
@@ -133,14 +133,14 @@ export class OrderUseCase {
     });
   }
 
-  async complete(id: string) {
-    const order = await this.get(id);
+  async complete(orderId: string) {
+    const order = await this.get(orderId);
 
     if (order.status !== 'pending') {
       throw new OrderStatusInvalidError('只有待完成订单可以完成');
     }
 
-    const updateOrder = await this.deps.orderRepo.update(id, {
+    const updateOrder = await this.deps.orderRepo.update(orderId, {
       status: 'completed',
       completedAt: new Date(),
     });
@@ -152,9 +152,9 @@ export class OrderUseCase {
     return updateOrder;
   }
 
-  async refund(id: string, refundData: RefundOrderBody) {
+  async refund(orderId: string, refundData: RefundOrderBody) {
     return this.deps.db.transaction(async tx => {
-      const order = await this.deps.orderRepo.findById(id, tx);
+      const order = await this.deps.orderRepo.findById(orderId, tx);
 
       if (!order) {
         throw new OrderNotFoundError();
@@ -206,7 +206,7 @@ export class OrderUseCase {
       });
 
       const updateOrder = await this.deps.orderRepo.update(
-        id,
+        orderId,
         {
           status: 'refunded',
           refundReason: refundData.reason,

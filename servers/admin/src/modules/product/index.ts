@@ -2,10 +2,9 @@ import {
   createProductSchema,
   productIdParamsSchema,
   productPageQuerySchema,
-  stockAdjustmentSchema,
-  stockMovementPageQuerySchema,
   updateProductSchema,
-} from '@internal/shared/schema';
+} from '@internal/shared/product';
+import { stockAdjustmentSchema, stockMovementPageQuerySchema } from '@internal/shared/stock';
 import Elysia from 'elysia';
 
 import { appContext } from '../../context';
@@ -45,11 +44,11 @@ export const product = new Elysia({
     },
   )
   .get(
-    '/:id/stock/movements',
+    '/:productId/stock/movements',
     ({ query, params, stockMovementUseCase }) => {
       return stockMovementUseCase.page({
         ...query,
-        productId: params.id,
+        productId: params.productId,
       });
     },
     {
@@ -62,9 +61,9 @@ export const product = new Elysia({
     },
   )
   .get(
-    '/:id',
+    '/:productId',
     ({ params, productUseCase }) => {
-      return productUseCase.get(params.id);
+      return productUseCase.get(params.productId);
     },
     {
       params: productIdParamsSchema,
@@ -93,9 +92,9 @@ export const product = new Elysia({
     },
   )
   .put(
-    '/:id',
+    '/:productId',
     ({ body, params, productUseCase }) => {
-      return productUseCase.update(params.id, body);
+      return productUseCase.update(params.productId, body);
     },
     {
       body: updateProductSchema,
@@ -107,9 +106,9 @@ export const product = new Elysia({
     },
   )
   .patch(
-    '/:id/enable',
+    '/:productId/enable',
     ({ params, productUseCase }) => {
-      return productUseCase.active(params.id);
+      return productUseCase.active(params.productId);
     },
     {
       params: productIdParamsSchema,
@@ -120,9 +119,9 @@ export const product = new Elysia({
     },
   )
   .patch(
-    '/:id/disable',
+    '/:productId/disable',
     ({ params, productUseCase }) => {
-      return productUseCase.disable(params.id);
+      return productUseCase.disable(params.productId);
     },
     {
       params: productIdParamsSchema,
@@ -133,11 +132,11 @@ export const product = new Elysia({
     },
   )
   .patch(
-    '/:id/stock/adjust',
+    '/:productId/stock/adjust',
     async ({ body, params, productUseCase, auth: { id: adminId } }) => {
       const {
         product: { id, stock },
-      } = await productUseCase.adminAdjustStock(params.id, adminId, body);
+      } = await productUseCase.adminAdjustStock(params.productId, adminId, body);
 
       return {
         id,

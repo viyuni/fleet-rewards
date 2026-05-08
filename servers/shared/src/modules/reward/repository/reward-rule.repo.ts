@@ -11,10 +11,10 @@ import { and, asc, eq, gt, isNull, lte, or } from 'drizzle-orm';
 export class RewardRuleRepository {
   constructor(private readonly db: DbExecutor) {}
 
-  async findById(id: string, db: DbExecutor = this.db) {
+  async findById(rewardRuleId: string, db: DbExecutor = this.db) {
     return await db.query.rewardRules.findFirst({
       where: {
-        id,
+        id: rewardRuleId,
         deletedAt: {
           isNull: true,
         },
@@ -42,30 +42,34 @@ export class RewardRuleRepository {
     return rule ?? null;
   }
 
-  async update(id: string, data: UpdateRewardRule, db: DbExecutor = this.db) {
+  async update(rewardRuleId: string, data: UpdateRewardRule, db: DbExecutor = this.db) {
     const [rule] = await db
       .update(rewardRules)
       .set(data)
-      .where(and(eq(rewardRules.id, id), deletedAtIsNull(rewardRules)))
+      .where(and(eq(rewardRules.id, rewardRuleId), deletedAtIsNull(rewardRules)))
       .returning();
 
     return rule ?? null;
   }
 
-  async delete(id: string, db: DbExecutor = this.db) {
+  async delete(rewardRuleId: string, db: DbExecutor = this.db) {
     const [rule] = await db
       .update(rewardRules)
       .set({
         deletedAt: new Date(),
       })
-      .where(and(eq(rewardRules.id, id), deletedAtIsNull(rewardRules)))
+      .where(and(eq(rewardRules.id, rewardRuleId), deletedAtIsNull(rewardRules)))
       .returning();
 
     return rule ?? null;
   }
 
-  async updateEnabled(id: string, enabled: RewardRule['enabled'], db: DbExecutor = this.db) {
-    return await this.update(id, { enabled }, db);
+  async updateEnabled(
+    rewardRuleId: string,
+    enabled: RewardRule['enabled'],
+    db: DbExecutor = this.db,
+  ) {
+    return await this.update(rewardRuleId, { enabled }, db);
   }
 
   listManage() {

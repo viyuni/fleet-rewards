@@ -3,7 +3,7 @@ import {
   createPointConversionRuleSchema,
   pointConversionRuleIdParamsSchema,
   updatePointConversionRuleSchema,
-} from '@internal/shared/schema';
+} from '@internal/shared/point-conversion';
 import Elysia from 'elysia';
 
 import { appContext } from '../../context';
@@ -44,9 +44,9 @@ export const pointConversionRoute = new Elysia({
     },
   )
   .put(
-    '/:id',
+    '/:pointConversionRuleId',
     ({ body, params, pointConversionUseCase }) => {
-      return pointConversionUseCase.update(params.id, body);
+      return pointConversionUseCase.update(params.pointConversionRuleId, body);
     },
     {
       body: updatePointConversionRuleSchema,
@@ -58,9 +58,9 @@ export const pointConversionRoute = new Elysia({
     },
   )
   .patch(
-    '/:id/enable',
+    '/:pointConversionRuleId/enable',
     ({ params, pointConversionUseCase }) => {
-      return pointConversionUseCase.enable(params.id);
+      return pointConversionUseCase.enable(params.pointConversionRuleId);
     },
     {
       params: pointConversionRuleIdParamsSchema,
@@ -71,9 +71,9 @@ export const pointConversionRoute = new Elysia({
     },
   )
   .patch(
-    '/:id/disable',
+    '/:pointConversionRuleId/disable',
     ({ params, pointConversionUseCase }) => {
-      return pointConversionUseCase.disable(params.id);
+      return pointConversionUseCase.disable(params.pointConversionRuleId);
     },
     {
       params: pointConversionRuleIdParamsSchema,

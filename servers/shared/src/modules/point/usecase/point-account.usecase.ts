@@ -1,4 +1,4 @@
-import type { AdjustBalanceBody } from '@internal/shared/schema';
+import type { AdjustBalanceBody } from '@internal/shared/point-account';
 import type { DbClient } from '@server/db';
 
 import { POINT_CHANGE_SOURCE_TYPE } from '../domain';

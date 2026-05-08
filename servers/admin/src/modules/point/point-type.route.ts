@@ -2,7 +2,7 @@ import {
   createPointTypeSchema,
   pointTypeIdParamsSchema,
   updatePointTypeSchema,
-} from '@internal/shared/schema';
+} from '@internal/shared/point-type';
 import Elysia from 'elysia';
 
 import { appContext } from '../../context';
@@ -29,9 +29,9 @@ export const pointTypeRoute = new Elysia({
     },
   )
   .get(
-    '/:id',
+    '/:pointTypeId',
     ({ params, pointTypeUseCase }) => {
-      return pointTypeUseCase.get(params.id);
+      return pointTypeUseCase.get(params.pointTypeId);
     },
     {
       params: pointTypeIdParamsSchema,
@@ -55,9 +55,9 @@ export const pointTypeRoute = new Elysia({
     },
   )
   .put(
-    '/:id',
+    '/:pointTypeId',
     ({ body, params, pointTypeUseCase }) => {
-      return pointTypeUseCase.update(params.id, body);
+      return pointTypeUseCase.update(params.pointTypeId, body);
     },
     {
       body: updatePointTypeSchema,
@@ -69,9 +69,9 @@ export const pointTypeRoute = new Elysia({
     },
   )
   .patch(
-    '/:id/enable',
+    '/:pointTypeId/enable',
     ({ params, pointTypeUseCase }) => {
-      return pointTypeUseCase.enable(params.id);
+      return pointTypeUseCase.enable(params.pointTypeId);
     },
     {
       params: pointTypeIdParamsSchema,
@@ -82,9 +82,9 @@ export const pointTypeRoute = new Elysia({
     },
   )
   .patch(
-    '/:id/disable',
+    '/:pointTypeId/disable',
     ({ params, pointTypeUseCase }) => {
-      return pointTypeUseCase.disable(params.id);
+      return pointTypeUseCase.disable(params.pointTypeId);
     },
     {
       params: pointTypeIdParamsSchema,

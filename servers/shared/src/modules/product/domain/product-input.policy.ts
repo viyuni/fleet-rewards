@@ -1,4 +1,4 @@
-import type { CreateProductBody, UpdateProductBody } from '@internal/shared/schema';
+import type { CreateProductBody, UpdateProductBody } from '@internal/shared/product';
 
 import { ProductInvalidInputError } from './errors';
 
