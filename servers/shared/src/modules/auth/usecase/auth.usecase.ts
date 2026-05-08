@@ -1,9 +1,18 @@
 import { UnauthorizedError } from '@server/shared';
-import { SignJWT, jwtVerify, type JWTPayload } from 'jose';
+import { SignJWT, jwtVerify } from 'jose';
 
-export interface AuthTokenPayload {
-  userId: string;
-  role?: string;
+export interface AuthPayload {
+  /**
+   * 登录账号 ID
+   */
+  id: string;
+
+  /**
+   * 登录账号角色
+   *
+   * 默认为 `user` (undefined)
+   */
+  role?: 'user' | 'admin' | 'superAdmin';
 }
 
 export class AuthUseCase {
@@ -13,13 +22,11 @@ export class AuthUseCase {
     this.encodedSecret = new TextEncoder().encode(this.secret);
   }
 
-  async sign(payload: AuthTokenPayload) {
-    const jwtPayload: JWTPayload = {
-      userId: payload.userId,
+  async sign(payload: AuthPayload) {
+    return new SignJWT({
+      id: payload.id,
       role: payload.role,
-    };
-
-    return new SignJWT(jwtPayload)
+    })
       .setProtectedHeader({ alg: 'HS256' })
       .setIssuedAt()
       .setExpirationTime('1d')
@@ -28,13 +35,19 @@ export class AuthUseCase {
 
   async verify(token: string) {
     try {
-      const { payload } = await jwtVerify(token, this.encodedSecret);
-      if (typeof payload.userId !== 'string') throw new UnauthorizedError();
-      if (payload.role !== undefined && typeof payload.role !== 'string')
+      const { payload } = await jwtVerify<AuthPayload>(token, this.encodedSecret);
+
+      if (typeof payload.id !== 'string') {
         throw new UnauthorizedError();
+      }
+
+      // 确保角色是字符串
+      if (payload.role !== undefined && typeof payload.role !== 'string') {
+        throw new UnauthorizedError();
+      }
 
       return {
-        userId: payload.userId,
+        id: payload.id,
         role: payload.role,
       };
     } catch {

@@ -29,7 +29,7 @@ export class AdminAuthUseCase {
 
     const loggedIn = await this.deps.adminRepo.updateLastLoginAt(user.id);
     const { id, uid, username, role, lastLoginAt } = loggedIn ?? user;
-    const token = await this.deps.authUseCase.sign({ userId: user.id, role: user.role });
+    const token = await this.deps.authUseCase.sign({ id: user.id, role: user.role });
 
     return {
       token,

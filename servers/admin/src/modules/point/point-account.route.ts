@@ -13,7 +13,7 @@ export const pointAccountRoute = new Elysia({
   .use(appContext)
   .patch(
     '/balance/adjust',
-    ({ pointAccountUseCase, userId: adminId, body }) => {
+    ({ pointAccountUseCase, auth: { id: adminId }, body }) => {
       return pointAccountUseCase.adjustBalance(adminId, body);
     },
     {

@@ -36,21 +36,26 @@ export const createAuthGuard = (authUseCase: AuthUseCase) => {
         const payload = await authUseCase.verify(token);
 
         return {
-          userId: payload.userId,
-          role: payload.role,
+          auth: {
+            id: payload.id,
+            role: payload.role,
+          },
         };
       },
     })
     .macro('requiredSuperAdminAuth', {
       requiredAuth: true,
-      async resolve({ userId, role }) {
-        if (role !== 'superAdmin') {
+
+      async resolve({ auth }) {
+        if (auth.role !== 'superAdmin') {
           throw new UnauthorizedError('Not super admin');
         }
 
         return {
-          userId,
-          role,
+          auth: {
+            id: auth.id,
+            role: auth.role,
+          },
         };
       },
     });

@@ -125,7 +125,6 @@ describeWithDatabase('AdminUseCase 真实数据库', () => {
 
     const updated = await useCase.update(seeded.id, {
       username: `${batch}_updated`,
-      remark: 'updated remark',
     });
 
     expect(updated).toMatchObject({
@@ -146,7 +145,6 @@ describeWithDatabase('AdminUseCase 真实数据库', () => {
 
     const updated = await useCase.updateMe(seeded.id, {
       username: `${batch}_self_updated`,
-      remark: 'self updated remark',
     });
 
     expect(updated).toMatchObject({

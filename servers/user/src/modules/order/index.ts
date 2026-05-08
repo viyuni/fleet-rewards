@@ -13,7 +13,7 @@ export const order = new Elysia({
   .use(appContext)
   .get(
     '/',
-    ({ query, userId, orderUseCase }) => {
+    ({ query, auth: { id: userId }, orderUseCase }) => {
       return orderUseCase.pageMine({
         ...query,
         userId,
@@ -29,7 +29,7 @@ export const order = new Elysia({
   )
   .post(
     '/',
-    async ({ body, userId, orderUseCase }) => {
+    async ({ body, auth: { id: userId }, orderUseCase }) => {
       const { orderNo } = await orderUseCase.create(userId, body);
       return {
         orderNo,

@@ -10,13 +10,13 @@ describe('AuthUseCase', () => {
     const authUseCase = new AuthUseCase('test-secret');
 
     const token = await authUseCase.sign({
-      userId: 'admin-id',
+      id: 'admin-id',
       role: 'superAdmin',
     });
     const payload = await authUseCase.verify(token);
 
     expect(payload).toEqual({
-      userId: 'admin-id',
+      id: 'admin-id',
       role: 'superAdmin',
     });
   });
@@ -25,12 +25,12 @@ describe('AuthUseCase', () => {
     const authUseCase = new AuthUseCase('test-secret');
 
     const token = await authUseCase.sign({
-      userId: 'user-id',
+      id: 'user-id',
     });
     const payload = await authUseCase.verify(token);
 
     expect(payload).toEqual({
-      userId: 'user-id',
+      id: 'user-id',
       role: undefined,
     });
   });
@@ -44,8 +44,8 @@ describe('requiredSuperAdminAuth', () => {
 
     const app = new Elysia().use(createAuthGuard(authUseCase)).get(
       '/super',
-      ({ userId, role }) => ({
-        userId,
+      ({ auth: { id, role } }) => ({
+        id,
         role,
       }),
       {

@@ -28,21 +28,25 @@ export const admin = new Elysia({
       description: '管理员列表',
     },
   })
-  .get('/me', ({ userId, adminUseCase }) => adminUseCase.me(userId), {
+  .get('/me', ({ auth: { id: adminId }, adminUseCase }) => adminUseCase.me(adminId), {
     requiredAuth: true,
     detail: {
       tags: ['Admin'],
       description: '获取当前管理员信息',
     },
   })
-  .patch('/me', ({ userId, body, adminUseCase }) => adminUseCase.updateMe(userId, body), {
-    body: adminUpdateSchema,
-    requiredAuth: true,
-    detail: {
-      tags: ['Admin'],
-      description: '更新当前管理员信息',
+  .patch(
+    '/me',
+    ({ auth: { id: adminId }, body, adminUseCase }) => adminUseCase.updateMe(adminId, body),
+    {
+      body: adminUpdateSchema,
+      requiredAuth: true,
+      detail: {
+        tags: ['Admin'],
+        description: '更新当前管理员信息',
+      },
     },
-  })
+  )
   .post('/', ({ body, adminUseCase }) => adminUseCase.create(body), {
     body: adminCreateSchema,
     requiredSuperAdminAuth: true,

@@ -134,10 +134,10 @@ export const product = new Elysia({
   )
   .patch(
     '/:id/stock/adjust',
-    async ({ body, params, productUseCase, userId }) => {
+    async ({ body, params, productUseCase, auth: { id: adminId } }) => {
       const {
         product: { id, stock },
-      } = await productUseCase.adminAdjustStock(params.id, userId, body);
+      } = await productUseCase.adminAdjustStock(params.id, adminId, body);
 
       return {
         id,
