@@ -1,11 +1,11 @@
 import pino from 'pino';
 import pretty from 'pino-pretty';
 
-import type { SharedConfig } from './config';
+import type { SharedEnv } from './env';
 
-export function createLogger(config: SharedConfig) {
+export function createLogger(env: SharedEnv) {
   const stream =
-    config.NODE_ENV === 'development'
+    env.NODE_ENV === 'development'
       ? pretty({
           colorize: true,
           translateTime: 'HH:MM:ss.l',
@@ -15,7 +15,7 @@ export function createLogger(config: SharedConfig) {
 
   const logger = pino(
     {
-      level: config.LOG_LEVEL ?? 'info',
+      level: env.LOG_LEVEL ?? 'info',
     },
     stream,
   );

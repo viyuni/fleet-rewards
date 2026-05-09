@@ -1,15 +1,15 @@
-import { type } from 'arktype';
+import * as v from 'valibot';
 
-import { dateRangeQuerySchema, pageQuerySchema } from './common';
+import { DateRangeQuerySchema, PageQuerySchema } from './common';
 
 /**
  * 积分流水 ID Params Schema。
  */
-export const pointTransactionIdParamsSchema = type({
-  id: type('string').describe('积分流水 ID'),
+export const PointTransactionIdParamsSchema = v.object({
+  id: v.pipe(v.string('请输入积分流水 ID'), v.description('积分流水 ID')),
 });
 
-export type PointTransactionIdParams = typeof pointTransactionIdParamsSchema.infer;
+export type PointTransactionIdParams = v.InferOutput<typeof PointTransactionIdParamsSchema>;
 
 /**
  * 积分流水类型。
@@ -25,19 +25,24 @@ export const PointTransactionType = {
 /**
  * 积分流水类型 Schema。
  */
-export const pointTransactionTypeSchema = type
-  .valueOf(PointTransactionType)
-  .describe('积分流水类型');
+export const PointTransactionTypeSchema = v.pipe(
+  v.enum(PointTransactionType, '请选择有效的积分流水类型'),
+  v.description('积分流水类型'),
+);
 
-export type PointTransactionType = typeof pointTransactionTypeSchema.infer;
+export type PointTransactionType = v.InferOutput<typeof PointTransactionTypeSchema>;
 
 /**
  * 积分流水分页查询 Query Schema。
  */
-export const transactionPageQuerySchema = pageQuerySchema.and(dateRangeQuerySchema).and({
-  'type?': pointTransactionTypeSchema,
-  'pointTypeId?': type('string').describe('积分类型 ID'),
-  'userId?': type('string').describe('用户 ID'),
-});
+export const TransactionPageQuerySchema = v.intersect([
+  PageQuerySchema,
+  DateRangeQuerySchema,
+  v.object({
+    type: v.optional(PointTransactionTypeSchema),
+    pointTypeId: v.optional(v.pipe(v.string('请输入积分类型 ID'), v.description('积分类型 ID'))),
+    userId: v.optional(v.pipe(v.string('请输入用户 ID'), v.description('用户 ID'))),
+  }),
+]);
 
-export type PointTransactionPageQuery = typeof transactionPageQuerySchema.infer;
+export type PointTransactionPageQuery = v.InferOutput<typeof TransactionPageQuerySchema>;

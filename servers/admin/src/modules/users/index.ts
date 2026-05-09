@@ -1,4 +1,4 @@
-import { userIdParamsSchema, userPageQuerySchema, userRegisterSchema } from '@internal/shared/user';
+import { UserIdParamsSchema, UserPageQuerySchema, UserRegisterSchema } from '@internal/shared/user';
 import Elysia from 'elysia';
 
 import { appContext } from '#server/admin/context';
@@ -17,7 +17,7 @@ export const users = new Elysia({
       return userUseCase.page(query);
     },
     {
-      query: userPageQuerySchema,
+      query: UserPageQuerySchema,
       requiredAuth: true,
       detail: {
         description: '用户列表',
@@ -30,7 +30,7 @@ export const users = new Elysia({
       return await userUseCase.create(body);
     },
     {
-      body: userRegisterSchema,
+      body: UserRegisterSchema,
       requiredAuth: true,
       detail: {
         description: '用户注册',
@@ -48,7 +48,7 @@ export const users = new Elysia({
       };
     },
     {
-      params: userIdParamsSchema,
+      params: UserIdParamsSchema,
       requiredAuth: true,
       detail: {
         description: '封禁用户',
@@ -66,7 +66,7 @@ export const users = new Elysia({
       };
     },
     {
-      params: userIdParamsSchema,
+      params: UserIdParamsSchema,
       requiredAuth: true,
       detail: {
         description: '恢复用户',

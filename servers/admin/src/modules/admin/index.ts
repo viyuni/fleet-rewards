@@ -1,10 +1,10 @@
 import {
-  adminCreateSchema,
-  adminIdParamsSchema,
-  adminPageQuerySchema,
-  adminUpdatePasswordSchema,
-  adminUpdateSchema,
-  superAdminUpdateSchema,
+  AdminCreateSchema,
+  AdminIdParamsSchema,
+  AdminPageQuerySchema,
+  AdminUpdatePasswordSchema,
+  AdminUpdateSchema,
+  SuperAdminUpdateSchema,
 } from '@internal/shared/admin';
 import Elysia from 'elysia';
 
@@ -22,7 +22,7 @@ export const admin = new Elysia({
   .use(appContext)
   .error(AdminErrors)
   .get('/', ({ query, adminUseCase }) => adminUseCase.page(query), {
-    query: adminPageQuerySchema,
+    query: AdminPageQuerySchema,
     requiredSuperAdminAuth: true,
     detail: {
       tags: ['Admin'],
@@ -40,7 +40,7 @@ export const admin = new Elysia({
     '/me',
     ({ auth: { id: adminId }, body, adminUseCase }) => adminUseCase.updateMe(adminId, body),
     {
-      body: adminUpdateSchema,
+      body: AdminUpdateSchema,
       requiredAuth: true,
       detail: {
         tags: ['Admin'],
@@ -49,7 +49,7 @@ export const admin = new Elysia({
     },
   )
   .post('/', ({ body, adminUseCase }) => adminUseCase.create(body), {
-    body: adminCreateSchema,
+    body: AdminCreateSchema,
     requiredSuperAdminAuth: true,
     detail: {
       tags: ['Admin'],
@@ -60,8 +60,8 @@ export const admin = new Elysia({
     '/:adminId',
     ({ params, body, adminUseCase }) => adminUseCase.update(params.adminId, body),
     {
-      body: superAdminUpdateSchema,
-      params: adminIdParamsSchema,
+      body: SuperAdminUpdateSchema,
+      params: AdminIdParamsSchema,
       requiredSuperAdminAuth: true,
       detail: {
         tags: ['Admin'],
@@ -70,7 +70,7 @@ export const admin = new Elysia({
     },
   )
   .patch('/:adminId/ban', ({ params, adminUseCase }) => adminUseCase.ban(params.adminId), {
-    params: adminIdParamsSchema,
+    params: AdminIdParamsSchema,
     requiredSuperAdminAuth: true,
     detail: {
       tags: ['Admin'],
@@ -78,7 +78,7 @@ export const admin = new Elysia({
     },
   })
   .patch('/:adminId/restore', ({ params, adminUseCase }) => adminUseCase.restore(params.adminId), {
-    params: adminIdParamsSchema,
+    params: AdminIdParamsSchema,
     requiredSuperAdminAuth: true,
     detail: {
       tags: ['Admin'],
@@ -89,7 +89,7 @@ export const admin = new Elysia({
     '/updatePassword',
     ({ auth: { id: adminId }, body, adminUseCase }) => adminUseCase.updatePassword(adminId, body),
     {
-      body: adminUpdatePasswordSchema,
+      body: AdminUpdatePasswordSchema,
       requiredAuth: true,
       detail: {
         tags: ['Admin'],
@@ -101,7 +101,7 @@ export const admin = new Elysia({
     '/:adminId/resetPassword',
     ({ params, adminUseCase }) => adminUseCase.resetPassword(params.adminId),
     {
-      params: adminIdParamsSchema,
+      params: AdminIdParamsSchema,
       requiredSuperAdminAuth: true,
       detail: {
         tags: ['Admin'],

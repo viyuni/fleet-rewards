@@ -1,10 +1,10 @@
 import {
-  createProductSchema,
-  productIdParamsSchema,
-  productPageQuerySchema,
-  updateProductSchema,
+  CreateProductSchema,
+  ProductIdParamsSchema,
+  ProductPageQuerySchema,
+  UpdateProductSchema,
 } from '@internal/shared/product';
-import { stockAdjustmentSchema, stockMovementPageQuerySchema } from '@internal/shared/stock';
+import { StockAdjustmentSchema, StockMovementPageQuerySchema } from '@internal/shared/stock';
 import Elysia from 'elysia';
 
 import { appContext } from '../../context';
@@ -23,7 +23,7 @@ export const product = new Elysia({
       return productUseCase.pageManage(query);
     },
     {
-      query: productPageQuerySchema,
+      query: ProductPageQuerySchema,
       requiredAuth: true,
       detail: {
         description: '商品列表',
@@ -36,7 +36,7 @@ export const product = new Elysia({
       return stockMovementUseCase.page(query);
     },
     {
-      query: stockMovementPageQuerySchema,
+      query: StockMovementPageQuerySchema,
       requiredAuth: true,
       detail: {
         description: '商品库存流水',
@@ -52,8 +52,8 @@ export const product = new Elysia({
       });
     },
     {
-      query: stockMovementPageQuerySchema,
-      params: productIdParamsSchema,
+      query: StockMovementPageQuerySchema,
+      params: ProductIdParamsSchema,
       requiredAuth: true,
       detail: {
         description: '商品库存流水',
@@ -66,7 +66,7 @@ export const product = new Elysia({
       return productUseCase.get(params.productId);
     },
     {
-      params: productIdParamsSchema,
+      params: ProductIdParamsSchema,
       requiredAuth: true,
       detail: {
         description: '商品详情',
@@ -79,7 +79,7 @@ export const product = new Elysia({
       return productUseCase.create(body);
     },
     {
-      body: createProductSchema,
+      body: CreateProductSchema,
       requiredAuth: true,
       detail: {
         description: '创建商品',
@@ -97,8 +97,8 @@ export const product = new Elysia({
       return productUseCase.update(params.productId, body);
     },
     {
-      body: updateProductSchema,
-      params: productIdParamsSchema,
+      body: UpdateProductSchema,
+      params: ProductIdParamsSchema,
       requiredAuth: true,
       detail: {
         description: '更新商品',
@@ -111,7 +111,7 @@ export const product = new Elysia({
       return productUseCase.active(params.productId);
     },
     {
-      params: productIdParamsSchema,
+      params: ProductIdParamsSchema,
       requiredAuth: true,
       detail: {
         description: '上架商品',
@@ -124,7 +124,7 @@ export const product = new Elysia({
       return productUseCase.disable(params.productId);
     },
     {
-      params: productIdParamsSchema,
+      params: ProductIdParamsSchema,
       requiredAuth: true,
       detail: {
         description: '下架商品',
@@ -144,8 +144,8 @@ export const product = new Elysia({
       };
     },
     {
-      body: stockAdjustmentSchema,
-      params: productIdParamsSchema,
+      body: StockAdjustmentSchema,
+      params: ProductIdParamsSchema,
       requiredAuth: true,
       detail: {
         description: '调整商品库存',

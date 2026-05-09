@@ -161,6 +161,7 @@
   "Skeleton": "@web/ui/skeleton",
   "Toaster": "@web/ui/sonner",
   "Spinner": "@web/ui/spinner",
+  "DataTable": "@web/ui/table",
   "Table": "@web/ui/table",
   "TableBody": "@web/ui/table",
   "TableCaption": "@web/ui/table",

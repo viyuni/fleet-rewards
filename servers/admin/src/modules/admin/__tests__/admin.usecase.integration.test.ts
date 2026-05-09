@@ -5,7 +5,7 @@ import { admins } from '@server/db/schema';
 import { PasswordUtil } from '@server/shared/utils';
 import { eq, inArray, like } from 'drizzle-orm';
 
-import { config } from '#server/admin/utils';
+import { env } from '#server/admin/utils';
 
 import { AdminNotFoundError, AdminSuperAdminCannotBeBannedError } from '../domain/errors';
 import { AdminRepository } from '../repository';
@@ -207,7 +207,7 @@ describeWithDatabase('AdminUseCase 真实数据库', () => {
 
     const row = await db.query.admins.findFirst({
       where: {
-        uid: config.SUPER_ADMIN_UID,
+        uid: env.SUPER_ADMIN_UID,
       },
     });
 
@@ -221,7 +221,7 @@ describeWithDatabase('AdminUseCase 真实数据库', () => {
     const existingSuperAdmin = await findSuperAdmin();
     if (!existingSuperAdmin) {
       await seedAdmin({
-        uid: config.SUPER_ADMIN_UID,
+        uid: env.SUPER_ADMIN_UID,
         username: `${batch}_existing_default`,
         role: 'superAdmin',
       });
@@ -232,7 +232,7 @@ describeWithDatabase('AdminUseCase 真实数据库', () => {
     const rows = await db
       .select({ id: admins.id })
       .from(admins)
-      .where(eq(admins.uid, config.SUPER_ADMIN_UID));
+      .where(eq(admins.uid, env.SUPER_ADMIN_UID));
 
     expect(rows.length).toBe(1);
   });

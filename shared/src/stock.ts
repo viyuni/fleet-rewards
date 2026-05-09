@@ -1,6 +1,6 @@
-import { type } from 'arktype';
+import * as v from 'valibot';
 
-import { dateRangeQuerySchema, nonceBodySchema, pageQuerySchema, remarkSchema } from './common';
+import { DateRangeQuerySchema, NonceBodySchema, PageQuerySchema, RemarkSchema } from './common';
 
 /**
  * 库存变动类型。
@@ -14,9 +14,12 @@ export const StockMovementType = {
 /**
  * 库存变动类型 Schema。
  */
-export const stockMovementTypeSchema = type.valueOf(StockMovementType).describe('库存变动类型');
+export const StockMovementTypeSchema = v.pipe(
+  v.enum(StockMovementType, '请选择有效的库存变动类型'),
+  v.description('库存变动类型'),
+);
 
-export type StockMovementType = typeof stockMovementTypeSchema.infer;
+export type StockMovementType = v.InferOutput<typeof StockMovementTypeSchema>;
 
 /**
  * 非零整数 Schema。
@@ -26,28 +29,40 @@ export type StockMovementType = typeof stockMovementTypeSchema.infer;
  * - 小于 0：减少库存
  * - 不允许为 0
  */
-const nonZeroIntegerSchema = type('number.integer < 0 | number.integer > 0');
+const NonZeroIntegerSchema = v.pipe(
+  v.number('请输入库存调整数量'),
+  v.integer('库存调整数量必须是整数'),
+  v.check(value => value !== 0, '库存调整数量不能为 0'),
+  v.description('库存调整数量'),
+);
 
 /**
  * 库存流水分页查询 Query Schema。
  *
  * 用于按商品、库存变动类型、时间范围分页查询库存流水。
  */
-export const stockMovementPageQuerySchema = pageQuerySchema.and(dateRangeQuerySchema).and({
-  'type?': stockMovementTypeSchema,
-  'productId?': type('string').describe('商品 ID'),
-});
+export const StockMovementPageQuerySchema = v.intersect([
+  PageQuerySchema,
+  DateRangeQuerySchema,
+  v.object({
+    type: v.optional(StockMovementTypeSchema),
+    productId: v.optional(v.pipe(v.string('请输入商品 ID'), v.description('商品 ID'))),
+  }),
+]);
 
-export type StockMovementPageQuery = typeof stockMovementPageQuerySchema.infer;
+export type StockMovementPageQuery = v.InferOutput<typeof StockMovementPageQuerySchema>;
 
 /**
  * 库存调整 Body Schema。
  *
  * 用于管理员手动调整商品库存。
  */
-export const stockAdjustmentSchema = nonceBodySchema.and({
-  delta: nonZeroIntegerSchema.describe('库存调整数量'),
-  'remark?': remarkSchema,
-});
+export const StockAdjustmentSchema = v.intersect([
+  NonceBodySchema,
+  v.object({
+    delta: NonZeroIntegerSchema,
+    remark: v.optional(RemarkSchema),
+  }),
+]);
 
-export type StockAdjustmentBody = typeof stockAdjustmentSchema.infer;
+export type StockAdjustmentBody = v.InferOutput<typeof StockAdjustmentSchema>;

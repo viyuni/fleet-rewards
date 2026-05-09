@@ -1,4 +1,4 @@
-import { createOrderSchema, orderPageQuerySchema } from '@internal/shared/schema';
+import { CreateOrderSchema, OrderPageQuerySchema } from '@internal/shared/order';
 import Elysia from 'elysia';
 
 import { appContext } from '#servers/user/context';
@@ -20,7 +20,7 @@ export const order = new Elysia({
       });
     },
     {
-      query: orderPageQuerySchema,
+      query: OrderPageQuerySchema,
       requiredAuth: true,
       detail: {
         description: '我的订单列表',
@@ -36,7 +36,7 @@ export const order = new Elysia({
       };
     },
     {
-      body: createOrderSchema,
+      body: CreateOrderSchema,
       requiredAuth: true,
       detail: {
         description: '兑换商品',

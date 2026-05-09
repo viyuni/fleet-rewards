@@ -1,72 +1,87 @@
-import { type } from 'arktype';
+import * as v from 'valibot';
 
-import { biliUidSchema, pageQuerySchema, passwordSchema, usernameSchema } from './common';
+import { BiliUidSchema, PageQuerySchema, PasswordSchema, UsernameSchema } from './common';
 
 /**
  * 管理员角色 Schema
  */
-export const adminRoleSchema = type('"admin" | "superAdmin"').describe('管理员角色');
+export const AdminRoleSchema = v.pipe(
+  v.picklist(['admin', 'superAdmin'], '请选择有效的管理员角色'),
+  v.description('管理员角色'),
+);
 
-export type AdminRole = typeof adminRoleSchema.infer;
+export type AdminRole = v.InferOutput<typeof AdminRoleSchema>;
 
 /**
  * 管理员 ID Params Schema
  */
-export const adminIdParamsSchema = type({
-  adminId: type('string').describe('管理员 ID'),
+export const AdminIdParamsSchema = v.object({
+  adminId: v.pipe(v.string('请输入管理员 ID'), v.description('管理员 ID')),
 });
 
 /**
  * 创建管理员请求参数 Schema
  */
-export const adminCreateSchema = type({
-  uid: biliUidSchema,
-  username: usernameSchema,
-  password: passwordSchema,
-  'remark?': type('string <= 500').describe('备注'),
+export const AdminCreateSchema = v.object({
+  uid: BiliUidSchema,
+  username: UsernameSchema,
+  password: PasswordSchema,
+  remark: v.optional(
+    v.pipe(
+      v.string('请输入备注'),
+      v.maxLength(500, '备注不能超过 500 个字符'),
+      v.description('备注'),
+    ),
+  ),
 });
 
-export type AdminCreateBody = typeof adminCreateSchema.infer;
+export type AdminCreateBody = v.InferOutput<typeof AdminCreateSchema>;
 
 /**
  * 更新管理员请求参数 Schema
  */
-export const superAdminUpdateSchema = type({
-  'username?': usernameSchema,
-  'remark?': type('string <= 500').describe('备注'),
+export const SuperAdminUpdateSchema = v.object({
+  username: v.optional(UsernameSchema),
+  remark: v.optional(
+    v.pipe(
+      v.string('请输入备注'),
+      v.maxLength(500, '备注不能超过 500 个字符'),
+      v.description('备注'),
+    ),
+  ),
 });
 
-export type SuperAdminUpdateBody = typeof superAdminUpdateSchema.infer;
+export type SuperAdminUpdateBody = v.InferOutput<typeof SuperAdminUpdateSchema>;
 
 /**
  * 更新管理员请求参数 Schema
  */
-export const adminUpdateSchema = type({
-  'username?': usernameSchema,
+export const AdminUpdateSchema = v.object({
+  username: v.optional(UsernameSchema),
 });
 
-export type AdminUpdateBody = typeof adminUpdateSchema.infer;
+export type AdminUpdateBody = v.InferOutput<typeof AdminUpdateSchema>;
 
-export const adminUpdatePasswordSchema = type({
-  oldPassword: passwordSchema,
-  newPassword: passwordSchema,
+export const AdminUpdatePasswordSchema = v.object({
+  oldPassword: PasswordSchema,
+  newPassword: PasswordSchema,
 });
 
-export type AdminUpdatePasswordBody = typeof adminUpdatePasswordSchema.infer;
+export type AdminUpdatePasswordBody = v.InferOutput<typeof AdminUpdatePasswordSchema>;
 
 /**
  * 管理员分页查询 Schema
  */
-export const adminPageQuerySchema = pageQuerySchema;
+export const AdminPageQuerySchema = PageQuerySchema;
 
-export type AdminPageQuery = typeof adminPageQuerySchema.infer;
+export type AdminPageQuery = v.InferOutput<typeof AdminPageQuerySchema>;
 
 /**
  * 管理员登录请求参数 Schema
  */
-export const adminLoginSchema = type({
-  uid: biliUidSchema,
-  password: passwordSchema,
+export const AdminLoginSchema = v.object({
+  uid: BiliUidSchema,
+  password: PasswordSchema,
 });
 
-export type AdminLoginBody = typeof adminLoginSchema.infer;
+export type AdminLoginBody = v.InferOutput<typeof AdminLoginSchema>;

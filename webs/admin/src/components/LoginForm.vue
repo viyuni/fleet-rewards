@@ -5,12 +5,14 @@ const emit = defineEmits<{
   submit: [data: { uid: string; password: string }];
 }>();
 
-import { adminLoginSchema } from '@internal/shared/admin';
+import { AdminLoginSchema } from '@internal/shared/admin';
 import { useForm } from '@tanstack/vue-form';
 
 const form = useForm({
   validators: {
-    onSubmit: adminLoginSchema,
+    onSubmit: AdminLoginSchema,
+    onChange: AdminLoginSchema,
+    onBlur: AdminLoginSchema,
   },
   defaultValues: {
     uid: '',

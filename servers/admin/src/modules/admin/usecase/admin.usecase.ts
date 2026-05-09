@@ -8,7 +8,7 @@ import type { AdminRole } from '@server/db/schema';
 import { InvalidCredentialsError, UnauthorizedError } from '@server/shared';
 import { PasswordUtil } from '@server/shared/utils';
 
-import { config, logger } from '#server/admin/utils';
+import { env, logger } from '#server/admin/utils';
 
 import {
   AdminAlreadyExistsError,
@@ -178,7 +178,7 @@ export class AdminUseCase {
       SUPER_ADMIN_UID: uid,
       SUPER_ADMIN_USERNAME: username,
       SUPER_ADMIN_PASSWORD: password,
-    } = config;
+    } = env;
 
     const existing = await this.deps.adminRepo.findByUid(uid);
 

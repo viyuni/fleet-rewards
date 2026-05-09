@@ -1,7 +1,6 @@
 import type { DbClient } from '@server/db';
 import Elysia from 'elysia';
 
-import type { SharedConfig } from './config';
 import { createAuthGuard } from './modules/auth';
 import { AuthUseCase } from './modules/auth/usecase';
 import { ImageUseCase } from './modules/image';
@@ -25,18 +24,19 @@ import {
 } from './modules/product';
 import { RewardRuleRepository, RewardRuleUseCase, RewardUseCase } from './modules/reward';
 import { UserBasicInfoCrypto, UserRepository, UserUseCase } from './modules/user';
+import type { SharedEnv } from './utils';
 
 export interface CreateContextOptions {
   db: DbClient;
-  config: SharedConfig & {
+  env: SharedEnv & {
     JWT_SECRET: string;
     DATA_SECRET: string;
   };
 }
 
-export function createAppInstances({ db, config }: CreateContextOptions) {
-  const authUseCase = new AuthUseCase(config.JWT_SECRET);
-  const userBasicInfoCrypto = new UserBasicInfoCrypto(config.DATA_SECRET);
+export function createAppInstances({ db, env }: CreateContextOptions) {
+  const authUseCase = new AuthUseCase(env.JWT_SECRET);
+  const userBasicInfoCrypto = new UserBasicInfoCrypto(env.DATA_SECRET);
 
   const userRepo = new UserRepository(db);
   const pointAccountRepo = new PointAccountRepository();
@@ -84,7 +84,7 @@ export function createAppInstances({ db, config }: CreateContextOptions) {
     pointTypeUseCase,
   });
 
-  const imageUseCase = new ImageUseCase(config.IMAGE_SAVE_PATH);
+  const imageUseCase = new ImageUseCase(env.IMAGE_SAVE_PATH);
 
   const productUseCase = new ProductUseCase({
     db,

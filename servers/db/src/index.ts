@@ -3,8 +3,12 @@ import { drizzle } from 'drizzle-orm/bun-sql';
 import { relations } from './relations.ts';
 import * as schema from './schema/index.ts';
 
-export function createDatabase(connectionString: string) {
-  return drizzle(connectionString, { schema, relations });
+export function createDatabase(connection: string) {
+  return drizzle({
+    connection,
+    schema,
+    relations,
+  });
 }
 
 export type DbClient = ReturnType<typeof createDatabase>;

@@ -1,5 +1,5 @@
 import { createLogger } from '@server/shared';
 
-import { config } from './config';
+import { env } from './env';
 
-export const logger = createLogger(config);
+export const logger = createLogger(env);

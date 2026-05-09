@@ -1,7 +1,7 @@
 import {
-  createRewardRuleSchema,
-  rewardRuleIdParamsSchema,
-  updateRewardRuleSchema,
+  CreateRewardRuleSchema,
+  RewardRuleIdParamsSchema,
+  UpdateRewardRuleSchema,
 } from '@internal/shared/reward';
 import { RewardErrors } from '@server/shared/reward';
 import Elysia from 'elysia';
@@ -35,7 +35,7 @@ export const rewardRuleRoute = new Elysia({
       return rewardRuleUseCase.get(params.rewardRuleId);
     },
     {
-      params: rewardRuleIdParamsSchema,
+      params: RewardRuleIdParamsSchema,
       requiredAuth: true,
       detail: {
         description: '积分奖励规则详情',
@@ -48,7 +48,7 @@ export const rewardRuleRoute = new Elysia({
       return rewardRuleUseCase.create(body);
     },
     {
-      body: createRewardRuleSchema,
+      body: CreateRewardRuleSchema,
       requiredAuth: true,
       detail: {
         description: '创建积分奖励规则',
@@ -61,8 +61,8 @@ export const rewardRuleRoute = new Elysia({
       return rewardRuleUseCase.update(params.rewardRuleId, body);
     },
     {
-      body: updateRewardRuleSchema,
-      params: rewardRuleIdParamsSchema,
+      body: UpdateRewardRuleSchema,
+      params: RewardRuleIdParamsSchema,
       requiredAuth: true,
       detail: {
         description: '更新积分奖励规则',
@@ -75,7 +75,7 @@ export const rewardRuleRoute = new Elysia({
       return rewardRuleUseCase.enable(params.rewardRuleId);
     },
     {
-      params: rewardRuleIdParamsSchema,
+      params: RewardRuleIdParamsSchema,
       requiredAuth: true,
       detail: {
         description: '启用积分奖励规则',
@@ -88,7 +88,7 @@ export const rewardRuleRoute = new Elysia({
       return rewardRuleUseCase.disable(params.rewardRuleId);
     },
     {
-      params: rewardRuleIdParamsSchema,
+      params: RewardRuleIdParamsSchema,
       requiredAuth: true,
       detail: {
         description: '停用积分奖励规则',
@@ -101,7 +101,7 @@ export const rewardRuleRoute = new Elysia({
       return rewardRuleUseCase.remove(params.rewardRuleId);
     },
     {
-      params: rewardRuleIdParamsSchema,
+      params: RewardRuleIdParamsSchema,
       requiredAuth: true,
       detail: {
         description: '删除积分奖励规则',

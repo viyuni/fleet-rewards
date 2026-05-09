@@ -1,5 +1,5 @@
 import { createDatabase } from '@server/db';
 
-import { config } from './config';
+import { env } from './env';
 
-export const db = createDatabase(config.DATABASE_URL);
+export const db = createDatabase(env.DATABASE_URL);

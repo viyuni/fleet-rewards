@@ -173,6 +173,7 @@ declare module 'vue' {
     Skeleton: typeof import('@web/ui/skeleton')['Skeleton']
     Toaster: typeof import('@web/ui/sonner')['Toaster']
     Spinner: typeof import('@web/ui/spinner')['Spinner']
+    DataTable: typeof import('@web/ui/table')['DataTable']
     Table: typeof import('@web/ui/table')['Table']
     TableBody: typeof import('@web/ui/table')['TableBody']
     TableCaption: typeof import('@web/ui/table')['TableCaption']

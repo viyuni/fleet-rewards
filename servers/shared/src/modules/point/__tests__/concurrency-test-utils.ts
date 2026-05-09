@@ -70,7 +70,8 @@ export async function expectRejectsInstanceOf<T extends Error>(
 export function createDeps() {
   const { repositories, useCases } = createAppInstances({
     db,
-    config: {
+    env: {
+      PORT: 3000,
       DATABASE_URL: testDatabaseUrl ?? '',
       NODE_ENV: 'test',
       LOG_LEVEL: 'error',

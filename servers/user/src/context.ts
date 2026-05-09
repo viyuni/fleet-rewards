@@ -1,12 +1,12 @@
 import { createAppContext } from '@server/shared/context';
 
-import { config } from '#servers/user/config';
+import { env } from '#servers/user/env';
 
 import { db } from './db';
 
 const { context } = createAppContext({
   db,
-  config,
+  env,
 });
 
 export const appContext = context;

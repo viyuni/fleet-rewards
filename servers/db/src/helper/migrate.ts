@@ -1,6 +1,6 @@
 import { fileURLToPath } from 'node:url';
 
-import { migrate as startMigrate } from 'drizzle-orm/node-postgres/migrator';
+import { migrate as startMigrate } from 'drizzle-orm/bun-sql/postgres/migrator';
 
 import type { DbClient } from '..';
 

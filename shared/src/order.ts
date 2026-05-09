@@ -1,17 +1,17 @@
-import { type } from 'arktype';
+import * as v from 'valibot';
 
 import {
-  dateRangeQuerySchema,
-  keywordQuerySchema,
-  nonceBodySchema,
-  pageQuerySchema,
+  DateRangeQuerySchema,
+  KeywordQuerySchema,
+  NonceBodySchema,
+  PageQuerySchema,
 } from './common';
 
 /**
  * 订单 ID Params Schema
  */
-export const orderIdParamsSchema = type({
-  orderId: type('string').describe('订单ID'),
+export const OrderIdParamsSchema = v.object({
+  orderId: v.pipe(v.string('请输入订单ID'), v.description('订单ID')),
 });
 
 /**
@@ -26,36 +26,56 @@ export const OrderStatus = {
 /**
  * 订单状态 Schema
  */
-export const orderStatusSchema = type.valueOf(OrderStatus).describe('订单状态');
+export const OrderStatusSchema = v.pipe(
+  v.enum(OrderStatus, '请选择有效的订单状态'),
+  v.description('订单状态'),
+);
 
 /**
  * 订单查询参数 Schema
  */
-export const orderPageQuerySchema = pageQuerySchema
-  .and(keywordQuerySchema)
-  .and(dateRangeQuerySchema)
-  .and({
-    'status?': orderStatusSchema,
-    'userId?': type('string').describe('用户ID'),
-  });
+export const OrderPageQuerySchema = v.intersect([
+  PageQuerySchema,
+  KeywordQuerySchema,
+  DateRangeQuerySchema,
+  v.object({
+    status: v.optional(OrderStatusSchema),
+    userId: v.optional(v.pipe(v.string('请输入用户ID'), v.description('用户ID'))),
+  }),
+]);
 
-export type OrderPageQuery = typeof orderPageQuerySchema.infer;
+export type OrderPageQuery = v.InferOutput<typeof OrderPageQuerySchema>;
 
 /**
  * 创建订单 Schema
  */
-export const createOrderSchema = nonceBodySchema.and({
-  productId: type('string').describe('用户ID'),
-  'remark?': type('string <= 500').describe('备注'),
-});
+export const CreateOrderSchema = v.intersect([
+  NonceBodySchema,
+  v.object({
+    productId: v.pipe(v.string('请输入用户ID'), v.description('用户ID')),
+    remark: v.optional(
+      v.pipe(
+        v.string('请输入备注'),
+        v.maxLength(500, '备注不能超过 500 个字符'),
+        v.description('备注'),
+      ),
+    ),
+  }),
+]);
 
-export type CreateOrderBody = typeof createOrderSchema.infer;
+export type CreateOrderBody = v.InferOutput<typeof CreateOrderSchema>;
 
 /**
  * 退款订单 Schema
  */
-export const refundOrderSchema = type({
-  'reason?': type('string <= 100').describe('备注'),
+export const RefundOrderSchema = v.object({
+  reason: v.optional(
+    v.pipe(
+      v.string('请输入备注'),
+      v.maxLength(100, '备注不能超过 100 个字符'),
+      v.description('备注'),
+    ),
+  ),
 });
 
-export type RefundOrderBody = typeof refundOrderSchema.infer;
+export type RefundOrderBody = v.InferOutput<typeof RefundOrderSchema>;

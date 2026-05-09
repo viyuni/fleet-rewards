@@ -1,5 +1,5 @@
 import { openapi as elysiaOpenapi } from '@elysia/openapi';
-import { Type } from 'arktype';
+import { toJsonSchema } from '@valibot/to-json-schema';
 
 interface ContactObject {
   name?: string;
@@ -21,37 +21,11 @@ interface InfoObject {
   version: string;
 }
 
-function toOpenApiSchema(schema: unknown) {
-  if (schema instanceof Type) {
-    return schema.toJsonSchema({
-      fallback: {
-        default: ctx => ctx.base,
-        proto: ctx => {
-          if (ctx.proto === File || ctx.proto?.name === 'File') {
-            return {
-              ...ctx.base,
-              type: 'string',
-              format: 'binary',
-            };
-          }
-
-          return ctx.base;
-        },
-
-        date: ctx => ({
-          ...ctx.base,
-          type: 'string',
-          format: 'date-time',
-        }),
-      },
-    });
-  }
-}
-
 export function openapi(info?: InfoObject) {
   return elysiaOpenapi({
     mapJsonSchema: {
-      arktype: toOpenApiSchema,
+      valibot: (schema: any) =>
+        toJsonSchema(schema, { target: 'openapi-3.0', errorMode: 'ignore' }),
     },
     documentation: {
       info,

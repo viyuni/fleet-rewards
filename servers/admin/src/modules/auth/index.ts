@@ -1,4 +1,4 @@
-import { adminLoginSchema } from '@internal/shared/admin';
+import { AdminLoginSchema } from '@internal/shared/admin';
 import { AUTH_COOKIE_NAME, AUTH_COOKIE_OPTIONS } from '@server/shared/auth';
 import Elysia from 'elysia';
 
@@ -27,7 +27,7 @@ export const auth = new Elysia({
       return user;
     },
     {
-      body: adminLoginSchema,
+      body: AdminLoginSchema,
       detail: {
         description: '管理员登录',
       },

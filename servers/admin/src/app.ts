@@ -14,7 +14,7 @@ import { point } from './modules/point';
 import { product } from './modules/product';
 import { reward } from './modules/reward';
 import { users } from './modules/users';
-import { config } from './utils/config';
+import { env } from './utils/env';
 import { logger } from './utils/logger';
 
 export const app = new Elysia({
@@ -39,7 +39,7 @@ export const app = new Elysia({
   .use(health)
   .get('/', () => 'Viyuni guard rewards server running... :)', { tags: ['Index'] });
 
-if (config.NODE_ENV === 'development') {
+if (env.NODE_ENV === 'development') {
   app.use(
     openapi({
       title: 'Viyuni Guard Rewards',
@@ -48,6 +48,6 @@ if (config.NODE_ENV === 'development') {
   );
 }
 
-app.listen({ port: config.PORT }, logger.printUrls);
+app.listen({ port: env.PORT }, logger.printUrls);
 
 await initDefaultAdmin();

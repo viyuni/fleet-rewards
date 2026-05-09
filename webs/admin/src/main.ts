@@ -33,7 +33,16 @@ app.use(PiniaColada, {
       }
 
       if (error instanceof EdenFetchError) {
-        toast.error(errorMessage ?? error.value.message);
+        if (errorMessage) {
+          toast.error(errorMessage);
+          return;
+        }
+
+        if (typeof error.value === 'string') {
+          toast.error(error.value);
+        }
+
+        toast.error('请求失败喵😒');
       } else if (error instanceof Error) {
         toast.error(errorMessage ?? error.message);
       } else {

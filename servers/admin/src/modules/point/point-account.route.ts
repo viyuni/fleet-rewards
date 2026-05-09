@@ -1,4 +1,4 @@
-import { adjustBalanceSchema } from '@internal/shared/point-account';
+import { AdjustBalanceSchema } from '@internal/shared/point-account';
 import Elysia from 'elysia';
 
 import { appContext } from '../../context';
@@ -18,7 +18,7 @@ export const pointAccountRoute = new Elysia({
     },
     {
       requiredAuth: true,
-      body: adjustBalanceSchema,
+      body: AdjustBalanceSchema,
       detail: {
         description: ' 账号积分调整',
       },

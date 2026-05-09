@@ -1,13 +1,13 @@
-import { type } from 'arktype';
+import * as v from 'valibot';
 
 /**
  * 积分类型 ID Params Schema。
  */
-export const pointTypeIdParamsSchema = type({
-  pointTypeId: type('string').describe('积分类型 ID'),
+export const PointTypeIdParamsSchema = v.object({
+  pointTypeId: v.pipe(v.string('请输入积分类型 ID'), v.description('积分类型 ID')),
 });
 
-export type PointTypeIdParams = typeof pointTypeIdParamsSchema.infer;
+export type PointTypeIdParams = v.InferOutput<typeof PointTypeIdParamsSchema>;
 
 /**
  * 积分类型状态。
@@ -20,36 +20,48 @@ export const PointTypeStatus = {
 /**
  * 积分类型状态 Schema。
  */
-export const pointTypeStatusSchema = type.valueOf(PointTypeStatus).describe('积分类型状态');
+export const PointTypeStatusSchema = v.pipe(
+  v.enum(PointTypeStatus, '请选择有效的积分类型状态'),
+  v.description('积分类型状态'),
+);
 
-export type PointTypeStatus = typeof pointTypeStatusSchema.infer;
+export type PointTypeStatus = v.InferOutput<typeof PointTypeStatusSchema>;
 
 /**
  * 积分类型名称 Schema。
  */
-const pointTypeNameSchema = type('2 <= string <= 50').describe('积分类型名称');
+const PointTypeNameSchema = v.pipe(
+  v.string('请输入积分类型名称'),
+  v.minLength(2, '积分类型名称不能少于 2 个字符'),
+  v.maxLength(50, '积分类型名称不能超过 50 个字符'),
+  v.description('积分类型名称'),
+);
 
 /**
  * 积分类型描述 Schema。
  */
-const pointTypeDescriptionSchema = type('string <= 50').describe('积分类型描述');
+const PointTypeDescriptionSchema = v.pipe(
+  v.string('请输入积分类型描述'),
+  v.maxLength(50, '积分类型描述不能超过 50 个字符'),
+  v.description('积分类型描述'),
+);
 
 /**
  * 创建积分类型 Body Schema。
  */
-export const createPointTypeSchema = type({
-  name: pointTypeNameSchema,
-  'description?': pointTypeDescriptionSchema,
+export const CreatePointTypeSchema = v.object({
+  name: PointTypeNameSchema,
+  description: v.optional(PointTypeDescriptionSchema),
 });
 
-export type CreatePointTypeBody = typeof createPointTypeSchema.infer;
+export type CreatePointTypeBody = v.InferOutput<typeof CreatePointTypeSchema>;
 
 /**
  * 更新积分类型 Body Schema。
  */
-export const updatePointTypeSchema = type({
-  'name?': pointTypeNameSchema,
-  'description?': pointTypeDescriptionSchema,
+export const UpdatePointTypeSchema = v.object({
+  name: v.optional(PointTypeNameSchema),
+  description: v.optional(PointTypeDescriptionSchema),
 });
 
-export type UpdatePointTypeBody = typeof updatePointTypeSchema.infer;
+export type UpdatePointTypeBody = v.InferOutput<typeof UpdatePointTypeSchema>;

@@ -1,8 +1,8 @@
 import {
-  convertPointSchema,
-  createPointConversionRuleSchema,
-  pointConversionRuleIdParamsSchema,
-  updatePointConversionRuleSchema,
+  ConvertPointSchema,
+  CreatePointConversionRuleSchema,
+  PointConversionRuleIdParamsSchema,
+  UpdatePointConversionRuleSchema,
 } from '@internal/shared/point-conversion';
 import Elysia from 'elysia';
 
@@ -36,7 +36,7 @@ export const pointConversionRoute = new Elysia({
       return pointConversionUseCase.create(body);
     },
     {
-      body: createPointConversionRuleSchema,
+      body: CreatePointConversionRuleSchema,
       requiredAuth: true,
       detail: {
         description: '创建积分转换规则',
@@ -49,8 +49,8 @@ export const pointConversionRoute = new Elysia({
       return pointConversionUseCase.update(params.pointConversionRuleId, body);
     },
     {
-      body: updatePointConversionRuleSchema,
-      params: pointConversionRuleIdParamsSchema,
+      body: UpdatePointConversionRuleSchema,
+      params: PointConversionRuleIdParamsSchema,
       requiredAuth: true,
       detail: {
         description: '更新积分转换规则',
@@ -63,7 +63,7 @@ export const pointConversionRoute = new Elysia({
       return pointConversionUseCase.enable(params.pointConversionRuleId);
     },
     {
-      params: pointConversionRuleIdParamsSchema,
+      params: PointConversionRuleIdParamsSchema,
       requiredAuth: true,
       detail: {
         description: '启用积分转换规则',
@@ -76,7 +76,7 @@ export const pointConversionRoute = new Elysia({
       return pointConversionUseCase.disable(params.pointConversionRuleId);
     },
     {
-      params: pointConversionRuleIdParamsSchema,
+      params: PointConversionRuleIdParamsSchema,
       requiredAuth: true,
       detail: {
         description: '停用积分转换规则',
@@ -89,7 +89,7 @@ export const pointConversionRoute = new Elysia({
       return pointConversionUseCase.convert(body);
     },
     {
-      body: convertPointSchema,
+      body: ConvertPointSchema,
       requiredAuth: true,
       detail: {
         description: '执行积分转换',

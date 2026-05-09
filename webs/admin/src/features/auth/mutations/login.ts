@@ -3,7 +3,7 @@ import { defineMutation, useMutation } from '@pinia/colada';
 
 import { api } from '#eden';
 
-import { useAuthStore } from '../../store';
+import { useAuthStore } from '../store';
 
 export const useLogin = defineMutation(() => {
   const { updateUser } = useAuthStore();

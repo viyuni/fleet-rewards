@@ -1,15 +1,17 @@
-import { type } from 'arktype';
+import * as v from 'valibot';
 
-import { keywordQuerySchema, pageQuerySchema } from './common';
+import { KeywordQuerySchema, PageQuerySchema } from './common';
+
+const NumericStringRegex = /^-?\d+(\.\d+)?$/;
 
 /**
  * 商品 ID Params Schema。
  */
-export const productIdParamsSchema = type({
-  productId: type('string').describe('商品 ID'),
+export const ProductIdParamsSchema = v.object({
+  productId: v.pipe(v.string('请输入商品 ID'), v.description('商品 ID')),
 });
 
-export type ProductIdParams = typeof productIdParamsSchema.infer;
+export type ProductIdParams = v.InferOutput<typeof ProductIdParamsSchema>;
 
 /**
  * 商品状态。
@@ -22,9 +24,12 @@ export const ProductStatus = {
 /**
  * 商品状态 Schema。
  */
-export const productStatusSchema = type.valueOf(ProductStatus).describe('商品状态');
+export const ProductStatusSchema = v.pipe(
+  v.enum(ProductStatus, '请选择有效的商品状态'),
+  v.description('商品状态'),
+);
 
-export type ProductStatus = typeof productStatusSchema.infer;
+export type ProductStatus = v.InferOutput<typeof ProductStatusSchema>;
 
 /**
  * 商品发货方式。
@@ -37,121 +42,165 @@ export const ProductDeliveryType = {
 /**
  * 商品发货方式 Schema。
  */
-export const productDeliveryTypeSchema = type.valueOf(ProductDeliveryType).describe('商品发货方式');
+export const ProductDeliveryTypeSchema = v.pipe(
+  v.enum(ProductDeliveryType, '请选择有效的商品发货方式'),
+  v.description('商品发货方式'),
+);
 
-export type ProductDeliveryType = typeof productDeliveryTypeSchema.infer;
+export type ProductDeliveryType = v.InferOutput<typeof ProductDeliveryTypeSchema>;
 
 /**
  * 商品名称 Schema。
  */
-const productNameSchema = type('2 <= string <= 100').describe('商品名称');
+const ProductNameSchema = v.pipe(
+  v.string('请输入商品名称'),
+  v.minLength(2, '商品名称不能少于 2 个字符'),
+  v.maxLength(100, '商品名称不能超过 100 个字符'),
+  v.description('商品名称'),
+);
 
 /**
  * 商品描述 Schema。
  */
-const productDescriptionSchema = type('string <= 500').describe('商品描述');
+const ProductDescriptionSchema = v.pipe(
+  v.string('请输入商品描述'),
+  v.maxLength(500, '商品描述不能超过 500 个字符'),
+  v.description('商品描述'),
+);
 
 /**
  * 商品详情 Schema。
  */
-const productDetailSchema = type('string').describe('商品详情');
+const ProductDetailSchema = v.pipe(v.string('请输入商品详情'), v.description('商品详情'));
 
 /**
  * 商品封面图 Schema。
  */
-const productCoverSchema = type('File').describe('商品封面图');
+const ProductCoverSchema = v.pipe(
+  v.file('请选择商品封面图'),
+  v.mimeType(['image/*'], '请选择图片格式的商品封面图'),
+  v.maxSize(1024 * 1024 * 10, '请选择一个小于 20MB 的文件'),
+  v.description('商品封面图'),
+);
 
 /**
  * 商品关联积分类型 ID Schema。
  */
-const productPointTypeIdSchema = type('string').describe('积分类型 ID');
+const ProductPointTypeIdSchema = v.pipe(
+  v.string('请输入积分类型 ID'),
+  v.description('积分类型 ID'),
+);
 
 /**
  * 商品兑换价格 Schema。
  */
-const productPriceSchema = type('string.numeric.parse')
-  .pipe(type('number.integer > 0'))
-  .describe('兑换所需积分数量');
+const ProductPriceSchema = v.pipe(
+  v.string('请输入兑换所需积分数量'),
+  v.regex(NumericStringRegex, '兑换所需积分数量必须是数字'),
+  v.toNumber('兑换所需积分数量必须是数字'),
+  v.integer('兑换所需积分数量必须是整数'),
+  v.minValue(1, '兑换所需积分数量必须大于 0'),
+  v.description('兑换所需积分数量'),
+);
 
 /**
  * 商品库存 Schema。
  */
-const productStockSchema = type('string.numeric.parse')
-  .pipe(type('number.integer >= 0'))
-  .describe('商品库存');
+const ProductStockSchema = v.pipe(
+  v.string('请输入商品库存'),
+  v.regex(NumericStringRegex, '商品库存必须是数字'),
+  v.transform(Number),
+  v.integer('商品库存必须是整数'),
+  v.minValue(0, '商品库存不能小于 0'),
+  v.description('商品库存'),
+);
 
 /**
  * 商品排序值 Schema。
  */
-const productSortSchema = type('string.numeric.parse')
-  .pipe(type('number.integer'))
-  .describe('排序值');
+const ProductSortSchema = v.pipe(
+  v.string('请输入排序值'),
+  v.regex(NumericStringRegex, '排序值必须是数字'),
+  v.transform(Number),
+  v.integer('排序值必须是整数'),
+  v.description('排序值'),
+);
 
 /**
  * 商品是否允许用户取消订单 Schema。
  */
-const productAllowCancelSchema = type("'true' | 'false'")
-  .pipe(value => value === 'true')
-  .describe('是否允许用户取消订单');
+const ProductAllowCancelSchema = v.pipe(
+  v.picklist(['true', 'false'], '请选择是否允许用户取消订单'),
+  v.toBoolean(),
+  v.description('是否允许用户取消订单'),
+);
 
 /**
  * 商品扩展数据 Schema。
  */
-const productMetadataSchema = type('string.json').describe('商品扩展数据');
+const ProductMetadataSchema = v.pipe(
+  v.string('请输入商品扩展数据'),
+  v.parseJson(undefined, '商品扩展数据必须是合法 JSON 字符串'),
+  v.description('商品扩展数据'),
+);
 
 /**
  * 商品列表分页查询 Query Schema。
  */
-export const productPageQuerySchema = pageQuerySchema.and(keywordQuerySchema).and({
-  'status?': productStatusSchema,
-  'pointTypeId?': productPointTypeIdSchema,
-  'deliveryType?': productDeliveryTypeSchema,
-});
+export const ProductPageQuerySchema = v.intersect([
+  PageQuerySchema,
+  KeywordQuerySchema,
+  v.object({
+    status: v.optional(ProductStatusSchema),
+    pointTypeId: v.optional(ProductPointTypeIdSchema),
+    deliveryType: v.optional(ProductDeliveryTypeSchema),
+  }),
+]);
 
-export type ProductPageQuery = typeof productPageQuerySchema.infer;
+export type ProductPageQuery = v.InferOutput<typeof ProductPageQuerySchema>;
 
 /**
  * 创建商品 Body Schema。
  */
-export const createProductSchema = type({
-  name: productNameSchema,
+export const CreateProductSchema = v.object({
+  name: ProductNameSchema,
 
-  'description?': productDescriptionSchema,
-  'cover?': productCoverSchema,
-  'detail?': productDetailSchema,
+  description: v.optional(ProductDescriptionSchema),
+  cover: v.optional(ProductCoverSchema),
+  detail: v.optional(ProductDetailSchema),
 
-  pointTypeId: productPointTypeIdSchema,
-  price: productPriceSchema,
+  pointTypeId: ProductPointTypeIdSchema,
+  price: ProductPriceSchema,
 
-  'status?': productStatusSchema,
-  'stock?': productStockSchema,
-  'deliveryType?': productDeliveryTypeSchema,
-  'allowCancel?': productAllowCancelSchema,
-  'sort?': productSortSchema,
-  'metadata?': productMetadataSchema,
+  status: v.optional(ProductStatusSchema),
+  stock: v.optional(ProductStockSchema),
+  deliveryType: v.optional(ProductDeliveryTypeSchema),
+  allowCancel: v.optional(ProductAllowCancelSchema),
+  sort: v.optional(ProductSortSchema),
+  metadata: v.optional(ProductMetadataSchema),
 });
 
-export type CreateProductBody = typeof createProductSchema.infer;
+export type CreateProductBody = v.InferOutput<typeof CreateProductSchema>;
 
 /**
  * 更新商品 Body Schema。
  */
-export const updateProductSchema = type({
-  'name?': productNameSchema,
+export const UpdateProductSchema = v.object({
+  name: v.optional(ProductNameSchema),
 
-  'description?': productDescriptionSchema,
-  'cover?': productCoverSchema,
-  'detail?': productDetailSchema,
+  description: v.optional(ProductDescriptionSchema),
+  cover: v.optional(ProductCoverSchema),
+  detail: v.optional(ProductDetailSchema),
 
-  'pointTypeId?': productPointTypeIdSchema,
-  'price?': productPriceSchema,
+  pointTypeId: v.optional(ProductPointTypeIdSchema),
+  price: v.optional(ProductPriceSchema),
 
-  'status?': productStatusSchema,
-  'stock?': productStockSchema,
-  'deliveryType?': productDeliveryTypeSchema,
-  'allowCancel?': productAllowCancelSchema,
-  'sort?': productSortSchema,
-  'metadata?': productMetadataSchema,
+  status: v.optional(ProductStatusSchema),
+  stock: v.optional(ProductStockSchema),
+  deliveryType: v.optional(ProductDeliveryTypeSchema),
+  allowCancel: v.optional(ProductAllowCancelSchema),
+  sort: v.optional(ProductSortSchema),
+  metadata: v.optional(ProductMetadataSchema),
 });
 
-export type UpdateProductBody = typeof updateProductSchema.infer;
+export type UpdateProductBody = v.InferOutput<typeof UpdateProductSchema>;

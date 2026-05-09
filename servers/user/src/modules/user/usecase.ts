@@ -1,4 +1,4 @@
-import type { UserLoginBody, UserRegisterBody } from '@internal/shared';
+import type { UserLoginBody, UserRegisterBody } from '@internal/shared/user';
 import type { DbClient } from '@server/db';
 import type { AuthUseCase } from '@server/shared/auth';
 

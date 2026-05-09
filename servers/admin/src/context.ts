@@ -1,6 +1,6 @@
 import { createAppContext } from '@server/shared/context';
 
-import { config } from '#server/admin/utils';
+import { env } from '#server/admin/utils';
 
 import { db } from './db';
 import { AdminRepository } from './modules/admin/repository';
@@ -14,7 +14,7 @@ const {
   },
 } = createAppContext({
   db,
-  config,
+  env,
 });
 
 const adminRepo = new AdminRepository(db);

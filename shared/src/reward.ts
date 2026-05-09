@@ -1,33 +1,42 @@
-import { type } from 'arktype';
+import * as v from 'valibot';
 
 /**
  * 积分奖励规则 ID Params Schema。
  */
-export const rewardRuleIdParamsSchema = type({
-  rewardRuleId: type('string').describe('积分奖励规则 ID'),
+export const RewardRuleIdParamsSchema = v.object({
+  rewardRuleId: v.pipe(v.string('请输入积分奖励规则 ID'), v.description('积分奖励规则 ID')),
 });
 
-export type RewardRuleIdParams = typeof rewardRuleIdParamsSchema.infer;
+export type RewardRuleIdParams = v.InferOutput<typeof RewardRuleIdParamsSchema>;
 
 /**
  * 积分奖励规则名称 Schema。
  */
-const rewardRuleNameSchema = type('2 <= string <= 80').describe('积分奖励规则名称');
+const RewardRuleNameSchema = v.pipe(
+  v.string('请输入积分奖励规则名称'),
+  v.minLength(2, '积分奖励规则名称不能少于 2 个字符'),
+  v.maxLength(80, '积分奖励规则名称不能超过 80 个字符'),
+  v.description('积分奖励规则名称'),
+);
 
 /**
  * 积分奖励规则描述 Schema。
  */
-const rewardRuleDescriptionSchema = type('string <= 200').describe('备注');
+const RewardRuleDescriptionSchema = v.pipe(
+  v.string('请输入备注'),
+  v.maxLength(200, '备注不能超过 200 个字符'),
+  v.description('备注'),
+);
 
 /**
  * 互斥分组 Schema。
  */
-const rewardRuleGroupSchema = type('1 <= string <= 80').describe('互斥分组');
-
-/**
- * 正整数 Schema。
- */
-const positiveIntegerSchema = type('number.integer > 0');
+const RewardRuleGroupSchema = v.pipe(
+  v.string('请输入互斥分组'),
+  v.minLength(1, '互斥分组不能为空'),
+  v.maxLength(80, '互斥分组不能超过 80 个字符'),
+  v.description('互斥分组'),
+);
 
 /**
  * 大航海类型。
@@ -50,72 +59,122 @@ export const BiliGuardType = {
 /**
  * 大航海类型 Schema。
  */
-export const biliGuardTypeSchema = type.valueOf(BiliGuardType).describe('大航海类型');
+export const BiliGuardTypeSchema = v.pipe(
+  v.enum(BiliGuardType, '请选择有效的大航海类型'),
+  v.description('大航海类型'),
+);
 
-export type BiliGuardType = typeof biliGuardTypeSchema.infer;
+export type BiliGuardType = v.InferOutput<typeof BiliGuardTypeSchema>;
 
 /**
  * 大航海奖励条件 Schema。
  */
-export const biliGuardRewardConditionSchema = type({
-  type: type("'biliGuard'").describe('条件类型'),
-  'guardTypes?': biliGuardTypeSchema.array().describe('大航海类型'),
+export const BiliGuardRewardConditionSchema = v.object({
+  type: v.pipe(v.literal('biliGuard', '请选择有效的条件类型'), v.description('条件类型')),
+  guardTypes: v.optional(
+    v.pipe(v.array(BiliGuardTypeSchema, '请选择大航海类型'), v.description('大航海类型')),
+  ),
 });
 
-export type BiliGuardRewardCondition = typeof biliGuardRewardConditionSchema.infer;
+export type BiliGuardRewardCondition = v.InferOutput<typeof BiliGuardRewardConditionSchema>;
 
 /**
  * 积分奖励规则条件 Schema。
  */
-export const rewardRuleConditionSchema = biliGuardRewardConditionSchema;
+export const RewardRuleConditionSchema = BiliGuardRewardConditionSchema;
 
-export type RewardRuleCondition = typeof rewardRuleConditionSchema.infer;
-
-/**
-
+export type RewardRuleCondition = v.InferOutput<typeof RewardRuleConditionSchema>;
 
 /**
  * 创建积分奖励规则 Body Schema。
  */
-export const createRewardRuleSchema = type({
-  name: rewardRuleNameSchema,
-  'description?': rewardRuleDescriptionSchema,
+export const CreateRewardRuleSchema = v.object({
+  name: RewardRuleNameSchema,
+  description: v.optional(RewardRuleDescriptionSchema),
 
-  conditions: rewardRuleConditionSchema,
+  conditions: RewardRuleConditionSchema,
 
-  pointTypeId: type('string').describe('积分类型 ID'),
-  points: positiveIntegerSchema.describe('奖励积分数'),
+  pointTypeId: v.pipe(v.string('请输入积分类型 ID'), v.description('积分类型 ID')),
+  points: v.pipe(
+    v.number('请输入奖励积分数'),
+    v.integer('奖励积分数必须是整数'),
+    v.minValue(1, '奖励积分数必须大于 0'),
+    v.description('奖励积分数'),
+  ),
 
-  'enabled?': type('boolean').describe('是否启用'),
-  'group?': rewardRuleGroupSchema,
+  enabled: v.optional(v.pipe(v.boolean('请选择是否启用'), v.description('是否启用'))),
+  group: v.optional(RewardRuleGroupSchema),
 
-  'startsAt?': type('number.integer').describe('生效开始时间戳'),
-  'endsAt?': type('number.integer').describe('生效结束时间戳'),
+  startsAt: v.optional(
+    v.pipe(
+      v.number('请输入生效开始时间戳'),
+      v.integer('生效开始时间戳必须是整数'),
+      v.description('生效开始时间戳'),
+    ),
+  ),
+  endsAt: v.optional(
+    v.pipe(
+      v.number('请输入生效结束时间戳'),
+      v.integer('生效结束时间戳必须是整数'),
+      v.description('生效结束时间戳'),
+    ),
+  ),
 
-  'priority?': type('number.integer').describe('优先级，数字越小优先级越高'),
+  priority: v.optional(
+    v.pipe(
+      v.number('请输入优先级'),
+      v.integer('优先级必须是整数'),
+      v.description('优先级，数字越小优先级越高'),
+    ),
+  ),
 });
 
-export type CreateRewardRuleBody = typeof createRewardRuleSchema.infer;
+export type CreateRewardRuleBody = v.InferOutput<typeof CreateRewardRuleSchema>;
 
 /**
  * 更新积分奖励规则 Body Schema。
  */
-export const updateRewardRuleSchema = type({
-  'name?': rewardRuleNameSchema,
-  'description?': rewardRuleDescriptionSchema,
+export const UpdateRewardRuleSchema = v.object({
+  name: v.optional(RewardRuleNameSchema),
+  description: v.optional(RewardRuleDescriptionSchema),
 
-  'conditions?': rewardRuleConditionSchema,
+  conditions: v.optional(RewardRuleConditionSchema),
 
-  'pointTypeId?': type('string').describe('积分类型 ID'),
-  'points?': positiveIntegerSchema.describe('奖励积分数'),
+  pointTypeId: v.optional(v.pipe(v.string('请输入积分类型 ID'), v.description('积分类型 ID'))),
+  points: v.optional(
+    v.pipe(
+      v.number('请输入奖励积分数'),
+      v.integer('奖励积分数必须是整数'),
+      v.minValue(1, '奖励积分数必须大于 0'),
+      v.description('奖励积分数'),
+    ),
+  ),
 
-  'enabled?': type('boolean').describe('是否启用'),
-  'group?': rewardRuleGroupSchema,
+  enabled: v.optional(v.pipe(v.boolean('请选择是否启用'), v.description('是否启用'))),
+  group: v.optional(RewardRuleGroupSchema),
 
-  'startsAt?': type('number.integer').describe('生效开始时间戳'),
-  'endsAt?': type('number.integer').describe('生效结束时间戳'),
+  startsAt: v.optional(
+    v.pipe(
+      v.number('请输入生效开始时间戳'),
+      v.integer('生效开始时间戳必须是整数'),
+      v.description('生效开始时间戳'),
+    ),
+  ),
+  endsAt: v.optional(
+    v.pipe(
+      v.number('请输入生效结束时间戳'),
+      v.integer('生效结束时间戳必须是整数'),
+      v.description('生效结束时间戳'),
+    ),
+  ),
 
-  'priority?': type('number.integer').describe('优先级，数字越小优先级越高'),
+  priority: v.optional(
+    v.pipe(
+      v.number('请输入优先级'),
+      v.integer('优先级必须是整数'),
+      v.description('优先级，数字越小优先级越高'),
+    ),
+  ),
 });
 
-export type UpdateRewardRuleBody = typeof updateRewardRuleSchema.infer;
+export type UpdateRewardRuleBody = v.InferOutput<typeof UpdateRewardRuleSchema>;

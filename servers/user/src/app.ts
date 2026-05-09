@@ -1,14 +1,16 @@
-import { setupApp } from '@server/shared/setup-app';
+import { errorHandler } from '@server/shared/error-handler';
+import { openapi } from '@server/shared/openapi';
 import { Elysia } from 'elysia';
 
-import { config } from './config';
 import { appContext } from './context';
+import { env } from './env';
 import { logger } from './logger';
 import { order } from './modules/order';
 import { user } from './modules/user';
-
-export const app = setupApp(new Elysia())
+export const app = new Elysia()
+  .use(openapi())
+  .use(errorHandler)
   .use(appContext)
   .use(user)
   .use(order)
-  .listen({ port: config.PORT }, logger.printUrls);
+  .listen({ port: env.PORT }, logger.printUrls);

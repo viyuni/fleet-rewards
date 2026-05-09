@@ -1,7 +1,7 @@
 import {
-  createPointTypeSchema,
-  pointTypeIdParamsSchema,
-  updatePointTypeSchema,
+  CreatePointTypeSchema,
+  PointTypeIdParamsSchema,
+  UpdatePointTypeSchema,
 } from '@internal/shared/point-type';
 import Elysia from 'elysia';
 
@@ -34,7 +34,7 @@ export const pointTypeRoute = new Elysia({
       return pointTypeUseCase.get(params.pointTypeId);
     },
     {
-      params: pointTypeIdParamsSchema,
+      params: PointTypeIdParamsSchema,
       requiredAuth: true,
       detail: {
         description: '积分类型详情',
@@ -47,7 +47,7 @@ export const pointTypeRoute = new Elysia({
       return pointTypeUseCase.create(body);
     },
     {
-      body: createPointTypeSchema,
+      body: CreatePointTypeSchema,
       requiredAuth: true,
       detail: {
         description: '创建积分类型',
@@ -60,8 +60,8 @@ export const pointTypeRoute = new Elysia({
       return pointTypeUseCase.update(params.pointTypeId, body);
     },
     {
-      body: updatePointTypeSchema,
-      params: pointTypeIdParamsSchema,
+      body: UpdatePointTypeSchema,
+      params: PointTypeIdParamsSchema,
       requiredAuth: true,
       detail: {
         description: '更新积分类型',
@@ -74,7 +74,7 @@ export const pointTypeRoute = new Elysia({
       return pointTypeUseCase.enable(params.pointTypeId);
     },
     {
-      params: pointTypeIdParamsSchema,
+      params: PointTypeIdParamsSchema,
       requiredAuth: true,
       detail: {
         description: '启用积分类型',
@@ -87,7 +87,7 @@ export const pointTypeRoute = new Elysia({
       return pointTypeUseCase.disable(params.pointTypeId);
     },
     {
-      params: pointTypeIdParamsSchema,
+      params: PointTypeIdParamsSchema,
       requiredAuth: true,
       detail: {
         description: '停用积分类型',

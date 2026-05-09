@@ -1,6 +1,5 @@
-import { userLoginSchema, userRegisterSchema } from '@internal/shared';
+import { UserLoginSchema, UserRegisterSchema } from '@internal/shared/user';
 import { AUTH_COOKIE_NAME, AUTH_COOKIE_OPTIONS } from '@server/shared/auth';
-import { setupApp } from '@server/shared/setup-app';
 import Elysia from 'elysia';
 
 import { appContext } from '#servers/user/context';
@@ -13,11 +12,9 @@ export * from './usecase';
 export * from './errors';
 export * from './model';
 
-export const user = setupApp(
-  new Elysia({
-    name: 'UserRoute',
-  }),
-)
+export const user = new Elysia({
+  name: 'UserRoute',
+})
   .use(appContext)
   .derive(({ authUseCase }) => ({
     userAuthUseCase: new UserAuthUseCase(db, authUseCase),
@@ -42,7 +39,7 @@ export const user = setupApp(
       return result;
     },
     {
-      body: userLoginSchema,
+      body: UserLoginSchema,
       details: {
         summary: '用户登录',
       },
@@ -54,10 +51,10 @@ export const user = setupApp(
       return userAuthUseCase.register(body);
     },
     {
-      body: userRegisterSchema,
+      body: UserRegisterSchema,
       details: {
         summary: '用户注册',
       },
     },
   )
-  .get('/me', ({ userId }) => ({ name: 'Viyuni', userId }), { requiredAuth: true });
+  .get('/me', ({ auth: { id: userId } }) => ({ name: 'Viyuni', userId }), { requiredAuth: true });

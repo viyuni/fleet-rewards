@@ -16,6 +16,7 @@
     "@elysia/eden": "^1.4.10",
     "@internal/shared": "workspace:*",
     "@pinia/colada": "^1.2.1",
+    "@pinia/colada-plugin-cache-persister": "^1.0.0",
     "@tanstack/vue-form": "^1.29.1",
     "@tanstack/vue-table": "^8.21.3",
     "@vueuse/core": "^14.2.1",

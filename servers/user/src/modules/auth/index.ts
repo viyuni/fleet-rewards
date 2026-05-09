@@ -1,4 +1,4 @@
-import { userLoginSchema, userRegisterSchema } from '@internal/shared';
+import { UserLoginSchema, UserRegisterSchema } from '@internal/shared/user';
 import { AUTH_COOKIE_NAME, AUTH_COOKIE_OPTIONS } from '@server/shared/auth';
 import Elysia from 'elysia';
 
@@ -35,7 +35,7 @@ export const auth = new Elysia({
       return result;
     },
     {
-      body: userLoginSchema,
+      body: UserLoginSchema,
     },
   )
   .post(
@@ -44,6 +44,6 @@ export const auth = new Elysia({
       return userAuthUseCase.register(body);
     },
     {
-      body: userRegisterSchema,
+      body: UserRegisterSchema,
     },
   );

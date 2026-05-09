@@ -1,3 +1,7 @@
+<script lang="ts">
+import { UserTable } from '#web/admin/features/user';
+</script>
+
 <script setup lang="ts">
 definePage({
   meta: {
@@ -6,4 +10,6 @@ definePage({
 });
 </script>
 
-<template>Users</template>
+<template>
+  <UserTable></UserTable>
+</template>

@@ -1,96 +1,195 @@
-import { type } from 'arktype';
+import * as v from 'valibot';
 
-import { nonceBodySchema } from './common';
+import { NonceBodySchema } from './common';
 
 /**
  * 积分转换规则 ID Params Schema。
  */
-export const pointConversionRuleIdParamsSchema = type({
-  pointConversionRuleId: type('string').describe('积分转换规则 ID'),
+export const PointConversionRuleIdParamsSchema = v.object({
+  pointConversionRuleId: v.pipe(
+    v.string('请输入积分转换规则 ID'),
+    v.description('积分转换规则 ID'),
+  ),
 });
 
-export type PointConversionRuleIdParams = typeof pointConversionRuleIdParamsSchema.infer;
+export type PointConversionRuleIdParams = v.InferOutput<typeof PointConversionRuleIdParamsSchema>;
 
 /**
  * 积分转换规则名称 Schema。
  */
-const conversionRuleNameSchema = type('2 <= string <= 80').describe('积分转换规则名称');
+const ConversionRuleNameSchema = v.pipe(
+  v.string('请输入积分转换规则名称'),
+  v.minLength(2, '积分转换规则名称不能少于 2 个字符'),
+  v.maxLength(80, '积分转换规则名称不能超过 80 个字符'),
+  v.description('积分转换规则名称'),
+);
 
 /**
  * 积分转换规则描述 Schema。
  */
-const conversionRuleDescriptionSchema = type('string <= 200').describe('积分转换规则描述');
+const ConversionRuleDescriptionSchema = v.pipe(
+  v.string('请输入积分转换规则描述'),
+  v.maxLength(200, '积分转换规则描述不能超过 200 个字符'),
+  v.description('积分转换规则描述'),
+);
 
 /**
  * 积分转换规则备注 Schema。
  */
-const conversionRuleRemarkSchema = type('string <= 200').describe('备注');
-
-/**
- * 正整数 Schema。
- */
-const positiveIntegerSchema = type('number.integer > 0');
+const ConversionRuleRemarkSchema = v.pipe(
+  v.string('请输入备注'),
+  v.maxLength(200, '备注不能超过 200 个字符'),
+  v.description('备注'),
+);
 
 /**
  * 创建积分转换规则 Body Schema。
  */
-export const createPointConversionRuleSchema = type({
-  name: conversionRuleNameSchema,
-  'description?': conversionRuleDescriptionSchema,
-  'remark?': conversionRuleRemarkSchema,
+export const CreatePointConversionRuleSchema = v.object({
+  name: ConversionRuleNameSchema,
+  description: v.optional(ConversionRuleDescriptionSchema),
+  remark: v.optional(ConversionRuleRemarkSchema),
 
-  fromPointTypeId: type('string').describe('来源积分类型 ID'),
-  toPointTypeId: type('string').describe('目标积分类型 ID'),
+  fromPointTypeId: v.pipe(v.string('请输入来源积分类型 ID'), v.description('来源积分类型 ID')),
+  toPointTypeId: v.pipe(v.string('请输入目标积分类型 ID'), v.description('目标积分类型 ID')),
 
-  fromAmount: positiveIntegerSchema.describe('来源积分数量'),
-  toAmount: positiveIntegerSchema.describe('目标积分数量'),
+  fromAmount: v.pipe(
+    v.number('请输入来源积分数量'),
+    v.integer('来源积分数量必须是整数'),
+    v.minValue(1, '来源积分数量必须大于 0'),
+    v.description('来源积分数量'),
+  ),
+  toAmount: v.pipe(
+    v.number('请输入目标积分数量'),
+    v.integer('目标积分数量必须是整数'),
+    v.minValue(1, '目标积分数量必须大于 0'),
+    v.description('目标积分数量'),
+  ),
 
-  'minFromAmount?': positiveIntegerSchema.describe('单次最小来源积分数量'),
-  'maxFromAmount?': positiveIntegerSchema.describe('单次最大来源积分数量'),
+  minFromAmount: v.optional(
+    v.pipe(
+      v.number('请输入单次最小来源积分数量'),
+      v.integer('单次最小来源积分数量必须是整数'),
+      v.minValue(1, '单次最小来源积分数量必须大于 0'),
+      v.description('单次最小来源积分数量'),
+    ),
+  ),
+  maxFromAmount: v.optional(
+    v.pipe(
+      v.number('请输入单次最大来源积分数量'),
+      v.integer('单次最大来源积分数量必须是整数'),
+      v.minValue(1, '单次最大来源积分数量必须大于 0'),
+      v.description('单次最大来源积分数量'),
+    ),
+  ),
 
-  'enabled?': type('boolean').describe('是否启用'),
+  enabled: v.optional(v.pipe(v.boolean('请选择是否启用'), v.description('是否启用'))),
 
-  'startsAt?': type('number.integer').describe('生效时间戳'),
-  'endsAt?': type('number.integer').describe('失效时间戳'),
+  startsAt: v.optional(
+    v.pipe(
+      v.number('请输入生效时间戳'),
+      v.integer('生效时间戳必须是整数'),
+      v.description('生效时间戳'),
+    ),
+  ),
+  endsAt: v.optional(
+    v.pipe(
+      v.number('请输入失效时间戳'),
+      v.integer('失效时间戳必须是整数'),
+      v.description('失效时间戳'),
+    ),
+  ),
 });
 
-export type CreatePointConversionRuleBody = typeof createPointConversionRuleSchema.infer;
+export type CreatePointConversionRuleBody = v.InferOutput<typeof CreatePointConversionRuleSchema>;
 
 /**
  * 更新积分转换规则 Body Schema。
  */
-export const updatePointConversionRuleSchema = type({
-  'name?': conversionRuleNameSchema,
-  'description?': conversionRuleDescriptionSchema,
-  'remark?': conversionRuleRemarkSchema,
+export const UpdatePointConversionRuleSchema = v.object({
+  name: v.optional(ConversionRuleNameSchema),
+  description: v.optional(ConversionRuleDescriptionSchema),
+  remark: v.optional(ConversionRuleRemarkSchema),
 
-  'fromPointTypeId?': type('string').describe('来源积分类型 ID'),
-  'toPointTypeId?': type('string').describe('目标积分类型 ID'),
+  fromPointTypeId: v.optional(
+    v.pipe(v.string('请输入来源积分类型 ID'), v.description('来源积分类型 ID')),
+  ),
+  toPointTypeId: v.optional(
+    v.pipe(v.string('请输入目标积分类型 ID'), v.description('目标积分类型 ID')),
+  ),
 
-  'fromAmount?': positiveIntegerSchema.describe('来源积分数量'),
-  'toAmount?': positiveIntegerSchema.describe('目标积分数量'),
+  fromAmount: v.optional(
+    v.pipe(
+      v.number('请输入来源积分数量'),
+      v.integer('来源积分数量必须是整数'),
+      v.minValue(1, '来源积分数量必须大于 0'),
+      v.description('来源积分数量'),
+    ),
+  ),
+  toAmount: v.optional(
+    v.pipe(
+      v.number('请输入目标积分数量'),
+      v.integer('目标积分数量必须是整数'),
+      v.minValue(1, '目标积分数量必须大于 0'),
+      v.description('目标积分数量'),
+    ),
+  ),
 
-  'minFromAmount?': positiveIntegerSchema.describe('单次最小来源积分数量'),
-  'maxFromAmount?': positiveIntegerSchema.describe('单次最大来源积分数量'),
+  minFromAmount: v.optional(
+    v.pipe(
+      v.number('请输入单次最小来源积分数量'),
+      v.integer('单次最小来源积分数量必须是整数'),
+      v.minValue(1, '单次最小来源积分数量必须大于 0'),
+      v.description('单次最小来源积分数量'),
+    ),
+  ),
+  maxFromAmount: v.optional(
+    v.pipe(
+      v.number('请输入单次最大来源积分数量'),
+      v.integer('单次最大来源积分数量必须是整数'),
+      v.minValue(1, '单次最大来源积分数量必须大于 0'),
+      v.description('单次最大来源积分数量'),
+    ),
+  ),
 
-  'enabled?': type('boolean').describe('是否启用'),
+  enabled: v.optional(v.pipe(v.boolean('请选择是否启用'), v.description('是否启用'))),
 
-  'startsAt?': type('number.integer').describe('生效时间戳'),
-  'endsAt?': type('number.integer').describe('失效时间戳'),
+  startsAt: v.optional(
+    v.pipe(
+      v.number('请输入生效时间戳'),
+      v.integer('生效时间戳必须是整数'),
+      v.description('生效时间戳'),
+    ),
+  ),
+  endsAt: v.optional(
+    v.pipe(
+      v.number('请输入失效时间戳'),
+      v.integer('失效时间戳必须是整数'),
+      v.description('失效时间戳'),
+    ),
+  ),
 });
 
-export type UpdatePointConversionRuleBody = typeof updatePointConversionRuleSchema.infer;
+export type UpdatePointConversionRuleBody = v.InferOutput<typeof UpdatePointConversionRuleSchema>;
 
 /**
  * 积分转换 Body Schema。
  *
  * 用于用户按转换规则兑换积分。
  */
-export const convertPointSchema = nonceBodySchema.and({
-  ruleId: type('string').describe('积分转换规则 ID'),
-  userId: type('string').describe('用户 ID'),
-  fromAmount: positiveIntegerSchema.describe('来源积分数量'),
-  'remark?': conversionRuleRemarkSchema,
-});
+export const ConvertPointSchema = v.intersect([
+  NonceBodySchema,
+  v.object({
+    ruleId: v.pipe(v.string('请输入积分转换规则 ID'), v.description('积分转换规则 ID')),
+    userId: v.pipe(v.string('请输入用户 ID'), v.description('用户 ID')),
+    fromAmount: v.pipe(
+      v.number('请输入来源积分数量'),
+      v.integer('来源积分数量必须是整数'),
+      v.minValue(1, '来源积分数量必须大于 0'),
+      v.description('来源积分数量'),
+    ),
+    remark: v.optional(ConversionRuleRemarkSchema),
+  }),
+]);
 
-export type ConvertPointBody = typeof convertPointSchema.infer;
+export type ConvertPointBody = v.InferOutput<typeof ConvertPointSchema>;

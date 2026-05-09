@@ -1,7 +1,7 @@
 import {
-  orderIdParamsSchema,
-  orderPageQuerySchema,
-  refundOrderSchema,
+  OrderIdParamsSchema,
+  OrderPageQuerySchema,
+  RefundOrderSchema,
 } from '@internal/shared/order';
 import Elysia from 'elysia';
 
@@ -22,7 +22,7 @@ export const order = new Elysia({
       return orderUseCase.pageManage(query);
     },
     {
-      query: orderPageQuerySchema,
+      query: OrderPageQuerySchema,
       requiredAuth: true,
       detail: {
         description: '订单列表',
@@ -35,7 +35,7 @@ export const order = new Elysia({
       return orderUseCase.get(params.orderId);
     },
     {
-      params: orderIdParamsSchema,
+      params: OrderIdParamsSchema,
       requiredAuth: true,
       detail: {
         description: '订单详情',
@@ -53,7 +53,7 @@ export const order = new Elysia({
       };
     },
     {
-      params: orderIdParamsSchema,
+      params: OrderIdParamsSchema,
       requiredAuth: true,
       detail: {
         description: '完成订单',
@@ -71,8 +71,8 @@ export const order = new Elysia({
       };
     },
     {
-      body: refundOrderSchema,
-      params: orderIdParamsSchema,
+      body: RefundOrderSchema,
+      params: OrderIdParamsSchema,
       requiredAuth: true,
       detail: {
         description: '退款订单',
