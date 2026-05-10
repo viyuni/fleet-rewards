@@ -1,5 +1,5 @@
 <script lang="ts">
-import { UserTable } from '#web/admin/features/user';
+import { UserTable } from '#web/admin/features/user/components/UserTable';
 </script>
 
 <script setup lang="ts">

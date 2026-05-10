@@ -10,7 +10,8 @@
     ".": "./src/index.ts",
     "./schema": "./src/schema/index.ts",
     "./helper": "./src/helper/index.ts",
-    "./migrate": "./src/migrate.ts"
+    "./migrate": "./src/migrate.ts",
+    "./seed": "./src/seed.ts"
   },
   "scripts": {
     "test": "NODE_ENV=test bun --env-file=.env.test test --pass-with-no-tests",

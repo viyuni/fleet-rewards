@@ -1,7 +1,7 @@
 import { EdenFetchError } from '@elysia/eden';
 import { PiniaColada } from '@pinia/colada';
 import { createPinia } from 'pinia';
-import { createApp } from 'vue';
+import { createApp, vaporInteropPlugin } from 'vue';
 import { createRouter, createWebHistory } from 'vue-router';
 import { routes, handleHotUpdate } from 'vue-router/auto-routes';
 
@@ -19,6 +19,7 @@ const router = createRouter({
 
 const app = createApp(App);
 
+app.use(vaporInteropPlugin);
 app.use(router);
 app.use(pinia);
 app.use(PiniaColada, {

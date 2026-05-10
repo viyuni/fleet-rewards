@@ -7,6 +7,7 @@ import autoImport from 'unplugin-auto-import/vite';
 import components from 'unplugin-vue-components/vite';
 import vueDevTools from 'vite-plugin-vue-devtools';
 import { defineConfig } from 'vite-plus';
+import vueJsxVapor from 'vue-jsx-vapor/vite';
 import vueRouter from 'vue-router/vite';
 
 // https://vite.dev/config/
@@ -16,6 +17,10 @@ export default defineConfig({
       dts: './.types/typed-router.d.ts',
     }),
     vue(),
+    vueJsxVapor({
+      macros: true,
+      interop: true,
+    }),
     vueDevTools(),
     tailwindcss(),
     components({
