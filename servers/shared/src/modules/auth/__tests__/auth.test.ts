@@ -37,7 +37,7 @@ describe('AuthUseCase', () => {
 });
 
 describe('requiredSuperAdminAuth', () => {
-  function createApp(payload: { userId: string; role?: string }) {
+  function createApp(payload: { id: string; role?: string }) {
     const authUseCase = {
       verify: mock(async () => payload),
     } as any;
@@ -58,7 +58,7 @@ describe('requiredSuperAdminAuth', () => {
 
   it('允许超级管理员访问', async () => {
     const { app, authUseCase } = createApp({
-      userId: 'admin-id',
+      id: 'admin-id',
       role: 'superAdmin',
     });
 
@@ -72,7 +72,7 @@ describe('requiredSuperAdminAuth', () => {
 
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({
-      userId: 'admin-id',
+      id: 'admin-id',
       role: 'superAdmin',
     });
     expect(authUseCase.verify).toHaveBeenCalledWith('token');
@@ -80,7 +80,7 @@ describe('requiredSuperAdminAuth', () => {
 
   it('拒绝普通管理员访问', async () => {
     const { app } = createApp({
-      userId: 'admin-id',
+      id: 'admin-id',
       role: 'admin',
     });
 
@@ -98,7 +98,7 @@ describe('requiredSuperAdminAuth', () => {
 
   it('拒绝没有角色的 user token', async () => {
     const { app } = createApp({
-      userId: 'user-id',
+      id: 'user-id',
     });
 
     const response = await app.handle(
@@ -114,7 +114,7 @@ describe('requiredSuperAdminAuth', () => {
 
   it('缺少 token 时拒绝访问', async () => {
     const { app } = createApp({
-      userId: 'admin-id',
+      id: 'admin-id',
       role: 'superAdmin',
     });
 

@@ -51,11 +51,21 @@ export class PasswordUtil {
   static hash(password: string) {
     return Bun.password.hash(password, {
       algorithm: 'bcrypt',
-      cost: 12,
+      cost: this.hashCost(),
     });
   }
 
   static verify(password: string, hash: string) {
     return Bun.password.verify(password, hash, 'bcrypt');
+  }
+
+  private static hashCost() {
+    const cost = Number(Bun.env.PASSWORD_HASH_COST ?? 12);
+
+    if (!Number.isInteger(cost) || cost < 4 || cost > 31) {
+      throw new Error('PASSWORD_HASH_COST must be an integer between 4 and 31');
+    }
+
+    return cost;
   }
 }

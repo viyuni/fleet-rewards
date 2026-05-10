@@ -5,7 +5,7 @@ import type {
   AdminUpdatePasswordBody,
 } from '@internal/shared/admin';
 import type { AdminRole } from '@server/db/schema';
-import { InvalidCredentialsError, UnauthorizedError } from '@server/shared';
+import { InvalidCredentialsError } from '@server/shared';
 import { PasswordUtil } from '@server/shared/utils';
 
 import { env, logger } from '#server/admin/utils';
@@ -13,8 +13,9 @@ import { env, logger } from '#server/admin/utils';
 import {
   AdminAlreadyExistsError,
   AdminNotFoundError,
+  AdminPolicy,
   AdminSuperAdminCannotBeBannedError,
-} from '../domain/errors';
+} from '../domain';
 import type { AdminRepository } from '../repository';
 
 interface AdminUseCaseDeps {
@@ -25,13 +26,15 @@ export class AdminUseCase {
   constructor(private readonly deps: AdminUseCaseDeps) {}
 
   async me(adminId: string) {
-    const admin = await this.deps.adminRepo.findActiveInfoById(adminId);
+    const { id, uid, username, role, lastLoginAt } = await this.getAvailableById(adminId);
 
-    if (!admin) {
-      throw new UnauthorizedError();
-    }
-
-    return admin;
+    return {
+      id,
+      uid,
+      username,
+      role,
+      lastLoginAt,
+    };
   }
 
   async create(body: AdminCreateBody) {
@@ -51,11 +54,7 @@ export class AdminUseCase {
   }
 
   private async updateAdmin(adminId: string, body: AdminUpdateBody) {
-    const admin = await this.deps.adminRepo.findActiveById(adminId);
-
-    if (!admin) {
-      throw new AdminNotFoundError();
-    }
+    const admin = await this.getAvailableById(adminId);
 
     if (body.username && body.username !== admin.username) {
       const existingUsernameAdmin = await this.deps.adminRepo.findByUsername(body.username);
@@ -74,18 +73,16 @@ export class AdminUseCase {
     return updated;
   }
 
-  async requireAvailableById(adminId: string) {
+  async getAvailableById(adminId: string) {
     const admin = await this.deps.adminRepo.findById(adminId);
 
-    if (!admin) {
-      throw new AdminNotFoundError();
-    }
+    AdminPolicy.assertAvailableExists(admin);
 
     return admin;
   }
 
   async updatePassword(adminId: string, data: AdminUpdatePasswordBody) {
-    const admin = await this.requireAvailableById(adminId);
+    const admin = await this.getAvailableById(adminId);
 
     const isValidPassword = await PasswordUtil.verify(data.oldPassword, admin.passwordHash);
 
@@ -98,7 +95,7 @@ export class AdminUseCase {
   }
 
   async resetPassword(adminId: string) {
-    const admin = await this.requireAvailableById(adminId);
+    const admin = await this.getAvailableById(adminId);
 
     const password = PasswordUtil.generate();
     const passwordHash = await PasswordUtil.hash(password);
@@ -109,11 +106,7 @@ export class AdminUseCase {
   }
 
   async ban(adminId: string) {
-    const admin = await this.deps.adminRepo.findActiveById(adminId);
-
-    if (!admin) {
-      throw new AdminNotFoundError();
-    }
+    const admin = await this.getAvailableById(adminId);
 
     if (admin.role === 'superAdmin') {
       throw new AdminSuperAdminCannotBeBannedError();

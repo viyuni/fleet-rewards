@@ -21,9 +21,16 @@ import {
 import type { HTMLAttributes } from 'vue';
 import { computed, ref } from 'vue';
 
+import {
+  Pagination,
+  PaginationContent,
+  PaginationPrevious,
+  PaginationItem,
+  PaginationEllipsis,
+  PaginationNext,
+} from '#ui/components/ui/pagination';
 import { cn } from '#ui/lib/utils';
 
-import { valueUpdater } from './utils';
 import Table from './Table.vue';
 import TableBody from './TableBody.vue';
 import TableCell from './TableCell.vue';
@@ -31,6 +38,7 @@ import TableEmpty from './TableEmpty.vue';
 import TableHead from './TableHead.vue';
 import TableHeader from './TableHeader.vue';
 import TableRow from './TableRow.vue';
+import { valueUpdater } from './utils';
 
 type DataTableCellSlotProps<TData, TValue = unknown> = {
   cell: Cell<TData, unknown>;
@@ -214,4 +222,20 @@ function getColumnSlotValue(cell: Cell<TData, unknown>) {
   </div>
 
   <slot name="footer" :table="resolvedTable" />
+  <Pagination v-slot="{ page }" :items-per-page="10" :total="30" :default-page="2">
+    <PaginationContent v-slot="{ items }">
+      <PaginationPrevious />
+      <template v-for="(item, index) in items" :key="index">
+        <PaginationItem
+          v-if="item.type === 'page'"
+          :value="item.value"
+          :is-active="item.value === page"
+        >
+          {{ item.value }}
+        </PaginationItem>
+      </template>
+      <PaginationEllipsis :index="4" />
+      <PaginationNext />
+    </PaginationContent>
+  </Pagination>
 </template>

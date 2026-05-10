@@ -2,7 +2,6 @@ import { getColumns } from 'drizzle-orm';
 import type { AnyPgTable } from 'drizzle-orm/pg-core';
 
 export * from './query-helpers';
-export * from './select-builder';
 export * from './page-builder';
 
 export function parseDate(value: number | undefined | null) {

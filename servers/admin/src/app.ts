@@ -5,7 +5,7 @@ import { openapi } from '@server/shared/openapi';
 import { Elysia } from 'elysia';
 
 import { version } from '../package.json' with { type: 'json' };
-import { initDefaultAdmin } from './context';
+import { appRuntimeContext } from './context';
 import { admin } from './modules/admin';
 import { auth } from './modules/auth';
 import { email } from './modules/email/index';
@@ -27,6 +27,7 @@ export const app = new Elysia({
       credentials: true,
     }),
   )
+  .use(appRuntimeContext)
   .use(errorHandler)
   .use(auth)
   .use(admin)
@@ -48,6 +49,4 @@ if (env.NODE_ENV === 'development') {
   );
 }
 
-app.listen({ port: env.PORT }, logger.printUrls);
-
-await initDefaultAdmin();
+app.compile().listen({ port: env.PORT }, logger.printUrls);

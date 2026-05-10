@@ -27,10 +27,10 @@ export class PointBalanceUseCase {
     PointTransactionPolicy.assertDeltaMatchesType(input.type, input.delta);
 
     // 获取积分类型, 用于存快照
-    const pointType = await this.deps.pointTypeUseCase.requireAvailableById(input.pointTypeId, tx);
+    const pointType = await this.deps.pointTypeUseCase.getAvailableById(input.pointTypeId, tx);
 
     // 获取用户
-    const user = await this.deps.userUseCase.requireAvailableById(input.userId, tx);
+    const user = await this.deps.userUseCase.getAvailableById(input.userId, tx);
 
     let updatedAccount: PointAccount;
 

@@ -69,7 +69,7 @@ export const UserPageQuerySchema = v.intersect([
   PageQuerySchema,
   v.object({
     keyword: v.optional(v.pipe(v.string('请输入用户名'), v.description('用户名'))),
-    status: v.optional(v.picklist(['normal', 'banned'], '请选择有效的状态')),
+    status: v.optional(v.picklist(['active', 'banned'], '请选择有效的状态')),
   }),
 ]);
 

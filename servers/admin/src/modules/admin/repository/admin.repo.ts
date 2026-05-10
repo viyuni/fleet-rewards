@@ -8,35 +8,10 @@ import { and, eq } from 'drizzle-orm';
 export class AdminRepository {
   constructor(private db: DbExecutor) {}
 
-  async findActiveById(adminId: string) {
-    return await this.db.query.admins.findFirst({
-      where: {
-        id: adminId,
-        status: 'active',
-      },
-    });
-  }
-
   async findById(adminId: string) {
     return this.db.query.admins.findFirst({
       where: {
         id: adminId,
-      },
-    });
-  }
-
-  async findActiveInfoById(adminId: string) {
-    return await this.db.query.admins.findFirst({
-      where: {
-        id: adminId,
-        status: 'active',
-      },
-      columns: {
-        id: true,
-        uid: true,
-        username: true,
-        role: true,
-        lastLoginAt: true,
       },
     });
   }
@@ -53,15 +28,6 @@ export class AdminRepository {
     return await this.db.query.admins.findFirst({
       where: {
         username,
-      },
-    });
-  }
-
-  async findActiveByUid(uid: string) {
-    return await this.db.query.admins.findFirst({
-      where: {
-        uid,
-        status: 'active',
       },
     });
   }
@@ -90,7 +56,7 @@ export class AdminRepository {
     const [admin] = await this.db
       .update(admins)
       .set(input)
-      .where(and(eq(admins.id, adminId), eq(admins.status, 'active')))
+      .where(eq(admins.id, adminId))
       .returning({
         id: admins.id,
         uid: admins.uid,
@@ -109,7 +75,7 @@ export class AdminRepository {
     const [admin] = await this.db
       .update(admins)
       .set({ passwordHash })
-      .where(and(eq(admins.id, adminId), eq(admins.status, 'active')))
+      .where(eq(admins.id, adminId))
       .returning({
         id: admins.id,
         uid: admins.uid,
@@ -124,7 +90,7 @@ export class AdminRepository {
   async ban(adminId: string) {
     const [admin] = await this.db
       .update(admins)
-      .set({ status: 'disabled' })
+      .set({ status: 'banned' })
       .where(and(eq(admins.id, adminId), eq(admins.role, 'admin'), eq(admins.status, 'active')))
       .returning({
         id: admins.id,
@@ -139,7 +105,7 @@ export class AdminRepository {
     const [admin] = await this.db
       .update(admins)
       .set({ status: 'active' })
-      .where(and(eq(admins.id, adminId), eq(admins.role, 'admin'), eq(admins.status, 'disabled')))
+      .where(and(eq(admins.id, adminId), eq(admins.role, 'admin'), eq(admins.status, 'banned')))
       .returning({
         id: admins.id,
         status: admins.status,

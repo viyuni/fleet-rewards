@@ -7,12 +7,12 @@
     ".": "./dist/eden.d.mts"
   },
   "scripts": {
-    "dev": "bun  --env-file=.env --watch src/app.ts",
-    "test": "NODE_ENV=development bun --env-file=.env test --pass-with-no-tests",
+    "dev": "bun --cwd .. --env-file=./servers/admin/.env --watch ./servers/admin/src/app.ts",
+    "test": "NODE_ENV=test bun --env-file=.env.test test --preload ./src/__tests__/setup-env.ts --pass-with-no-tests",
     "typecheck": "tsgo --build",
     "check": "vpr typecheck && vp lint && vp fmt",
     "generate:dts": "vp pack",
-    "build:exe": "bun build ./src/app.ts --compile --compile-autoload-package-json --external sharp --external @img/sharp-win32-x64 --outfile gr"
+    "build": "bun build ./src/app.ts --compile --compile-autoload-package-json --external sharp --external @img/sharp-win32-x64 --outfile gr"
   },
   "dependencies": {
     "@elysia/cors": "^1.4.2",

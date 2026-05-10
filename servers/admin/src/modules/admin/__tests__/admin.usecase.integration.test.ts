@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
 
 import { createDatabase, type DbClient } from '@server/db';
 import { admins } from '@server/db/schema';
+import { InvalidCredentialsError } from '@server/shared';
 import { PasswordUtil } from '@server/shared/utils';
 import { eq, inArray, like } from 'drizzle-orm';
 
@@ -11,7 +12,7 @@ import { AdminNotFoundError, AdminSuperAdminCannotBeBannedError } from '../domai
 import { AdminRepository } from '../repository';
 import { AdminUseCase } from '../usecase';
 
-const testDatabaseUrl = Bun.env.TEST_DATABASE_URL ?? Bun.env.DATABASE_URL;
+const testDatabaseUrl = Bun.env.TEST_DATABASE_URL;
 const describeWithDatabase = testDatabaseUrl ? describe : describe.skip;
 
 let db: DbClient;
@@ -33,7 +34,7 @@ async function seedAdmin(input: {
   uid: string;
   username: string;
   role?: 'admin' | 'superAdmin';
-  status?: 'active' | 'disabled';
+  status?: 'active' | 'banned';
 }) {
   const [admin] = await db
     .insert(admins)
@@ -72,9 +73,14 @@ async function cleanupBatch(batch: string) {
   }
 }
 
-beforeEach(() => {
+async function clearAdmins() {
+  await db.delete(admins);
+}
+
+beforeEach(async () => {
   if (!testDatabaseUrl) return;
   db = createDatabase(testDatabaseUrl);
+  await clearAdmins();
 });
 
 afterEach(async () => {
@@ -160,12 +166,18 @@ describeWithDatabase('AdminUseCase 真实数据库', () => {
       role: 'admin',
     });
 
-    await expect(
-      useCase.updatePassword(seeded.id, {
+    let error: unknown;
+
+    try {
+      await useCase.updatePassword(seeded.id, {
         oldPassword: 'wrongPassword123',
         newPassword: 'newPassword123',
-      }),
-    ).rejects.toThrow();
+      });
+    } catch (caught) {
+      error = caught;
+    }
+
+    expect(error).toBeInstanceOf(InvalidCredentialsError);
 
     const row = await db.query.admins.findFirst({
       where: {
@@ -188,11 +200,18 @@ describeWithDatabase('AdminUseCase 真实数据库', () => {
       username: `${batch}_target`,
     });
 
-    await expect(
-      useCase.update(target.id, {
+    let error: unknown;
+
+    try {
+      await useCase.update(target.id, {
         username: existing.username,
-      }),
-    ).rejects.toThrow('管理员用户名已存在');
+      });
+    } catch (caught) {
+      error = caught;
+    }
+
+    expect(error).toBeInstanceOf(Error);
+    expect((error as Error).message).toBe('管理员用户名已存在');
   });
 
   it('初始化默认管理员时创建唯一超级管理员', async () => {
@@ -200,7 +219,6 @@ describeWithDatabase('AdminUseCase 真实数据库', () => {
       return;
     }
 
-    const batch = newBatch();
     const useCase = createUseCase();
 
     await useCase.initDefaultAdmin();
@@ -255,10 +273,10 @@ describeWithDatabase('AdminUseCase 真实数据库', () => {
 
     expect(result).toEqual({
       id: seeded.id,
-      status: 'disabled',
+      status: 'banned',
       role: 'admin',
     });
-    expect(row?.status).toBe('disabled');
+    expect(row?.status).toBe('banned');
   });
 
   it('不能封禁超级管理员', async () => {
@@ -272,12 +290,28 @@ describeWithDatabase('AdminUseCase 真实数据库', () => {
         role: 'superAdmin',
       }));
 
-    await expect(useCase.ban(seeded.id)).rejects.toThrow(AdminSuperAdminCannotBeBannedError);
+    let error: unknown;
+
+    try {
+      await useCase.ban(seeded.id);
+    } catch (caught) {
+      error = caught;
+    }
+
+    expect(error).toBeInstanceOf(AdminSuperAdminCannotBeBannedError);
   });
 
   it('封禁不存在的管理员会抛出错误', async () => {
     const useCase = createUseCase();
 
-    await expect(useCase.ban(crypto.randomUUID())).rejects.toThrow(AdminNotFoundError);
+    let error: unknown;
+
+    try {
+      await useCase.ban(crypto.randomUUID());
+    } catch (caught) {
+      error = caught;
+    }
+
+    expect(error).toBeInstanceOf(AdminNotFoundError);
   });
 });

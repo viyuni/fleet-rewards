@@ -1,6 +1,5 @@
 import path from 'node:path';
 
-import { createEnv } from '@t3-oss/env-core';
 import * as v from 'valibot';
 
 const port = (defaultPort: number) =>
@@ -45,10 +44,3 @@ export const SharedEnvShape = {
 const schema = v.object(SharedEnvShape);
 
 export type SharedEnv = v.InferOutput<typeof schema>;
-
-export const env = createEnv({
-  shared: SharedEnvShape,
-  server: {},
-  runtimeEnv: process.env,
-  emptyStringAsUndefined: true,
-});

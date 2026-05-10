@@ -3,7 +3,7 @@ import { index, pgEnum, pgTable, text, timestamp, uniqueIndex, uuid } from 'driz
 
 import { timestamps } from './column-helpers.ts';
 
-export const adminStatusEnum = pgEnum('admin_status', ['active', 'disabled']);
+export const adminStatusEnum = pgEnum('admin_status', ['active', 'banned']);
 export const adminRoleEnum = pgEnum('admin_role', ['admin', 'superAdmin']);
 
 /** 管理员表 */

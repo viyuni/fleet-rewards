@@ -1,9 +1,7 @@
-import { type InferSelectModel, relationsFilterToSQL, type SQL } from 'drizzle-orm';
-import type { AnyPgTable, SelectedFields } from 'drizzle-orm/pg-core';
-import type { SelectResultFields } from 'drizzle-orm/query-builders/select.types';
+import { relationsFilterToSQL } from 'drizzle-orm';
+import type { AnyPgTable } from 'drizzle-orm/pg-core';
 
 import type { DbExecutor } from '..';
-import type { TableSelectFields } from './types';
 
 export type PaginationMeta = {
   page: number;
@@ -57,11 +55,6 @@ type QueryRunner<TQuery extends FindManyQuery, TItem> = (
   findMany: TQuery['findMany'],
   input: QueryInput<TQuery>,
 ) => Promise<TItem[]>;
-
-type PageItem<
-  TTable extends AnyPgTable,
-  TFields extends SelectedFields | undefined,
-> = TFields extends SelectedFields ? SelectResultFields<TFields> : InferSelectModel<TTable>;
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_PAGE_SIZE = 20;
@@ -119,98 +112,6 @@ export function createPaginatedResult<TItem>(input: {
       total: input.total,
     }),
   };
-}
-
-export class PageBuilder<
-  TTable extends AnyPgTable,
-  TFields extends SelectedFields | undefined = undefined,
-> {
-  private whereValue?: SQL;
-  private orderByValues: SQL[] = [];
-
-  private currentPage = DEFAULT_PAGE;
-  private currentPageSize = DEFAULT_PAGE_SIZE;
-  private currentMaxPageSize = DEFAULT_MAX_PAGE_SIZE;
-
-  private fields?: TFields;
-
-  constructor(
-    private readonly db: DbExecutor,
-    private readonly table: TTable,
-  ) {}
-
-  page(page: number | undefined | null) {
-    this.currentPage = Math.max(1, page ?? DEFAULT_PAGE);
-    return this;
-  }
-
-  pageSize(pageSize: number | undefined | null) {
-    const value = pageSize ?? DEFAULT_PAGE_SIZE;
-    this.currentPageSize = Math.min(this.currentMaxPageSize, Math.max(1, value));
-    return this;
-  }
-
-  maxPageSize(maxPageSize: number | undefined | null) {
-    const value = maxPageSize ?? DEFAULT_MAX_PAGE_SIZE;
-    this.currentMaxPageSize = Math.max(1, value);
-    this.currentPageSize = Math.min(this.currentPageSize, this.currentMaxPageSize);
-    return this;
-  }
-
-  where(value: SQL | undefined) {
-    this.whereValue = value;
-    return this;
-  }
-
-  orderBy(...values: SQL[]) {
-    this.orderByValues = values;
-    return this;
-  }
-
-  columns<const TNextFields extends SelectedFields>(
-    fields: TNextFields & TableSelectFields<TTable, TNextFields>,
-  ): PageBuilder<TTable, TNextFields> {
-    this.fields = fields as unknown as TFields;
-
-    return this as unknown as PageBuilder<TTable, TNextFields>;
-  }
-
-  async paginate(): Promise<PaginatedResult<PageItem<TTable, TFields>>> {
-    const pagination = resolvePagination({
-      page: this.currentPage,
-      pageSize: this.currentPageSize,
-      maxPageSize: this.currentMaxPageSize,
-    });
-
-    const table = this.table as any;
-
-    const query = this.fields
-      ? this.db
-          .select(this.fields as SelectedFields)
-          .from(table)
-          .$dynamic()
-      : this.db.select().from(table).$dynamic();
-
-    let builtQuery = query;
-
-    if (this.whereValue) {
-      builtQuery = builtQuery.where(this.whereValue);
-    }
-
-    if (this.orderByValues.length > 0) {
-      builtQuery = builtQuery.orderBy(...this.orderByValues);
-    }
-
-    const pagedQuery = builtQuery.limit(pagination.limit).offset(pagination.offset);
-
-    const [total, items] = await Promise.all([this.db.$count(table, this.whereValue), pagedQuery]);
-
-    return createPaginatedResult({
-      items,
-      total,
-      pagination,
-    }) as PaginatedResult<PageItem<TTable, TFields>>;
-  }
 }
 
 export class QueryPageBuilder<

@@ -1,1 +1,0 @@
-ALTER TABLE "point_accounts" ALTER COLUMN "user_id" SET DATA TYPE uuid USING "user_id"::uuid;

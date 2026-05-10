@@ -74,7 +74,6 @@ export class UserRepository {
       },
       where: {
         id: userId,
-        status: 'normal',
       },
     });
 
@@ -103,7 +102,7 @@ export class UserRepository {
     const [user] = await this.db
       .update(users)
       .set({
-        status: 'normal',
+        status: 'active',
       })
       .where(and(eq(users.id, userId)))
       .returning();
@@ -127,7 +126,7 @@ export class UserRepository {
       .set({
         passwordHash,
       })
-      .where(and(eq(users.id, userId), eq(users.status, 'normal')))
+      .where(eq(users.id, userId))
       .returning(userSelectCols);
 
     if (!user) {
@@ -141,7 +140,7 @@ export class UserRepository {
     const [user] = await this.db
       .update(users)
       .set(data)
-      .where(and(eq(users.id, userId), eq(users.status, 'normal')))
+      .where(eq(users.id, userId))
       .returning(userSelectCols);
 
     if (!user) {
@@ -158,7 +157,9 @@ export class UserRepository {
     return new QueryPageBuilder(this.db, users, this.db.query.users)
       .page(query.page)
       .pageSize(query.pageSize)
-      .where({})
+      .where({
+        status: query.status,
+      })
       .query((findMany, { where, limit, offset }) =>
         findMany({
           where,

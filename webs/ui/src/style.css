@@ -170,7 +170,7 @@
     /* 次要与静默 */
     --secondary: oklch(26.9% 0 0); /* #202022 */
     --secondary-foreground: oklch(87.609% 0 0);
-    --muted: oklch(26.9% 0 0);
+    --muted: oklch(19.125% 0.00002 271.152);
     --muted-foreground: oklch(70.8% 0 0);
 
     /* 强调与悬浮 */
@@ -190,7 +190,7 @@
     --chart-5: oklch(26.9% 0 0);
 
     /* 侧边栏 */
-    --sidebar: oklch(20.5% 0 0);
+    --sidebar: oklch(17.764% 0.00002 271.152);
     --sidebar-foreground: oklch(87.609% 0 0);
     --sidebar-primary: var(--primary);
     --sidebar-primary-foreground: oklch(100% 0 0);
@@ -222,5 +222,95 @@
   button:not(:disabled),
   [role='button']:not(:disabled) {
     cursor: pointer;
+  }
+
+  @font-face {
+    font-family: 'MiSans';
+    src: url('./fonts/MiSans-Thin.woff2') format('woff2');
+    font-weight: 100;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  @font-face {
+    font-family: 'MiSans';
+    src: url('./fonts/MiSans-ExtraLight.woff2') format('woff2');
+    font-weight: 200;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  @font-face {
+    font-family: 'MiSans';
+    src: url('./fonts/MiSans-Light.woff2') format('woff2');
+    font-weight: 300;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  @font-face {
+    font-family: 'MiSans';
+    src: url('./fonts/MiSans-Regular.woff2') format('woff2');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  @font-face {
+    font-family: 'MiSans';
+    src: url('./fonts/MiSans-Normal.woff2') format('woff2');
+    font-weight: 450;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  @font-face {
+    font-family: 'MiSans';
+    src: url('./fonts/MiSans-Medium.woff2') format('woff2');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  @font-face {
+    font-family: 'MiSans';
+    src: url('./fonts/MiSans-Semibold.woff2') format('woff2');
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  @font-face {
+    font-family: 'MiSans';
+    src: url('./fonts/MiSans-Demibold.woff2') format('woff2');
+    font-weight: 650;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  @font-face {
+    font-family: 'MiSans';
+    src: url('./fonts/MiSans-Bold.woff2') format('woff2');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  @font-face {
+    font-family: 'MiSans';
+    src: url('./fonts/MiSans-Heavy.woff2') format('woff2');
+    font-weight: 900;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  :root {
+    font-family:
+      'MiSans',
+      system-ui,
+      -apple-system,
+      BlinkMacSystemFont,
+      'Segoe UI',
+      sans-serif;
   }
 }

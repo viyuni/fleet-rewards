@@ -25,7 +25,7 @@ export class RewardRuleUseCase {
   }
 
   async create(ruleData: CreateRewardRuleBody) {
-    await this.deps.pointTypeUseCase.requireAvailableById(ruleData.pointTypeId);
+    await this.deps.pointTypeUseCase.getAvailableById(ruleData.pointTypeId);
 
     const rule = await this.deps.rewardRuleRepo.create(this.toInsert(ruleData));
 
@@ -40,7 +40,7 @@ export class RewardRuleUseCase {
     const current = await this.get(rewardRuleId);
 
     if (ruleData.pointTypeId) {
-      await this.deps.pointTypeUseCase.requireAvailableById(ruleData.pointTypeId);
+      await this.deps.pointTypeUseCase.getAvailableById(ruleData.pointTypeId);
     }
 
     const update = this.toUpdate(ruleData);

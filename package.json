@@ -13,7 +13,7 @@
     "check": "vp fmt && vp lint && vpr typecheck"
   },
   "dependencies": {
-    "@typescript/native-preview": "^7.0.0-dev.20260508.1"
+    "@typescript/native-preview": "^7.0.0-dev.20260509.2"
   },
   "devDependencies": {
     "@tsconfig/node24": "^24.0.4",

@@ -9,7 +9,7 @@
   },
   "scripts": {
     "dev": "bun --cwd .. --env-file=servers/user/.env --watch servers/user/src/app.ts",
-    "test": "NODE_ENV=development bun --env-file=.env test --pass-with-no-tests",
+    "test": "NODE_ENV=test bun --env-file=.env.test test --pass-with-no-tests",
     "typecheck": "tsgo --build",
     "check": "vpr typecheck && vp lint && vp fmt"
   },

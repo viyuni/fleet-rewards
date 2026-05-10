@@ -4,6 +4,7 @@ import { InvalidCredentialsError } from '@server/shared';
 import type { AuthUseCase } from '@server/shared/auth';
 import { PasswordUtil } from '@server/shared/utils';
 
+import { AdminPolicy } from '#server/admin/modules/admin/domain';
 import { AdminRepository } from '#server/admin/modules/admin/repository';
 
 export interface AdminAuthUseCaseDeps {
@@ -29,9 +30,13 @@ export class AdminAuthUseCase {
   constructor(private readonly deps: AdminAuthUseCaseDeps) {}
 
   async login(body: AdminLoginBody): Promise<AdminLoginResult> {
-    const user = await this.deps.adminRepo.findActiveByUid(body.uid);
+    const user = await this.deps.adminRepo.findByUid(body.uid);
 
     if (!user) {
+      throw new InvalidCredentialsError();
+    }
+
+    if (!AdminPolicy.isAvailable(user)) {
       throw new InvalidCredentialsError();
     }
 

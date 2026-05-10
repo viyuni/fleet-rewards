@@ -7,8 +7,7 @@ import {
   PointTransactionRepository,
   PointTypeUseCase,
 } from '#server/shared/modules/point';
-import { UserPolicy } from '#server/shared/modules/user/domain';
-import { UserRepository } from '#server/shared/modules/user/repository';
+import { UserUseCase } from '#server/shared/modules/user';
 
 import { RewardRulePolicy, type BiliGuardRewardEvent } from '../domain';
 import { RewardRuleRepository } from '../repository';
@@ -20,7 +19,7 @@ export interface RewardUseCaseDeps {
   pointTransactionRepo: PointTransactionRepository;
   pointTypeUseCase: PointTypeUseCase;
   rewardRuleRepo: RewardRuleRepository;
-  userRepo: UserRepository;
+  userUseCase: UserUseCase;
 }
 
 export class RewardUseCase {
@@ -43,9 +42,7 @@ export class RewardUseCase {
 
   async grantBiliGuard(event: BiliGuardRewardEvent, now = new Date()) {
     return await this.deps.db.transaction(async tx => {
-      const user = await this.deps.userRepo.findByBiliUid(String(event.uid), tx);
-
-      UserPolicy.assertAvailable(user);
+      const user = await this.deps.userUseCase.getAvailableByBiliUid(String(event.uid), tx);
 
       const rules = await this.deps.rewardRuleRepo.listCandidates(now, tx);
       const matchedRules = rules.filter(rule => RewardRulePolicy.matchesBiliGuard(rule, event));
@@ -53,7 +50,7 @@ export class RewardUseCase {
       const results = [];
 
       for (const rule of effectiveRules) {
-        await this.deps.pointTypeUseCase.requireAvailableById(rule.pointTypeId, tx);
+        await this.deps.pointTypeUseCase.getAvailableById(rule.pointTypeId, tx);
 
         const account = await this.deps.pointAccountRepo.ensureAccountAndLock(tx, {
           userId: user.id,

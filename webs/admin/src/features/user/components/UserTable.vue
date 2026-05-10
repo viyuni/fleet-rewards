@@ -80,10 +80,10 @@ function formatAmount(amount: number) {
 </script>
 
 <template>
-  <div class="w-full p-5">
+  <div class="w-full p-3">
     <DataTable :data="data" :columns="columns">
       <template #toolbar="{ table }">
-        <div class="flex items-center py-4">
+        <div class="mb-3 flex items-center">
           <Input
             class="max-w-sm"
             placeholder="Filter emails..."
@@ -187,32 +187,7 @@ function formatAmount(amount: number) {
         {{ JSON.stringify(data) }}
       </template>
 
-      <template #footer="{ table }">
-        <div class="flex items-center justify-end space-x-2 py-4">
-          <div class="text-muted-foreground flex-1 text-sm">
-            {{ table.getFilteredSelectedRowModel().rows.length }} of
-            {{ table.getFilteredRowModel().rows.length }} row(s) selected.
-          </div>
-          <div class="space-x-2">
-            <Button
-              variant="outline"
-              size="sm"
-              :disabled="!table.getCanPreviousPage()"
-              @click="table.previousPage()"
-            >
-              Previous
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              :disabled="!table.getCanNextPage()"
-              @click="table.nextPage()"
-            >
-              Next
-            </Button>
-          </div>
-        </div>
-      </template>
+      <template #footer="{ table }"> </template>
     </DataTable>
   </div>
 </template>

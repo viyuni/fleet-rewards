@@ -26,7 +26,7 @@ import { RewardRuleRepository, RewardRuleUseCase, RewardUseCase } from './module
 import { UserBasicInfoCrypto, UserRepository, UserUseCase } from './modules/user';
 import type { SharedEnv } from './utils';
 
-export interface CreateContextOptions {
+export interface CreateSharedContextOptions {
   db: DbClient;
   env: SharedEnv & {
     JWT_SECRET: string;
@@ -34,19 +34,23 @@ export interface CreateContextOptions {
   };
 }
 
-export function createAppInstances({ db, env }: CreateContextOptions) {
+export function createContainer({ db, env }: CreateSharedContextOptions) {
   const authUseCase = new AuthUseCase(env.JWT_SECRET);
   const userBasicInfoCrypto = new UserBasicInfoCrypto(env.DATA_SECRET);
 
   const userRepo = new UserRepository(db);
+
   const pointAccountRepo = new PointAccountRepository();
   const pointConversionRuleRepo = new PointConversionRuleRepository(db);
   const pointTransactionRepo = new PointTransactionRepository(db);
   const pointTypeRepo = new PointTypeRepository(db);
+
   const orderRepo = new OrderRepository(db);
+
   const productRepo = new ProductRepository(db);
-  const rewardRuleRepo = new RewardRuleRepository(db);
   const stockMovementRepo = new StockMovementRepository(db);
+
+  const rewardRuleRepo = new RewardRuleRepository(db);
 
   const userUseCase = new UserUseCase({
     userBasicInfoCrypto,
@@ -115,7 +119,7 @@ export function createAppInstances({ db, env }: CreateContextOptions) {
     pointTransactionRepo,
     pointTypeUseCase,
     rewardRuleRepo,
-    userRepo,
+    userUseCase,
   });
 
   const rewardRuleUseCase = new RewardRuleUseCase({
@@ -126,46 +130,52 @@ export function createAppInstances({ db, env }: CreateContextOptions) {
   return {
     repositories: {
       userRepo,
+
       pointAccountRepo,
       pointConversionRuleRepo,
       pointTransactionRepo,
       pointTypeRepo,
+
       orderRepo,
+
       productRepo,
-      rewardRuleRepo,
       stockMovementRepo,
+
+      rewardRuleRepo,
     },
+
     useCases: {
       authUseCase,
+
       userUseCase,
+
       pointTypeUseCase,
       pointAccountUseCase,
       pointBalanceUseCase,
       pointTransactionUseCase,
       pointConversionUseCase,
+
       productUseCase,
       stockMovementUseCase,
+
       orderUseCase,
+
       rewardUseCase,
       rewardRuleUseCase,
     },
   };
 }
 
-export type AppInstances = ReturnType<typeof createAppInstances>;
-
-export function createContext(instances: AppInstances) {
-  return new Elysia({ name: 'SharedAppContext' })
-    .use(createAuthGuard(instances.useCases.authUseCase))
-    .decorate(instances.useCases);
-}
-
-export function createAppContext(options: CreateContextOptions) {
-  const instances = createAppInstances(options);
-  const context = createContext(instances);
+export function createAppContext(options: CreateSharedContextOptions) {
+  const container = createContainer(options);
+  const context = new Elysia({
+    name: 'SharedContext',
+  })
+    .use(createAuthGuard(container.useCases.authUseCase))
+    .decorate(container.useCases);
 
   return {
-    instances,
+    container,
     context,
   };
 }

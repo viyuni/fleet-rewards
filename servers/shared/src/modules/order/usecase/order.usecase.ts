@@ -47,7 +47,7 @@ export class OrderUseCase {
 
   async create(userId: string, orderData: CreateOrderBody) {
     return this.deps.db.transaction(async tx => {
-      const user = await this.deps.userUseCase.requireAvailableById(userId, tx);
+      const user = await this.deps.userUseCase.getAvailableById(userId, tx);
       const product = await this.deps.productUseCase.requireByIdForUpdate(tx, orderData.productId);
 
       // 确保账户存在并锁行
@@ -56,10 +56,7 @@ export class OrderUseCase {
         pointTypeId: product.pointTypeId,
       });
 
-      const pointType = await this.deps.pointTypeUseCase.requireAvailableById(
-        product.pointTypeId,
-        tx,
-      );
+      const pointType = await this.deps.pointTypeUseCase.getAvailableById(product.pointTypeId, tx);
 
       if (product.status !== 'active') {
         throw new ProductUnavailableError();

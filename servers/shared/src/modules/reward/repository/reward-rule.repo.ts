@@ -1,5 +1,5 @@
 import type { DbExecutor } from '@server/db';
-import { deletedAtIsNull, keywordLike, QueryPageBuilder } from '@server/db/helper';
+import { deletedAtIsNull } from '@server/db/helper';
 import {
   rewardRules,
   type InsertRewardRule,

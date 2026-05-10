@@ -1,15 +1,14 @@
 import { defineConfig } from 'vite-plus';
 
-function batchCommands(...commands: string[]) {
-  return commands.map(command => `vpr ${command}`).join(' & ');
-}
-
 export default defineConfig({
   staged: {
     '*': 'vp check --fix',
   },
   run: {
-    cache: false,
+    cache: {
+      scripts: false,
+      tasks: true,
+    },
     tasks: {
       'dev:server/admin': {
         command: 'vpr @server/admin#dev',
@@ -30,27 +29,20 @@ export default defineConfig({
         command: 'vpr -r build',
         dependsOn: ['generate:meta'],
       },
-      typecheck: {
-        command: batchCommands(
-          '@server/shared#typecheck',
-          '@server/admin#typecheck',
-          '@server/db#typecheck',
-          '@server/user#typecheck',
-          // '@web/admin#typecheck',
-          // '@web/user#typecheck',
-          // '@web/ui#typecheck',
-          '@internal/shared#typecheck',
-        ),
+      tsc: {
+        command: 'vpr -r --parallel typecheck',
+        input: [{ auto: true }, '!**/*.tsbuildinfo'],
+      },
+      'tsc:server': {
+        command: 'vpr --parallel --filter "@server/*" --filter "@internal/shared" typecheck',
+        input: [{ auto: true }, '!**/*.tsbuildinfo'],
+      },
+      'tsc:web': {
+        command: 'vpr --parallel --filter "@web/*" --filter "@internal/shared" typecheck',
+        input: [{ auto: true }, '!**/*.tsbuildinfo'],
       },
       test: {
-        cache: false,
-        command: batchCommands(
-          '@web/admin#test',
-          '@web/user#test',
-          '@server/admin#test',
-          '@server/user#test',
-          '@server/shared#test',
-        ),
+        command: 'vpr -r test',
       },
     },
   },
@@ -61,7 +53,7 @@ export default defineConfig({
     sortPackageJson: true,
     arrowParens: 'avoid',
     embeddedLanguageFormatting: 'auto',
-    ignorePatterns: ['**/node_modules/**', '**/dist/**', '**/webs/ui/**'],
+    ignorePatterns: ['**/node_modules/**', '**/dist/**', 'webs/ui/components/ui/**'],
   },
   lint: {
     plugins: ['unicorn', 'typescript', 'oxc', 'vue', 'import', 'vitest', 'node'],
@@ -190,6 +182,6 @@ export default defineConfig({
       builtin: true,
     },
     globals: {},
-    ignorePatterns: ['**/node_modules/**', '**/dist/**', '**/webs/ui/**'],
+    ignorePatterns: ['**/node_modules/**', '**/dist/**', 'webs/ui/components/ui/**'],
   },
 });

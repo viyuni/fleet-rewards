@@ -1,7 +1,7 @@
 import type { CreatePointTypeBody, UpdatePointTypeBody } from '@internal/shared/point-type';
 import type { DbExecutor } from '@server/db';
 
-import { PointTypeNameExistsError, PointTypeNotFoundError, PointTypePolicy } from '../domain';
+import { PointTypeNameExistsError, PointTypePolicy } from '../domain';
 import { PointTypeRepository } from '../repository';
 
 export interface PointTypeUseCaseDeps {
@@ -14,17 +14,15 @@ export class PointTypeUseCase {
   async get(pointTypeId: string) {
     const pointType = await this.deps.pointTypeRepo.findById(pointTypeId);
 
-    if (!pointType) {
-      throw new PointTypeNotFoundError();
-    }
+    PointTypePolicy.assertExists(pointType);
 
     return pointType;
   }
 
-  async requireAvailableById(pointTypeId: string, db?: DbExecutor) {
+  async getAvailableById(pointTypeId: string, db?: DbExecutor) {
     const pointType = await this.deps.pointTypeRepo.findById(pointTypeId, db);
 
-    PointTypePolicy.assertAvailable(pointType);
+    PointTypePolicy.assertAvailableExists(pointType);
 
     return pointType;
   }
@@ -42,9 +40,7 @@ export class PointTypeUseCase {
   async update(pointTypeId: string, data: UpdatePointTypeBody) {
     const pointType = await this.deps.pointTypeRepo.findById(pointTypeId);
 
-    if (!pointType) {
-      throw new PointTypeNotFoundError();
-    }
+    PointTypePolicy.assertExists(pointType);
 
     return this.deps.pointTypeRepo.update(pointTypeId, data);
   }
@@ -52,9 +48,7 @@ export class PointTypeUseCase {
   async enable(pointTypeId: string) {
     const pointType = await this.deps.pointTypeRepo.findById(pointTypeId);
 
-    if (!pointType) {
-      throw new PointTypeNotFoundError();
-    }
+    PointTypePolicy.assertExists(pointType);
 
     if (pointType.status === 'active') {
       return pointType;
@@ -66,9 +60,7 @@ export class PointTypeUseCase {
   async disable(pointTypeId: string) {
     const pointType = await this.deps.pointTypeRepo.findById(pointTypeId);
 
-    if (!pointType) {
-      throw new PointTypeNotFoundError();
-    }
+    PointTypePolicy.assertExists(pointType);
 
     if (pointType.status === 'disabled') {
       return pointType;

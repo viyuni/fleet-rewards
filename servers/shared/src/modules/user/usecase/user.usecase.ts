@@ -9,12 +9,7 @@ import type { DbExecutor } from '@server/db';
 import { InvalidCredentialsError } from '#server/shared/errors';
 import { PasswordUtil } from '#server/shared/utils';
 
-import {
-  UserAlreadyRegisteredError,
-  UserBasicInfoCrypto,
-  UserNotFoundError,
-  UserPolicy,
-} from '../domain';
+import { UserAlreadyRegisteredError, UserBasicInfoCrypto, UserPolicy } from '../domain';
 import { UserRepository } from '../repository';
 
 export interface UserUseCaseDeps {
@@ -28,14 +23,9 @@ export class UserUseCase {
   /**
    * 查询可用用户
    */
-  async requireAvailableById(userId: string, db?: DbExecutor) {
+  async getAvailableById(userId: string, db?: DbExecutor) {
     const user = await this.deps.userRepo.findById(userId, db);
-
-    if (!user) {
-      throw new UserNotFoundError();
-    }
-
-    UserPolicy.assertAvailable(user);
+    UserPolicy.assertAvailableExists(user);
 
     return user;
   }
@@ -43,14 +33,9 @@ export class UserUseCase {
   /**
    * 查询可用用户通过 UID
    */
-  async requireAvailableByBiliUid(biliUid: string, db?: DbExecutor) {
+  async getAvailableByBiliUid(biliUid: string, db?: DbExecutor) {
     const user = await this.deps.userRepo.findByBiliUid(biliUid, db);
-
-    if (!user) {
-      throw new UserNotFoundError();
-    }
-
-    UserPolicy.assertAvailable(user);
+    UserPolicy.assertAvailableExists(user);
 
     return user;
   }
@@ -61,9 +46,7 @@ export class UserUseCase {
   async profile(userId: string) {
     const user = await this.deps.userRepo.findDetailById(userId);
 
-    if (!user) {
-      throw new UserNotFoundError();
-    }
+    UserPolicy.assertAvailableExists(user);
 
     const { phoneEncrypted, emailEncrypted, addressEncrypted, ...profile } = user;
 
@@ -106,9 +89,7 @@ export class UserUseCase {
   async ban(userId: string) {
     const user = await this.deps.userRepo.ban(userId);
 
-    if (!user) {
-      throw new UserNotFoundError();
-    }
+    UserPolicy.assertExists(user);
 
     return user;
   }
@@ -119,9 +100,7 @@ export class UserUseCase {
   async restore(userId: string) {
     const user = await this.deps.userRepo.restore(userId);
 
-    if (!user) {
-      throw new UserNotFoundError();
-    }
+    UserPolicy.assertExists(user);
 
     return user;
   }
@@ -155,7 +134,9 @@ export class UserUseCase {
   }
 
   async update(userId: string, data: UpdateUserBody) {
-    const updatedUser = await this.deps.userRepo.update(userId, {
+    const user = await this.getAvailableById(userId);
+
+    const updatedUser = await this.deps.userRepo.update(user.id, {
       ...data,
       ...this.deps.userBasicInfoCrypto.encryptBasicInfo(data),
     });
@@ -171,7 +152,7 @@ export class UserUseCase {
   }
 
   async updatePassword(data: UpdateUserPasswordBody) {
-    const user = await this.requireAvailableByBiliUid(data.biliUid);
+    const user = await this.getAvailableByBiliUid(data.biliUid);
 
     const isValidPassword = await PasswordUtil.verify(data.oldPassword, user.passwordHash);
 
@@ -190,10 +171,12 @@ export class UserUseCase {
    * - 账号不会退出
    */
   async resetPassword(userId: string) {
+    const user = await this.getAvailableById(userId);
+
     const radomPassword = PasswordUtil.generate();
     const passwordHash = await PasswordUtil.hash(radomPassword);
 
-    await this.deps.userRepo.updatePassword(userId, passwordHash);
+    await this.deps.userRepo.updatePassword(user.id, passwordHash);
 
     return {
       password: radomPassword,

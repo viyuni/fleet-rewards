@@ -51,7 +51,7 @@ export class ProductUseCase {
    * 创建商品
    */
   async create(productData: CreateProductBody) {
-    await this.deps.pointTypeUseCase.requireAvailableById(productData.pointTypeId);
+    await this.deps.pointTypeUseCase.getAvailableById(productData.pointTypeId);
     ProductInputPolicy.assertValid(productData);
 
     const { cover, ...data } = productData;

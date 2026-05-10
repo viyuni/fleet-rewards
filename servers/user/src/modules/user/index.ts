@@ -57,4 +57,6 @@ export const user = new Elysia({
       },
     },
   )
-  .get('/me', ({ auth: { id: userId } }) => ({ name: 'Viyuni', userId }), { requiredAuth: true });
+  .get('/me', ({ auth: { id: userId }, userUseCase }) => userUseCase.profile(userId), {
+    requiredAuth: true,
+  });

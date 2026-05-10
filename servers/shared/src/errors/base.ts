@@ -12,13 +12,13 @@ export abstract class AppError extends Error {
 }
 
 /**
- * 请求参数错误
+ * 请求错误
  */
 export class BadRequestError extends AppError {
   status = 400;
   code = 'BAD_REQUEST';
 
-  constructor(message = '请求参数错误') {
+  constructor(message = '请求错误') {
     super(message);
   }
 }

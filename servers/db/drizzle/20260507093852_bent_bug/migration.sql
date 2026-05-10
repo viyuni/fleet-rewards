@@ -1,1 +1,0 @@
-CREATE INDEX "admins_uid" ON "admins" ("uid");

@@ -1,4 +1,5 @@
 import { createAppContext } from '@server/shared/context';
+import Elysia from 'elysia';
 
 import { env } from '#server/admin/utils';
 
@@ -9,7 +10,7 @@ import { AdminAuthUseCase } from './modules/auth/usecase';
 
 const {
   context,
-  instances: {
+  container: {
     useCases: { authUseCase },
   },
 } = createAppContext({
@@ -18,6 +19,7 @@ const {
 });
 
 const adminRepo = new AdminRepository(db);
+
 const adminUseCase = new AdminUseCase({
   adminRepo,
 });
@@ -28,11 +30,29 @@ const adminAuthUseCase = new AdminAuthUseCase({
   authUseCase,
 });
 
-export const appContext = context.decorate({
+/**
+ * 真实运行时上下文。
+ *
+ * 只能在根 app 挂载一次。
+ */
+export const appRuntimeContext = context.decorate({
   adminAuthUseCase,
   adminUseCase,
 });
 
-export function initDefaultAdmin() {
-  return adminUseCase.initDefaultAdmin();
-}
+/**
+ * 业务模块上下文。
+ *
+ * 仅用于业务模块获得 appRuntimeContext 的类型提示。
+ * 运行时为空。
+ *
+ * 根 app 必须先 `.use(appRuntimeContext)`，再 `.use(业务模块)`。
+ */
+export const appContext = new Elysia({
+  name: 'AdminAppContextTypeOnly',
+}) as unknown as typeof appRuntimeContext;
+
+// 初始化默认管理员
+appRuntimeContext.onStart(() => {
+  adminUseCase.initDefaultAdmin();
+});

@@ -158,8 +158,8 @@ export class PointConversionUseCase {
       throw new PointConversionRuleInvalidError('来源积分类型和目标积分类型不能相同');
     }
 
-    await this.deps.pointTypeUseCase.requireAvailableById(fromPointTypeId);
-    await this.deps.pointTypeUseCase.requireAvailableById(toPointTypeId);
+    await this.deps.pointTypeUseCase.getAvailableById(fromPointTypeId);
+    await this.deps.pointTypeUseCase.getAvailableById(toPointTypeId);
   }
 
   private toInsertRule(ruleData: CreatePointConversionRuleBody): InsertPointConversionRule {
