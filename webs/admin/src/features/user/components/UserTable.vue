@@ -1,65 +1,55 @@
-<script setup lang="ts">
-import type { ColumnDef } from '@tanstack/vue-table';
+<script lang="ts">
+import type { Treaty } from '@elysia/eden';
+import type { Column, ColumnDef } from '@tanstack/vue-table';
 import { Button } from '@web/ui/button';
-import { Checkbox } from '@web/ui/checkbox';
 import { DataTable } from '@web/ui/table';
-import { ArrowUpDown, ChevronDown, MoreHorizontal } from 'lucide-vue-next';
+import { MoreHorizontal, Settings2 } from 'lucide-vue-next';
 
-export interface Payment {
-  id: string;
-  amount: number;
-  status: 'pending' | 'processing' | 'success' | 'failed';
-  email: string;
-}
+import { api } from '#eden';
+import type { UserPageQuery } from '#shared/user';
+import { useDebouncedPageQuery } from '#web/admin/composables/useDebouncedPageQuery';
+import { usePageQuery } from '#web/admin/composables/usePageQuery';
 
-const data: Payment[] = [
-  {
-    id: 'm5gr84i9',
-    amount: 316,
-    status: 'success',
-    email: 'ken99@yahoo.com',
-  },
-  {
-    id: '3u1reuv4',
-    amount: 242,
-    status: 'success',
-    email: 'Abe45@gmail.com',
-  },
-  {
-    id: 'derv1ws0',
-    amount: 837,
-    status: 'processing',
-    email: 'Monserrat44@gmail.com',
-  },
-  {
-    id: '5kma53ae',
-    amount: 874,
-    status: 'success',
-    email: 'Silas22@gmail.com',
-  },
-  {
-    id: 'bhqecj4p',
-    amount: 721,
-    status: 'failed',
-    email: 'carmella@hotmail.com',
-  },
-];
+import { userPageQuery } from '../queries/user';
 
-const columns: ColumnDef<Payment>[] = [
+export type UserListPage = Treaty.Data<typeof api.users.get>;
+export type User = NonNullable<UserListPage>['items'][number];
+</script>
+
+<script setup lang="ts">
+const columnLabels: Record<string, string> = {
+  biliUid: 'UID',
+  username: '用户名',
+  email: '邮箱',
+  phone: '手机号',
+  address: '地址',
+  status: '状态',
+};
+
+const columns: ColumnDef<User>[] = [
   {
-    id: 'select',
-    enableSorting: false,
-    // enableHiding: false,
+    accessorKey: 'biliUid',
+    header: 'UID',
   },
   {
-    accessorKey: 'status',
-    header: 'Status',
+    accessorKey: 'username',
+    header: '用户名',
   },
   {
     accessorKey: 'email',
+    header: '邮箱',
   },
   {
-    accessorKey: 'amount',
+    accessorKey: 'phone',
+    header: '手机号',
+  },
+  {
+    accessorKey: 'address',
+    header: '地址',
+  },
+  {
+    accessorKey: 'status',
+    header: '状态',
   },
   {
     id: 'actions',
@@ -67,127 +57,81 @@ const columns: ColumnDef<Payment>[] = [
   },
 ];
 
-function copy(id: string) {
-  navigator.clipboard.writeText(id);
-}
+const {
+  stateRefs: { page, pageSize, keyword },
+  query,
+} = useDebouncedPageQuery<UserPageQuery>();
 
-function formatAmount(amount: number) {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-  }).format(amount);
-}
+const { items: users, meta: userMeta } = usePageQuery(() => userPageQuery(query.value));
 </script>
 
 <template>
   <div class="w-full p-3">
-    <DataTable :data="data" :columns="columns">
+    <DataTable
+      v-model:page="page"
+      :data="users"
+      :columns="columns"
+      :total="userMeta?.total"
+      :page-size="userMeta?.pageSize ?? pageSize"
+    >
       <template #toolbar="{ table }">
-        <div class="mb-3 flex items-center">
+        <div class="flex items-center justify-end gap-2">
           <Input
-            class="max-w-sm"
-            placeholder="Filter emails..."
-            :model-value="table.getColumn('email')?.getFilterValue() as string"
-            @update:model-value="table.getColumn('email')?.setFilterValue($event)"
+            class="max-w-xs"
+            placeholder="Filter keywords..."
+            v-model:model-value.trim="keyword"
           />
-          <DropdownMenu>
-            <DropdownMenuTrigger as-child>
-              <Button variant="outline" class="ml-auto">
-                Columns <ChevronDown class="ml-2 h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuCheckboxItem
-                v-for="column in table.getAllColumns().filter(column => column.getCanHide())"
-                :key="column.id"
-                class="capitalize"
-                :model-value="column.getIsVisible()"
-                @update:model-value="
-                  value => {
-                    column.toggleVisibility(!!value);
-                  }
-                "
-              >
-                {{ column.id }}
-              </DropdownMenuCheckboxItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
         </div>
       </template>
 
-      <template #select-header="{ table }">
-        <Checkbox
-          :model-value="
-            table.getIsAllPageRowsSelected() ||
-            (table.getIsSomePageRowsSelected() && 'indeterminate')
-          "
-          aria-label="Select all"
-          @update:model-value="value => table.toggleAllPageRowsSelected(!!value)"
-        />
+      <template #biliUid="{ value }">
+        {{ value }}
       </template>
 
-      <template #select="{ row }">
-        <Checkbox
-          :model-value="row.getIsSelected()"
-          aria-label="Select row"
-          @update:model-value="value => row.toggleSelected(!!value)"
-        />
-      </template>
-
-      <template #status="{ value }">
+      <template #username="{ value }">
         <div class="capitalize">
           {{ value }}
         </div>
       </template>
 
-      <template #email-header="{ header }">
-        <Button
-          variant="ghost"
-          @click="header.column.toggleSorting(header.column.getIsSorted() === 'asc')"
-        >
-          Email <ArrowUpDown class="ml-2 h-4 w-4" />
-        </Button>
-      </template>
-
       <template #email="{ value }">
-        <div class="lowercase">
+        {{ value }}
+      </template>
+
+      <template #status="{ value }">
+        <Badge
+          class="text-xs uppercase"
+          size="sm"
+          :variant="value === 'active' ? 'outline' : 'destructive'"
+        >
           {{ value }}
-        </div>
-      </template>
-
-      <template #amount-header>
-        <div class="text-right">Amount</div>
-      </template>
-
-      <template #amount="{ value }">
-        <div class="text-right font-medium">
-          {{ formatAmount(value) }}
-        </div>
+        </Badge>
       </template>
 
       <template #actions="{ data, row }">
         <DropdownMenu>
           <DropdownMenuTrigger as-child>
             <Button variant="ghost" class="h-8 w-8 p-0">
-              <span class="sr-only">Open menu</span>
+              <span class="sr-only">打开菜单</span>
               <MoreHorizontal class="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem @click="copy(data.id)"> Copy payment ID </DropdownMenuItem>
+          <DropdownMenuContent align="end" class="w-50">
+            <DropdownMenuLabel>操作</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>View customer</DropdownMenuItem>
-            <DropdownMenuItem @click="row.toggleExpanded()">View payment details</DropdownMenuItem>
+            <DropdownMenuItem>操作积分</DropdownMenuItem>
+            <DropdownMenuItem>封禁</DropdownMenuItem>
+            <DropdownMenuItem @click="row.toggleExpanded()">查看积分账户</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </template>
 
       <template #expanded="{ data }">
-        {{ JSON.stringify(data) }}
+        <div v-for="pointAccount in data.pointAccounts">
+          {{ pointAccount.pointType?.name }}
+          {{ pointAccount.balance }}
+        </div>
       </template>
-
-      <template #footer="{ table }"> </template>
     </DataTable>
   </div>
 </template>

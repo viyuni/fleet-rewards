@@ -9,7 +9,7 @@ const props = defineProps<SidebarProps>();
 </script>
 
 <template>
-  <Sidebar v-bind="props">
+  <Sidebar v-bind="props" collapsible="offcanvas">
     <SidebarHeader>
       <SidebarMenu>
         <SidebarMenuItem>

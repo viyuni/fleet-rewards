@@ -128,7 +128,7 @@
     --sidebar-border: oklch(90.625% 0 0);
     --sidebar-ring: var(--primary);
 
-    --radius: 0.8rem;
+    --radius: 0.6rem;
     --header-height: 100px;
   }
 

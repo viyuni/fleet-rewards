@@ -163,82 +163,91 @@ function getColumnSlotValue(cell: Cell<TData, unknown>) {
 </script>
 
 <template>
-  <slot :table="resolvedTable" />
-  <slot name="toolbar" :table="resolvedTable" />
+  <div>
+    <slot :table="resolvedTable" />
 
-  <div :class="cn('rounded-md border', props.class)">
-    <Table>
-      <TableHeader>
-        <TableRow v-for="headerGroup in resolvedTable.getHeaderGroups()" :key="headerGroup.id">
-          <TableHead v-for="header in headerGroup.headers" :key="header.id">
-            <slot
-              v-if="!header.isPlaceholder && hasHeaderSlot(header.column.id)"
-              :name="getHeaderSlotName(header.column.id)"
-              :header="header"
-              :table="resolvedTable"
-            />
-            <FlexRender
-              v-else-if="!header.isPlaceholder"
-              :render="header.column.columnDef.header"
-              :props="header.getContext()"
-            />
-          </TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        <template v-if="resolvedTable.getRowModel().rows?.length">
-          <template v-for="row in resolvedTable.getRowModel().rows" :key="row.id">
-            <TableRow :data-state="row.getIsSelected() && 'selected'">
-              <TableCell v-for="cell in row.getVisibleCells()" :key="cell.id">
-                <slot
-                  v-if="hasColumnSlot(cell.column.id)"
-                  :name="getColumnSlotName(cell.column.id)"
-                  :cell="cell"
-                  :row="row"
-                  :table="resolvedTable"
-                  :value="getColumnSlotValue(cell)"
-                  :data="row.original"
-                />
-                <FlexRender
-                  v-else
-                  :render="cell.column.columnDef.cell"
-                  :props="cell.getContext()"
-                />
-              </TableCell>
-            </TableRow>
-            <TableRow v-if="$slots.expanded && row.getIsExpanded()">
-              <TableCell :colspan="row.getVisibleCells().length || visibleColumnCount">
-                <slot name="expanded" :row="row" :data="row.original" />
-              </TableCell>
-            </TableRow>
+    <slot name="toolbar" :table="resolvedTable" />
+
+    <div :class="cn('rounded-md border', props.class)">
+      <Table>
+        <TableHeader class="bg-muted sticky top-0 z-10">
+          <TableRow v-for="headerGroup in resolvedTable.getHeaderGroups()" :key="headerGroup.id">
+            <TableHead v-for="header in headerGroup.headers" :key="header.id">
+              <slot
+                v-if="!header.isPlaceholder && hasHeaderSlot(header.column.id)"
+                :name="getHeaderSlotName(header.column.id)"
+                :header="header"
+                :table="resolvedTable"
+              />
+              <FlexRender
+                v-else-if="!header.isPlaceholder"
+                :render="header.column.columnDef.header"
+                :props="header.getContext()"
+              />
+            </TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          <template v-if="resolvedTable.getRowModel().rows?.length">
+            <template v-for="row in resolvedTable.getRowModel().rows" :key="row.id">
+              <TableRow :data-state="row.getIsSelected() && 'selected'">
+                <TableCell v-for="cell in row.getVisibleCells()" :key="cell.id">
+                  <slot
+                    v-if="hasColumnSlot(cell.column.id)"
+                    :name="getColumnSlotName(cell.column.id)"
+                    :cell="cell"
+                    :row="row"
+                    :table="resolvedTable"
+                    :value="getColumnSlotValue(cell)"
+                    :data="row.original"
+                  />
+                  <FlexRender
+                    v-else
+                    :render="cell.column.columnDef.cell"
+                    :props="cell.getContext()"
+                  />
+                </TableCell>
+              </TableRow>
+              <TableRow v-if="$slots.expanded && row.getIsExpanded()">
+                <TableCell :colspan="row.getVisibleCells().length || visibleColumnCount">
+                  <slot name="expanded" :row="row" :data="row.original" />
+                </TableCell>
+              </TableRow>
+            </template>
           </template>
+
+          <TableEmpty v-else :colspan="visibleColumnCount" class="h-24 text-center">
+            <slot name="empty">
+              {{ emptyText }}
+            </slot>
+          </TableEmpty>
+        </TableBody>
+      </Table>
+    </div>
+
+    <slot name="footer" :table="resolvedTable" />
+
+    <Pagination
+      v-slot="{ page }"
+      :items-per-page="10"
+      :total="30"
+      :default-page="2"
+      :show-edges="false"
+    >
+      <PaginationContent v-slot="{ items }">
+        <PaginationPrevious />
+        <template v-for="(item, index) in items" :key="index">
+          <PaginationItem
+            v-if="item.type === 'page'"
+            :value="item.value"
+            :is-active="item.value === page"
+          >
+            {{ item.value }}
+          </PaginationItem>
         </template>
-
-        <TableEmpty v-else :colspan="visibleColumnCount" class="h-24 text-center">
-          <slot name="empty">
-            {{ emptyText }}
-          </slot>
-        </TableEmpty>
-      </TableBody>
-    </Table>
+        <PaginationEllipsis :index="4" />
+        <PaginationNext />
+      </PaginationContent>
+    </Pagination>
   </div>
-
-  <slot name="footer" :table="resolvedTable" />
-
-  <Pagination v-slot="{ page }" :items-per-page="10" :total="30" :default-page="2">
-    <PaginationContent v-slot="{ items }">
-      <PaginationPrevious />
-      <template v-for="(item, index) in items" :key="index">
-        <PaginationItem
-          v-if="item.type === 'page'"
-          :value="item.value"
-          :is-active="item.value === page"
-        >
-          {{ item.value }}
-        </PaginationItem>
-      </template>
-      <PaginationEllipsis :index="4" />
-      <PaginationNext />
-    </PaginationContent>
-  </Pagination>
 </template>

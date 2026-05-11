@@ -159,6 +159,20 @@ export class UserRepository {
       .pageSize(query.pageSize)
       .where({
         status: query.status,
+        OR: query.keyword
+          ? [
+              {
+                biliUid: {
+                  ilike: `%${query.keyword}%`,
+                },
+              },
+              {
+                username: {
+                  ilike: `%${query.keyword}%`,
+                },
+              },
+            ]
+          : undefined,
       })
       .query((findMany, { where, limit, offset }) =>
         findMany({

@@ -1,5 +1,12 @@
-import type { DbExecutor } from './index';
-import { pointTypes, products, users, type InsertProduct, type InsertUser } from './schema';
+import { createDatabase, type DbExecutor } from './index';
+import {
+  pointTypes,
+  products,
+  users,
+  type InsertPointType,
+  type InsertProduct,
+  type InsertUser,
+} from './schema';
 
 export interface SeedUsersOptions {
   password?: string;
@@ -9,53 +16,112 @@ export interface SeedProductsOptions {
   countPerPointType?: number;
 }
 
-const seedUserData = [
+export interface SeedOptions {
+  users?: SeedUsersOptions;
+  products?: SeedProductsOptions;
+}
+
+const seedDefaultPassword = '123456789@qW';
+
+export const seedPointTypeIds = {
+  captain: '00000000-0000-4000-8000-000000000001',
+  admiral: '00000000-0000-4000-8000-000000000002',
+  governor: '00000000-0000-4000-8000-000000000003',
+  activity: '00000000-0000-4000-8000-000000000004',
+} as const;
+
+export const seedPointTypeData = [
   {
-    biliUid: '100001',
-    username: 'ken99',
+    id: seedPointTypeIds.captain,
+    name: '舰长积分',
+    description: '开通舰长即可获得',
+    icon: 'captain',
     status: 'active',
-    emailEncrypted: 'ken99@yahoo.com',
-    phoneEncrypted: '13800000001',
-    addressEncrypted: '上海市浦东新区世纪大道 1 号',
-    remark: '首批演示用户',
+    sort: 400,
   },
   {
-    biliUid: '100002',
-    username: 'abe45',
+    id: seedPointTypeIds.admiral,
+    name: '提督积分',
+    description: '开通提督即可获得',
+    icon: 'admiral',
     status: 'active',
-    emailEncrypted: 'Abe45@gmail.com',
-    phoneEncrypted: '13800000002',
-    addressEncrypted: '北京市朝阳区建国路 88 号',
-    remark: '积分活跃用户',
+    sort: 300,
   },
   {
-    biliUid: '100003',
-    username: 'monserrat44',
+    id: seedPointTypeIds.governor,
+    name: '总督积分',
+    description: '开通总督即可获得',
+    icon: 'governor',
     status: 'active',
-    emailEncrypted: 'Monserrat44@gmail.com',
-    phoneEncrypted: '13800000003',
-    addressEncrypted: '杭州市西湖区文三路 99 号',
-    remark: '待完善资料',
+    sort: 200,
   },
   {
-    biliUid: '100004',
-    username: 'silas22',
+    id: seedPointTypeIds.activity,
+    name: '活动积分',
+    description: '特殊活动节日可获得',
+    icon: 'activity',
     status: 'active',
-    emailEncrypted: 'Silas22@gmail.com',
-    phoneEncrypted: '13800000004',
-    addressEncrypted: '深圳市南山区科技园 10 号',
-    remark: '企业客户',
+    sort: 100,
   },
-  {
-    biliUid: '100005',
-    username: 'carmella',
-    status: 'banned',
-    emailEncrypted: 'carmella@hotmail.com',
-    phoneEncrypted: '13800000005',
-    addressEncrypted: '广州市天河区体育西路 6 号',
-    remark: '风控封禁',
-  },
-] satisfies Array<Omit<InsertUser, 'passwordHash'>>;
+] satisfies InsertPointType[];
+
+const seedUserProfiles = [
+  ['ken99', '首批演示用户'],
+  ['abe45', '积分活跃用户'],
+  ['monserrat44', '待完善资料'],
+  ['silas22', '企业客户'],
+  ['carmella', '风控封禁'],
+  ['mira12', '节日活动用户'],
+  ['nolan77', '高频兑换用户'],
+  ['ivy08', '新注册用户'],
+  ['owen31', '直播间活跃用户'],
+  ['luna64', '周边收藏用户'],
+  ['ethan52', '自动发货测试用户'],
+  ['zoe19', '人工发货测试用户'],
+  ['liam86', '积分转换测试用户'],
+  ['aria23', '批量导入用户'],
+  ['noah70', '资料完整用户'],
+  ['emma41', '资料待审核用户'],
+  ['mason15', '月度回馈用户'],
+  ['ava68', '头像框兑换用户'],
+  ['logan33', '抽奖参与用户'],
+  ['mia92', '库存压测用户'],
+  ['lucas27', '客服备注用户'],
+  ['ella56', '订单退款用户'],
+  ['jack04', '账户暂停用户'],
+  ['ruby81', '历史订单用户'],
+  ['leo39', '积分补发用户'],
+  ['nina74', '活动报名用户'],
+  ['finn20', '提督积分用户'],
+  ['sara58', '总督积分用户'],
+  ['max11', '舰长积分用户'],
+  ['kate63', '混合积分用户'],
+  ['hugo47', '兑换审核用户'],
+  ['iris95', '地址变更用户'],
+  ['ryan26', '手机号变更用户'],
+  ['amy72', '邮箱变更用户'],
+  ['ivan18', '长期活跃用户'],
+  ['cara50', '节日礼包用户'],
+  ['ben84', '签名卡收藏用户'],
+  ['tina07', '直播装扮用户'],
+  ['eric61', '封禁样例用户'],
+  ['vera29', '普通演示用户'],
+] satisfies Array<readonly [username: string, remark: string]>;
+
+const seedUserData = seedUserProfiles.map(([username, remark], index) => {
+  const serial = index + 1;
+  const paddedSerial = serial.toString().padStart(2, '0');
+
+  return {
+    biliUid: (100000 + serial).toString(),
+    username,
+    status: serial % 20 === 19 ? 'banned' : 'active',
+    emailEncrypted: `${username}@example.com`,
+    phoneEncrypted: `138000000${paddedSerial}`,
+    addressEncrypted: `演示地址 ${paddedSerial} 号`,
+    remark,
+  };
+}) satisfies Array<Omit<InsertUser, 'passwordHash'>>;
 
 const productKinds = [
   {
@@ -101,8 +167,14 @@ const productKinds = [
   stockBase: number;
 }>;
 
+export async function seedPointTypes(db: DbExecutor) {
+  await db.insert(pointTypes).values(seedPointTypeData).onConflictDoNothing();
+
+  return seedPointTypeData;
+}
+
 export async function seedUsers(db: DbExecutor, options: SeedUsersOptions = {}) {
-  const passwordHash = await Bun.password.hash(options.password ?? 'password123', {
+  const passwordHash = await Bun.password.hash(options.password ?? seedDefaultPassword, {
     algorithm: 'bcrypt',
     cost: 12,
   });
@@ -118,7 +190,7 @@ export async function seedUsers(db: DbExecutor, options: SeedUsersOptions = {}) 
 }
 
 export async function seedProducts(db: DbExecutor, options: SeedProductsOptions = {}) {
-  const countPerPointType = options.countPerPointType ?? 30;
+  const countPerPointType = options.countPerPointType ?? 10;
   const existingPointTypes = await db.query.pointTypes.findMany({
     where: {
       status: 'active',
@@ -169,4 +241,31 @@ export async function seedProducts(db: DbExecutor, options: SeedProductsOptions 
   await db.insert(products).values(values).onConflictDoNothing();
 
   return values;
+}
+
+export async function seed(db: DbExecutor, options: SeedOptions = {}) {
+  const seededPointTypes = await seedPointTypes(db);
+  const seededUsers = await seedUsers(db, options.users);
+  const seededProducts = await seedProducts(db, options.products);
+
+  return {
+    pointTypes: seededPointTypes,
+    users: seededUsers,
+    products: seededProducts,
+  };
+}
+
+if (import.meta.main) {
+  const databaseUrl = Bun.env.DATABASE_URL;
+
+  if (!databaseUrl) {
+    throw new Error('DATABASE_URL is required to seed database.');
+  }
+
+  const db = createDatabase(databaseUrl);
+  const result = await seed(db);
+
+  console.log(
+    `Seed completed: ${result.pointTypes.length} point types, ${result.users.length} users, ${result.products.length} products.`,
+  );
 }
