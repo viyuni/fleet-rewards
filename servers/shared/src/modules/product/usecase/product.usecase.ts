@@ -49,6 +49,17 @@ export class ProductUseCase {
   }
 
   /**
+   * 获取可兑换商品信息
+   */
+  async getRedeem(productId: string) {
+    const product = await this.get(productId);
+
+    ProductPolicy.assertAvailable(product);
+
+    return product;
+  }
+
+  /**
    * 创建商品
    */
   async create(productData: CreateProductBody) {

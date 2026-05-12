@@ -190,6 +190,7 @@ export class ProductRepository {
         deletedAt: {
           isNull: true,
         },
+        status: 'active',
       })
       .query((findMany, { where, limit, offset }) =>
         findMany({

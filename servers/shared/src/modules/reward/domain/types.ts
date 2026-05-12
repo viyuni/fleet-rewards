@@ -1,8 +1,7 @@
-import type { GuardType, RewardRule } from '@server/db/schema';
+import type { BiliEventRewardItemSnapshot, GuardType } from '@server/db/schema';
 
 export interface BiliGuardRewardEvent {
   id: string;
-  stableKey?: string;
   uid: number;
   uname: string;
   guardType: GuardType;
@@ -15,12 +14,12 @@ export interface BiliGuardRewardEvent {
 }
 
 export interface RewardGrantPlanItem {
-  rule: RewardRule;
+  ruleSnapshot: BiliEventRewardItemSnapshot['ruleSnapshot'];
+  pointTypeSnapshot: BiliEventRewardItemSnapshot['pointTypeSnapshot'];
   pointTypeId: string;
   points: number;
 }
 
 export interface RewardGrantPlan {
-  event: BiliGuardRewardEvent;
   items: RewardGrantPlanItem[];
 }

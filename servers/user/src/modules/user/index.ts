@@ -6,7 +6,7 @@ export const user = new Elysia({
   name: 'UserRoute',
 })
   .use(appContext)
-  .get('/me', ({ auth: { id: userId }, userUseCase }) => userUseCase.profile(userId), {
+  .get('/me', ({ auth: { id: userId }, userUseCase }) => userUseCase.getDetail(userId), {
     requiredAuth: true,
     detail: {
       tags: ['User'],

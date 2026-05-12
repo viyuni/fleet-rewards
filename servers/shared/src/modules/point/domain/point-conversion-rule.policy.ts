@@ -6,10 +6,9 @@ export class PointConversionRulePolicy {
   static assertValidShape(input: {
     fromPointTypeId?: string;
     toPointTypeId?: string;
-    fromAmount?: number;
     toAmount?: number;
-    minFromAmount?: number | null;
-    maxFromAmount?: number | null;
+    minConvertAmount?: number | null;
+    maxConvertAmount?: number | null;
     startsAt?: Date | null;
     endsAt?: Date | null;
   }) {
@@ -21,20 +20,16 @@ export class PointConversionRulePolicy {
       throw new PointConversionRuleInvalidError('来源积分类型和目标积分类型不能相同');
     }
 
-    if (input.fromAmount !== undefined && input.fromAmount <= 0) {
-      throw new PointConversionRuleInvalidError('来源积分数量必须大于 0');
-    }
-
     if (input.toAmount !== undefined && input.toAmount <= 0) {
       throw new PointConversionRuleInvalidError('目标积分数量必须大于 0');
     }
 
     if (
-      input.minFromAmount !== undefined &&
-      input.maxFromAmount !== undefined &&
-      input.minFromAmount !== null &&
-      input.maxFromAmount !== null &&
-      input.minFromAmount > input.maxFromAmount
+      input.minConvertAmount !== undefined &&
+      input.maxConvertAmount !== undefined &&
+      input.minConvertAmount !== null &&
+      input.maxConvertAmount !== null &&
+      input.minConvertAmount > input.maxConvertAmount
     ) {
       throw new PointConversionRuleInvalidError('最小转换数量不能大于最大转换数量');
     }
@@ -64,23 +59,19 @@ export class PointConversionRulePolicy {
     }
   }
 
-  static calculateToAmount(rule: PointConversionRule, fromAmount: number) {
-    if (fromAmount <= 0) {
+  static calculateToAmount(rule: PointConversionRule, convertAmount: number) {
+    if (convertAmount <= 0) {
       throw new PointConversionRuleInvalidError('转换数量必须大于 0');
     }
 
-    if (rule.minFromAmount !== null && fromAmount < rule.minFromAmount) {
-      throw new PointConversionRuleInvalidError(`转换数量不能小于 ${rule.minFromAmount}`);
+    if (rule.minConvertAmount !== null && convertAmount < rule.minConvertAmount) {
+      throw new PointConversionRuleInvalidError(`转换数量不能小于 ${rule.minConvertAmount}`);
     }
 
-    if (rule.maxFromAmount !== null && fromAmount > rule.maxFromAmount) {
-      throw new PointConversionRuleInvalidError(`转换数量不能大于 ${rule.maxFromAmount}`);
+    if (rule.maxConvertAmount !== null && convertAmount > rule.maxConvertAmount) {
+      throw new PointConversionRuleInvalidError(`转换数量不能大于 ${rule.maxConvertAmount}`);
     }
 
-    if (fromAmount % rule.fromAmount !== 0) {
-      throw new PointConversionRuleInvalidError(`转换数量必须是 ${rule.fromAmount} 的整数倍`);
-    }
-
-    return (fromAmount / rule.fromAmount) * rule.toAmount;
+    return convertAmount * rule.toAmount;
   }
 }

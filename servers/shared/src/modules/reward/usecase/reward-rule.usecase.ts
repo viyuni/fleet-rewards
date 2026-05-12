@@ -1,5 +1,4 @@
 import type { CreateRewardRuleBody, UpdateRewardRuleBody } from '@internal/shared/reward';
-import type { InsertRewardRule, UpdateRewardRule } from '@server/db/schema';
 
 import { PointTypeUseCase } from '#server/shared/modules/point';
 
@@ -27,7 +26,7 @@ export class RewardRuleUseCase {
   async create(ruleData: CreateRewardRuleBody) {
     await this.deps.pointTypeUseCase.getAvailableById(ruleData.pointTypeId);
 
-    const rule = await this.deps.rewardRuleRepo.create(this.toInsert(ruleData));
+    const rule = await this.deps.rewardRuleRepo.create(ruleData);
 
     if (!rule) {
       throw new RewardRuleNotFoundError();
@@ -43,14 +42,12 @@ export class RewardRuleUseCase {
       await this.deps.pointTypeUseCase.getAvailableById(ruleData.pointTypeId);
     }
 
-    const update = this.toUpdate(ruleData);
-
     RewardRulePolicy.assertValidTimeRange({
-      startsAt: update.startsAt ?? current.startsAt,
-      endsAt: update.endsAt ?? current.endsAt,
+      startsAt: ruleData.startsAt ?? current.startsAt,
+      endsAt: ruleData.endsAt ?? current.endsAt,
     });
 
-    const rule = await this.deps.rewardRuleRepo.update(rewardRuleId, update);
+    const rule = await this.deps.rewardRuleRepo.update(rewardRuleId, ruleData);
 
     if (!rule) {
       throw new RewardRuleNotFoundError();
@@ -87,30 +84,6 @@ export class RewardRuleUseCase {
     }
 
     return rule;
-  }
-
-  private toInsert(input: CreateRewardRuleBody): InsertRewardRule {
-    const rule: InsertRewardRule = {
-      ...input,
-      startsAt: this.parseDate(input.startsAt),
-      endsAt: this.parseDate(input.endsAt),
-    };
-
-    RewardRulePolicy.assertValidTimeRange(rule);
-
-    return rule;
-  }
-
-  private toUpdate(input: UpdateRewardRuleBody): UpdateRewardRule {
-    return {
-      ...input,
-      startsAt: this.parseDate(input.startsAt),
-      endsAt: this.parseDate(input.endsAt),
-    };
-  }
-
-  private parseDate(value: number | undefined) {
-    return value === undefined ? undefined : new Date(value);
   }
 
   listManage() {

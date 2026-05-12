@@ -53,12 +53,6 @@ export const CreatePointConversionRuleSchema = v.object({
   fromPointTypeId: v.pipe(v.string('请输入来源积分类型 ID'), v.description('来源积分类型 ID')),
   toPointTypeId: v.pipe(v.string('请输入目标积分类型 ID'), v.description('目标积分类型 ID')),
 
-  fromAmount: v.pipe(
-    v.number('请输入来源积分数量'),
-    v.integer('来源积分数量必须是整数'),
-    v.minValue(1, '来源积分数量必须大于 0'),
-    v.description('来源积分数量'),
-  ),
   toAmount: v.pipe(
     v.number('请输入目标积分数量'),
     v.integer('目标积分数量必须是整数'),
@@ -66,20 +60,20 @@ export const CreatePointConversionRuleSchema = v.object({
     v.description('目标积分数量'),
   ),
 
-  minFromAmount: v.optional(
+  minConvertAmount: v.optional(
     v.pipe(
-      v.number('请输入单次最小来源积分数量'),
-      v.integer('单次最小来源积分数量必须是整数'),
-      v.minValue(1, '单次最小来源积分数量必须大于 0'),
-      v.description('单次最小来源积分数量'),
+      v.number('请输入单次最小转换数量'),
+      v.integer('单次最小转换数量必须是整数'),
+      v.minValue(1, '单次最小转换数量必须大于 0'),
+      v.description('单次最小转换数量'),
     ),
   ),
-  maxFromAmount: v.optional(
+  maxConvertAmount: v.optional(
     v.pipe(
-      v.number('请输入单次最大来源积分数量'),
-      v.integer('单次最大来源积分数量必须是整数'),
-      v.minValue(1, '单次最大来源积分数量必须大于 0'),
-      v.description('单次最大来源积分数量'),
+      v.number('请输入单次最大转换数量'),
+      v.integer('单次最大转换数量必须是整数'),
+      v.minValue(1, '单次最大转换数量必须大于 0'),
+      v.description('单次最大转换数量'),
     ),
   ),
 
@@ -89,6 +83,7 @@ export const CreatePointConversionRuleSchema = v.object({
     v.pipe(
       v.number('请输入生效时间戳'),
       v.integer('生效时间戳必须是整数'),
+      v.toDate(),
       v.description('生效时间戳'),
     ),
   ),
@@ -96,6 +91,7 @@ export const CreatePointConversionRuleSchema = v.object({
     v.pipe(
       v.number('请输入失效时间戳'),
       v.integer('失效时间戳必须是整数'),
+      v.toDate(),
       v.description('失效时间戳'),
     ),
   ),
@@ -118,14 +114,6 @@ export const UpdatePointConversionRuleSchema = v.object({
     v.pipe(v.string('请输入目标积分类型 ID'), v.description('目标积分类型 ID')),
   ),
 
-  fromAmount: v.optional(
-    v.pipe(
-      v.number('请输入来源积分数量'),
-      v.integer('来源积分数量必须是整数'),
-      v.minValue(1, '来源积分数量必须大于 0'),
-      v.description('来源积分数量'),
-    ),
-  ),
   toAmount: v.optional(
     v.pipe(
       v.number('请输入目标积分数量'),
@@ -135,20 +123,20 @@ export const UpdatePointConversionRuleSchema = v.object({
     ),
   ),
 
-  minFromAmount: v.optional(
+  minConvertAmount: v.optional(
     v.pipe(
-      v.number('请输入单次最小来源积分数量'),
-      v.integer('单次最小来源积分数量必须是整数'),
-      v.minValue(1, '单次最小来源积分数量必须大于 0'),
-      v.description('单次最小来源积分数量'),
+      v.number('请输入单次最小转换数量'),
+      v.integer('单次最小转换数量必须是整数'),
+      v.minValue(1, '单次最小转换数量必须大于 0'),
+      v.description('单次最小转换数量'),
     ),
   ),
-  maxFromAmount: v.optional(
+  maxConvertAmount: v.optional(
     v.pipe(
-      v.number('请输入单次最大来源积分数量'),
-      v.integer('单次最大来源积分数量必须是整数'),
-      v.minValue(1, '单次最大来源积分数量必须大于 0'),
-      v.description('单次最大来源积分数量'),
+      v.number('请输入单次最大转换数量'),
+      v.integer('单次最大转换数量必须是整数'),
+      v.minValue(1, '单次最大转换数量必须大于 0'),
+      v.description('单次最大转换数量'),
     ),
   ),
 
@@ -158,6 +146,7 @@ export const UpdatePointConversionRuleSchema = v.object({
     v.pipe(
       v.number('请输入生效时间戳'),
       v.integer('生效时间戳必须是整数'),
+      v.toDate(),
       v.description('生效时间戳'),
     ),
   ),
@@ -165,6 +154,7 @@ export const UpdatePointConversionRuleSchema = v.object({
     v.pipe(
       v.number('请输入失效时间戳'),
       v.integer('失效时间戳必须是整数'),
+      v.toDate(),
       v.description('失效时间戳'),
     ),
   ),

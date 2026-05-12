@@ -153,6 +153,19 @@ export const orders = pgTable(
      */
     idempotencyKey: text('idempotency_key').notNull(),
 
+    /**
+     * 快递公司
+     */
+    expressCompany: text('express_company'),
+
+    /**
+     * 快递单号
+     */
+    expressNo: text('express_no'),
+
+    /**
+     * 订单元数据
+     */
     metadata: jsonb('metadata'),
 
     ...timestamps,

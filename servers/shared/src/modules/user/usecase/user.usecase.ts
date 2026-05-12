@@ -43,7 +43,7 @@ export class UserUseCase {
   /**
    * 获取用户详情
    */
-  async profile(userId: string) {
+  async getDetail(userId: string) {
     const user = await this.deps.userRepo.findDetailById(userId);
 
     UserPolicy.assertAvailableExists(user);

@@ -79,7 +79,6 @@ describeWithDatabase('积分转换真实数据库并发保护', () => {
         name: `${prefix}_invalid_rule`,
         fromPointTypeId: pointType.id,
         toPointTypeId: pointType.id,
-        fromAmount: 1,
         toAmount: 1,
       }),
       PointConversionRuleInvalidError,
@@ -102,33 +101,49 @@ describeWithDatabase('积分转换真实数据库并发保护', () => {
     );
   });
 
-  it('积分转换会拒绝非规则倍数的转换数量', async () => {
+  it('积分转换按 1:n 扣减来源积分并增加目标积分', async () => {
     const prefix = newBatch();
     const { pointConversionUseCase } = createDeps();
-    const { rule, user } = await seedConversionFixture(`${prefix}_non_multiple`, {
-      fromAmount: 3,
-      toAmount: 10,
+    const { fromPointType, rule, toPointType, user } = await seedConversionFixture(
+      `${prefix}_one_to_many`,
+      {
+        toAmount: 10,
+      },
+    );
+
+    await grantPoints({
+      adminId: `${prefix}_admin`,
+      userId: user.id,
+      pointTypeId: fromPointType.id,
+      delta: 4,
+      nonce: `${prefix}_grant_from`,
     });
 
-    await expectRejectsInstanceOf(
-      pointConversionUseCase.convert({
-        userId: user.id,
-        ruleId: rule.id,
-        fromAmount: 4,
-        nonce: `${prefix}_non_multiple`,
-      }),
-      PointConversionRuleInvalidError,
-    );
+    await pointConversionUseCase.convert({
+      userId: user.id,
+      ruleId: rule.id,
+      fromAmount: 4,
+      nonce: `${prefix}_one_to_many`,
+    });
+
+    const toAccount = await db.query.pointAccounts.findFirst({
+      where: { userId: user.id, pointTypeId: toPointType.id },
+    });
+    const fromAccount = await db.query.pointAccounts.findFirst({
+      where: { userId: user.id, pointTypeId: fromPointType.id },
+    });
+
+    expect(fromAccount?.balance).toBe(0);
+    expect(toAccount?.balance).toBe(40);
   });
 
   it('积分转换会校验单次最小和最大转换数量', async () => {
     const prefix = newBatch();
     const { pointConversionUseCase } = createDeps();
     const { rule, user } = await seedConversionFixture(`${prefix}_min_max`, {
-      fromAmount: 2,
       toAmount: 10,
-      minFromAmount: 4,
-      maxFromAmount: 8,
+      minConvertAmount: 4,
+      maxConvertAmount: 8,
     });
 
     await expectRejectsInstanceOf(

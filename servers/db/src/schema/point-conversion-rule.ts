@@ -59,16 +59,7 @@ export const pointConversionRules = pgTable(
       .references(() => pointTypes.id),
 
     /**
-     * 来源积分数量
-     *
-     * 例如:
-     * 1 总督积分 -> 10 舰长积分
-     * fromAmount = 1
-     */
-    fromAmount: integer('from_amount').notNull(),
-
-    /**
-     * 目标积分数量
+     * 每 1 个来源积分可兑换的目标积分数量
      *
      * 例如:
      * 1 总督积分 -> 10 舰长积分
@@ -77,18 +68,18 @@ export const pointConversionRules = pgTable(
     toAmount: integer('to_amount').notNull(),
 
     /**
-     * 单次最小转换来源积分数量
+     * 单次最小转换数量
      *
      * null 表示不限制
      */
-    minFromAmount: integer('min_from_amount'),
+    minConvertAmount: integer('min_convert_amount'),
 
     /**
-     * 单次最大转换来源积分数量
+     * 单次最大转换数量
      *
      * null 表示不限制
      */
-    maxFromAmount: integer('max_from_amount'),
+    maxConvertAmount: integer('max_convert_amount'),
 
     /**
      * 是否启用

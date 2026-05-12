@@ -8,6 +8,7 @@ import { logger } from './logger';
 import { auth } from './modules/auth';
 import { order } from './modules/order';
 import { pointTransaction } from './modules/point-transaction';
+import { product } from './modules/product';
 import { user } from './modules/user';
 export const app = new Elysia()
   .use(openapi())
@@ -15,6 +16,7 @@ export const app = new Elysia()
   .use(appContext)
   .use(auth)
   .use(user)
+  .use(product)
   .use(pointTransaction)
   .use(order)
   .listen({ port: env.PORT }, logger.printUrls);

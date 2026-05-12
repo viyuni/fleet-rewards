@@ -49,8 +49,12 @@ export class PointConversionRuleRepository {
     return row ?? null;
   }
 
-  async updateEnabled(pointConversionRuleId: string, enabled: boolean, db: DbExecutor = this.db) {
-    return this.update(pointConversionRuleId, { enabled }, db);
+  async enabled(pointConversionRuleId: string, db: DbExecutor = this.db) {
+    return this.update(pointConversionRuleId, { enabled: true }, db);
+  }
+
+  async disabled(pointConversionRuleId: string, db: DbExecutor = this.db) {
+    return this.update(pointConversionRuleId, { enabled: false }, db);
   }
 
   list(db: DbExecutor = this.db) {

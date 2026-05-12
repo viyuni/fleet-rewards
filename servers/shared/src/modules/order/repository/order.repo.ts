@@ -80,6 +80,8 @@ export class OrderRepository {
             refundReason: true,
             completedAt: true,
             refundedAt: true,
+            expressCompany: true,
+            expressNo: true,
           },
           orderBy: {
             createdAt: 'desc',

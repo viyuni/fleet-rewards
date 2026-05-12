@@ -10,6 +10,15 @@ export const RewardRuleIdParamsSchema = v.object({
 export type RewardRuleIdParams = v.InferOutput<typeof RewardRuleIdParamsSchema>;
 
 /**
+ * B站事件 ID Params Schema。
+ */
+export const BiliEventIdParamsSchema = v.object({
+  biliEventId: v.pipe(v.string('请输入 B站事件 ID'), v.description('B站事件 ID')),
+});
+
+export type BiliEventIdParams = v.InferOutput<typeof BiliEventIdParamsSchema>;
+
+/**
  * 积分奖励规则名称 Schema。
  */
 const RewardRuleNameSchema = v.pipe(
@@ -109,6 +118,7 @@ export const CreateRewardRuleSchema = v.object({
     v.pipe(
       v.number('请输入生效开始时间戳'),
       v.integer('生效开始时间戳必须是整数'),
+      v.toDate(),
       v.description('生效开始时间戳'),
     ),
   ),
@@ -116,6 +126,7 @@ export const CreateRewardRuleSchema = v.object({
     v.pipe(
       v.number('请输入生效结束时间戳'),
       v.integer('生效结束时间戳必须是整数'),
+      v.toDate(),
       v.description('生效结束时间戳'),
     ),
   ),
@@ -157,6 +168,7 @@ export const UpdateRewardRuleSchema = v.object({
     v.pipe(
       v.number('请输入生效开始时间戳'),
       v.integer('生效开始时间戳必须是整数'),
+      v.toDate(),
       v.description('生效开始时间戳'),
     ),
   ),
@@ -164,6 +176,7 @@ export const UpdateRewardRuleSchema = v.object({
     v.pipe(
       v.number('请输入生效结束时间戳'),
       v.integer('生效结束时间戳必须是整数'),
+      v.toDate(),
       v.description('生效结束时间戳'),
     ),
   ),

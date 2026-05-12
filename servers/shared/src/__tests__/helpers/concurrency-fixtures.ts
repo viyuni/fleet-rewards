@@ -1,19 +1,24 @@
 import { afterEach, beforeEach, describe, expect } from 'bun:test';
 
+import type { CreatePointConversionRuleBody } from '@internal/shared/point-conversion';
+import type { CreateRewardRuleBody } from '@internal/shared/reward';
 import { createDatabase, type DbClient } from '@server/db';
 import {
   orders,
+  biliEvents,
   pointAccounts,
   pointConversionRules,
   pointTransactions,
   pointTypes,
   products,
   productStockMovements,
+  rewardRules,
   users,
 } from '@server/db/schema';
 import { and, inArray, like } from 'drizzle-orm';
 
 import { createContainer } from '../../context';
+import type { BiliGuardRewardEvent } from '../../modules/reward';
 
 const testDatabaseUrl = Bun.env.TEST_DATABASE_URL;
 const batches = new Set<string>();
@@ -95,10 +100,11 @@ export async function seedPointType(name: string) {
   return expectSeeded(pointType, 'seed point type failed');
 }
 
-export async function seedUser(name: string) {
-  const biliUid = `${Date.now()}${Math.floor(Math.random() * 100_000_000)}` as `${number}`;
+export async function seedUser(name: string, biliUid?: `${number}`) {
+  const userBiliUid =
+    biliUid ?? (`${Date.now()}${Math.floor(Math.random() * 100_000_000)}` as const);
   const created = await createDeps().userUseCase.create({
-    biliUid,
+    biliUid: userBiliUid,
     username: name,
     password: 'test_password',
   });
@@ -126,7 +132,7 @@ export async function seedProduct(input: {
 
 export async function seedConversionFixture(
   prefix: string,
-  overrides: Record<string, unknown> = {},
+  overrides: Partial<CreatePointConversionRuleBody> = {},
 ) {
   const fromPointType = await seedPointType(`${prefix}_from_point`);
   const toPointType = await seedPointType(`${prefix}_to_point`);
@@ -135,11 +141,10 @@ export async function seedConversionFixture(
     name: `${prefix}_conversion_rule`,
     fromPointTypeId: fromPointType.id,
     toPointTypeId: toPointType.id,
-    fromAmount: 2,
     toAmount: 10,
     enabled: true,
     ...overrides,
-  } as never);
+  });
 
   return {
     fromPointType,
@@ -153,19 +158,37 @@ export async function createConversionRule(
   prefix: string,
   fromPointTypeId: string,
   toPointTypeId: string,
-  overrides: Record<string, unknown> = {},
+  overrides: Partial<CreatePointConversionRuleBody> = {},
 ) {
   const rule = await createDeps().pointConversionUseCase.create({
     name: `${prefix}_conversion_rule`,
     fromPointTypeId,
     toPointTypeId,
-    fromAmount: 1,
     toAmount: 10,
     enabled: true,
     ...overrides,
-  } as never);
+  });
 
   return expectSeeded(rule, 'seed conversion rule failed');
+}
+
+export async function createRewardRule(
+  prefix: string,
+  pointTypeId: string,
+  overrides: Partial<CreateRewardRuleBody> = {},
+) {
+  const rule = await createDeps().rewardRuleUseCase.create({
+    name: `${prefix}_reward_rule_${crypto.randomUUID().slice(0, 8)}`,
+    conditions: {
+      type: 'biliGuard',
+    },
+    pointTypeId,
+    points: 10,
+    enabled: true,
+    ...overrides,
+  });
+
+  return expectSeeded(rule, 'seed reward rule failed');
 }
 
 export async function grantPoints(input: {
@@ -181,6 +204,30 @@ export async function grantPoints(input: {
     delta: input.delta,
     nonce: input.nonce,
   });
+}
+
+export function createBiliGuardEvent(
+  prefix: string,
+  uid: number,
+  overrides: Partial<BiliGuardRewardEvent> = {},
+): BiliGuardRewardEvent {
+  return {
+    id: `${prefix}_guard_event`,
+    uid,
+    uname: `${prefix}_user`,
+    guardType: 3,
+    guardName: '舰长',
+    total: 198000,
+    totalNormalized: 198,
+    isYearGuard: false,
+    roomId: 1,
+    timestamp: Date.now(),
+    ...overrides,
+  };
+}
+
+export function createBiliUid(): `${number}` {
+  return `${Math.floor(100_000_000 + Math.random() * 900_000_000)}`;
 }
 
 async function cleanupBatch(batch: string) {
@@ -203,8 +250,11 @@ async function cleanupBatch(batch: string) {
   const productIds = batchProducts.map(product => product.id);
 
   if (userIds.length > 0) {
+    await db.delete(biliEvents).where(inArray(biliEvents.userId, userIds));
     await db.delete(orders).where(inArray(orders.userId, userIds));
   }
+
+  await db.delete(biliEvents).where(like(biliEvents.biliEventId, `${batch}%`));
 
   if (productIds.length > 0) {
     await db
@@ -219,6 +269,10 @@ async function cleanupBatch(batch: string) {
   }
 
   if (pointTypeIds.length > 0) {
+    await db.delete(pointTransactions).where(inArray(pointTransactions.pointTypeId, pointTypeIds));
+    await db.delete(pointAccounts).where(inArray(pointAccounts.pointTypeId, pointTypeIds));
+    await db.delete(rewardRules).where(inArray(rewardRules.pointTypeId, pointTypeIds));
+
     await db
       .delete(pointConversionRules)
       .where(

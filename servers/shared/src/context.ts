@@ -3,6 +3,7 @@ import Elysia from 'elysia';
 
 import { createAuthGuard } from './modules/auth';
 import { AuthUseCase } from './modules/auth/usecase';
+import { BiliEventRepository } from './modules/bili-event';
 import { ImageUseCase } from './modules/image';
 import { OrderRepository, OrderUseCase } from './modules/order';
 import {
@@ -24,7 +25,7 @@ import {
 } from './modules/product';
 import { RewardRuleRepository, RewardRuleUseCase, RewardUseCase } from './modules/reward';
 import { UserBasicInfoCrypto, UserRepository, UserUseCase } from './modules/user';
-import type { SharedEnv } from './utils';
+import { createLogger, type SharedEnv } from './utils';
 
 export interface CreateSharedContextOptions {
   db: DbClient;
@@ -35,6 +36,7 @@ export interface CreateSharedContextOptions {
 }
 
 export function createContainer({ db, env }: CreateSharedContextOptions) {
+  const logger = createLogger(env);
   const authUseCase = new AuthUseCase(env.JWT_SECRET);
   const userBasicInfoCrypto = new UserBasicInfoCrypto(env.DATA_SECRET);
 
@@ -50,6 +52,7 @@ export function createContainer({ db, env }: CreateSharedContextOptions) {
   const productRepo = new ProductRepository(db);
   const stockMovementRepo = new StockMovementRepository(db);
 
+  const biliEventRepo = new BiliEventRepository(db);
   const rewardRuleRepo = new RewardRuleRepository(db);
 
   const userUseCase = new UserUseCase({
@@ -119,6 +122,8 @@ export function createContainer({ db, env }: CreateSharedContextOptions) {
     pointBalanceUseCase,
     pointTransactionRepo,
     pointTypeUseCase,
+    biliEventRepo,
+    logger: logger.scope('RewardUseCase'),
     rewardRuleRepo,
     userUseCase,
   });
@@ -142,6 +147,7 @@ export function createContainer({ db, env }: CreateSharedContextOptions) {
       productRepo,
       stockMovementRepo,
 
+      biliEventRepo,
       rewardRuleRepo,
     },
 
