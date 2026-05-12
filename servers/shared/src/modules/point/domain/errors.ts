@@ -160,7 +160,23 @@ export class PointTransactionAlreadyReversedError extends AppError {
   readonly status = 400;
   readonly code = 'POINT_TRANSACTION_ALREADY_REVERSED';
 
-  constructor(message = '积分流水以被冲正') {
+  constructor(message = '积分流水已被冲正') {
+    super(message);
+  }
+}
+
+export class PointAccountMismatchError extends BadRequestError {
+  override code = 'POINT_ACCOUNT_MISMATCH';
+
+  constructor(message = '积分账户与余额变更参数不匹配') {
+    super(message);
+  }
+}
+
+export class PointTransactionIdempotencyConflictError extends ConflictError {
+  override code = 'POINT_TRANSACTION_IDEMPOTENCY_CONFLICT';
+
+  constructor(message = '积分流水幂等键已被其他请求使用') {
     super(message);
   }
 }

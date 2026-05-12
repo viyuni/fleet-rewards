@@ -5,7 +5,7 @@ import type {
 } from '@internal/shared/point-transaction';
 import type { DbClient } from '@server/db';
 
-import { POINT_CHANGE_SOURCE_TYPE, PointTransactionAlreadyReversedError } from '../domain';
+import { POINT_CHANGE_SOURCE_TYPE, PointIdempotencyKey, PointTransactionPolicy } from '../domain';
 import { PointAccountRepository, PointTransactionRepository } from '../repository';
 import { PointBalanceUseCase } from './point-balance.usecase';
 
@@ -30,10 +30,10 @@ export class PointTransactionUseCase {
         data.transactionId,
       );
 
-      // 不允许重复冲正
-      if (original.reversalOfTransactionId) {
-        throw new PointTransactionAlreadyReversedError();
-      }
+      const existingReversal =
+        await this.deps.pointTransactionRepo.findReversalByOriginalTransactionId(original.id, tx);
+
+      PointTransactionPolicy.assertCanReverse(original, existingReversal);
 
       // 锁账户
       const account = await this.deps.pointAccountRepo.requireByIdForUpdate(
@@ -42,7 +42,7 @@ export class PointTransactionUseCase {
       );
 
       //  反转
-      const reversalDelta = -original.delta;
+      const reversalDelta = PointTransactionPolicy.reversalDelta(original);
 
       return await this.deps.pointBalanceUseCase.changeBalance(tx, account, {
         type: 'reversal',
@@ -51,7 +51,7 @@ export class PointTransactionUseCase {
         delta: reversalDelta,
         sourceType: POINT_CHANGE_SOURCE_TYPE.Reversal,
         sourceId: original.id,
-        idempotencyKey: `point-transaction:${original.id}:reversal`,
+        idempotencyKey: PointIdempotencyKey.reversal({ transactionId: original.id }),
         remark: data.remark ?? '积分流水冲正',
         metadata: {
           originalTransactionId: original.id,
@@ -60,53 +60,6 @@ export class PointTransactionUseCase {
         reversalOfTransactionId: original.id,
       });
     });
-  }
-
-  /**
-   * 获取积分流水标题
-   */
-  private resolveTransactionTitle(input: {
-    type: PointTransactionType;
-    delta: number;
-    sourceType: string | null;
-  }) {
-    // TODO 重构为 MAP 的形式匹配
-    switch (input.sourceType) {
-      case POINT_CHANGE_SOURCE_TYPE.OrderConsume:
-        return '兑换商品';
-
-      case POINT_CHANGE_SOURCE_TYPE.OrderRefund:
-        return '订单退款';
-
-      case POINT_CHANGE_SOURCE_TYPE.AdminAdjustment:
-        return input.delta >= 0 ? '管理员发放' : '管理员扣减';
-
-      case POINT_CHANGE_SOURCE_TYPE.Reversal:
-        return '积分冲正';
-
-      case POINT_CHANGE_SOURCE_TYPE.GuardEvent:
-        return '大航海奖励';
-
-      case POINT_CHANGE_SOURCE_TYPE.Conversion:
-        return input.delta >= 0 ? '积分转换转入' : '积分转换转出';
-    }
-
-    switch (input.type) {
-      case 'grant':
-        return '获得积分';
-
-      case 'consume':
-        return '消耗积分';
-
-      case 'refund':
-        return '积分退回';
-
-      case 'adjust':
-        return input.delta >= 0 ? '积分调整增加' : '积分调整扣减';
-
-      case 'reversal':
-        return '积分冲正';
-    }
   }
 
   private withTitle<
@@ -118,17 +71,14 @@ export class PointTransactionUseCase {
   >(item: T) {
     return {
       ...item,
-      title: this.resolveTransactionTitle(item),
+      title: PointTransactionPolicy.resolveTitle(item),
     };
   }
 
   pageManage(query: PointTransactionPageQuery) {
     return this.deps.pointTransactionRepo.pageManage(query).then(res => ({
       ...res,
-      items: res.items.map(item => ({
-        ...item,
-        title: this.withTitle(item),
-      })),
+      items: res.items.map(item => this.withTitle(item)),
     }));
   }
 
@@ -143,7 +93,7 @@ export class PointTransactionUseCase {
 
     return {
       ...rest,
-      title: this.withTitle(item),
+      title: PointTransactionPolicy.resolveTitle(item),
     };
   }
 

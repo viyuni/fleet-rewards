@@ -31,4 +31,12 @@ export class PointTypePolicy {
     PointTypePolicy.assertExists(pointType);
     PointTypePolicy.assertAvailable(pointType);
   }
+
+  static shouldEnable(pointType: PointType) {
+    return pointType.status !== 'active';
+  }
+
+  static shouldDisable(pointType: PointType) {
+    return pointType.status !== 'disabled';
+  }
 }

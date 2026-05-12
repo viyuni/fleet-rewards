@@ -3,6 +3,7 @@ import { expect, it } from 'bun:test';
 import { productStockMovements } from '@server/db/schema';
 import { count, eq } from 'drizzle-orm';
 
+import { StockIdempotencyKey } from '..';
 import {
   countFulfilled,
   countRejected,
@@ -70,7 +71,11 @@ describeWithDatabase('产品库存真实数据库并发保护', () => {
       .where(
         eq(
           productStockMovements.idempotencyKey,
-          `admin:stock:adjust:${product.id}:${prefix}_admin:${prefix}_same_key`,
+          StockIdempotencyKey.adminAdjust({
+            productId: product.id,
+            adminId: `${prefix}_admin`,
+            nonce: `${prefix}_same_key`,
+          }),
         ),
       );
     const current = await db.query.products.findFirst({ where: { id: product.id } });

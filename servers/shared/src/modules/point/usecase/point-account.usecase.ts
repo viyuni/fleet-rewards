@@ -1,7 +1,7 @@
 import type { AdjustBalanceBody } from '@internal/shared/point-account';
 import type { DbClient } from '@server/db';
 
-import { POINT_CHANGE_SOURCE_TYPE } from '../domain';
+import { POINT_CHANGE_SOURCE_TYPE, PointIdempotencyKey } from '../domain';
 import { PointAccountRepository } from '../repository/point-account.repo';
 import { PointBalanceUseCase } from './point-balance.usecase';
 
@@ -26,7 +26,7 @@ export class PointAccountUseCase {
         delta: data.delta,
         sourceType: POINT_CHANGE_SOURCE_TYPE.AdminAdjustment,
         sourceId: adminId,
-        idempotencyKey: `admin:points:adjust:${adminId}:${data.nonce}`,
+        idempotencyKey: PointIdempotencyKey.adminAdjust({ adminId, nonce: data.nonce }),
         remark: data.remark ?? '管理员调整积分',
         metadata: {
           adminId,

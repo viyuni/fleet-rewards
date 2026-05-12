@@ -1,7 +1,7 @@
 import { CreateOrderSchema, OrderPageQuerySchema } from '@internal/shared/order';
 import Elysia from 'elysia';
 
-import { appContext } from '#servers/user/context';
+import { appContext } from '#server/user/context';
 
 export const order = new Elysia({
   name: 'UserOrderRoute',

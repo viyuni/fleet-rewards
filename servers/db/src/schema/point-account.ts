@@ -1,14 +1,5 @@
 import type { InferEnum, InferInsertModel, InferSelectModel } from 'drizzle-orm';
-import {
-  index,
-  integer,
-  jsonb,
-  pgTable,
-  text,
-  uuid,
-  uniqueIndex,
-  pgEnum,
-} from 'drizzle-orm/pg-core';
+import { index, integer, jsonb, pgTable, uuid, uniqueIndex, pgEnum } from 'drizzle-orm/pg-core';
 
 import { timestamps } from './column-helpers';
 import { pointTypes } from './point-type';

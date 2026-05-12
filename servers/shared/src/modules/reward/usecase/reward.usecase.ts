@@ -2,6 +2,7 @@ import type { DbClient } from '@server/db';
 
 import {
   POINT_CHANGE_SOURCE_TYPE,
+  PointIdempotencyKey,
   PointAccountRepository,
   PointBalanceUseCase,
   PointTransactionRepository,
@@ -58,7 +59,10 @@ export class RewardUseCase {
         });
 
         const idempotencySource = event.stableKey ?? event.id;
-        const idempotencyKey = `bili-guard:${idempotencySource}:rule:${rule.id}`;
+        const idempotencyKey = PointIdempotencyKey.biliGuard({
+          sourceId: idempotencySource,
+          ruleId: rule.id,
+        });
         const existingTransaction =
           await this.deps.pointTransactionRepo.findByAccountAndIdempotencyKey(
             {
@@ -100,7 +104,6 @@ export class RewardUseCase {
           rule,
           pointTypeId: rule.pointTypeId,
           points: rule.points,
-          duplicated: false,
           ...result,
         });
       }

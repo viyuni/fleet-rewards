@@ -3,8 +3,8 @@ import Elysia from 'elysia';
 
 import { appContext } from '#server/admin/context';
 
-export const users = new Elysia({
-  name: 'UsersRoute',
+export const userManagement = new Elysia({
+  name: 'UserManagementRoute',
   prefix: '/users',
   detail: {
     tags: ['User'],

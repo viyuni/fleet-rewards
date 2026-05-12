@@ -1,1 +1,1 @@
-export { default as Plasma } from './Plasma.vue'
+export { default as Plasma } from './Plasma.vue';

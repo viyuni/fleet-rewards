@@ -1,7 +1,7 @@
 import type { PointTransactionPageQuery } from '@internal/shared/point-transaction';
 import type { DbExecutor, DbTransaction } from '@server/db';
 import { parseDate, QueryPageBuilder } from '@server/db/helper';
-import { pointTransactions } from '@server/db/schema';
+import { pointTransactions, type InsertPointTransaction } from '@server/db/schema';
 import { eq } from 'drizzle-orm';
 
 import { PointTransactionNotFoundError } from '../domain';
@@ -33,6 +33,20 @@ export class PointTransactionRepository {
         idempotencyKey: input.idempotencyKey,
       },
     });
+  }
+
+  async findReversalByOriginalTransactionId(transactionId: string, db: DbExecutor = this.db) {
+    return await db.query.pointTransactions.findFirst({
+      where: {
+        reversalOfTransactionId: transactionId,
+      },
+    });
+  }
+
+  async create(tx: DbTransaction, input: InsertPointTransaction) {
+    const [transaction] = await tx.insert(pointTransactions).values(input).returning();
+
+    return transaction ?? null;
   }
 
   pageManage(query: PointTransactionPageQuery) {

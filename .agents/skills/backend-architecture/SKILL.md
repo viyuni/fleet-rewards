@@ -418,7 +418,7 @@ After backend changes, run the repo's Vite+ commands from the project root:
 
 ```txt
 vp check
-vpr typecheck
+vpr tsc
 vp test
 ```
 

@@ -20,7 +20,6 @@
     "./reward": "./src/modules/reward/index.ts",
     "./product": "./src/modules/product/index.ts",
     "./order": "./src/modules/order/index.ts",
-    "./inventory": "./src/modules/inventory/index.ts",
     "./health": "./src/modules/health/index.ts"
   },
   "scripts": {

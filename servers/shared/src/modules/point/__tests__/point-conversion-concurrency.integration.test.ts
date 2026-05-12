@@ -7,6 +7,7 @@ import {
   PointAccountBannedError,
   PointConversionRuleInvalidError,
   PointConversionRuleUnavailableError,
+  PointIdempotencyKey,
 } from '..';
 import {
   countFulfilled,
@@ -233,7 +234,10 @@ describeWithDatabase('积分转换真实数据库并发保护', () => {
       .where(
         eq(
           pointTransactions.idempotencyKey,
-          `point:conversion:${rule.id}:${prefix}_same_nonce:consume`,
+          PointIdempotencyKey.conversionConsume({
+            ruleId: rule.id,
+            nonce: `${prefix}_same_nonce`,
+          }),
         ),
       );
     const [grantRows] = await db
@@ -242,12 +246,15 @@ describeWithDatabase('积分转换真实数据库并发保护', () => {
       .where(
         eq(
           pointTransactions.idempotencyKey,
-          `point:conversion:${rule.id}:${prefix}_same_nonce:grant`,
+          PointIdempotencyKey.conversionGrant({
+            ruleId: rule.id,
+            nonce: `${prefix}_same_nonce`,
+          }),
         ),
       );
 
-    expect(countFulfilled(results)).toBe(1);
-    expect(countRejected(results)).toBe(4);
+    expect(countFulfilled(results)).toBe(5);
+    expect(countRejected(results)).toBe(0);
     expect(fromAccount?.balance).toBe(4);
     expect(toAccount?.balance).toBe(10);
     expect(consumeRows?.total).toBe(1);

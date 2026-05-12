@@ -1,6 +1,6 @@
 import { createAppContext } from '@server/shared/context';
 
-import { env } from '#servers/user/env';
+import { env } from '#server/user/env';
 
 import { db } from './db';
 

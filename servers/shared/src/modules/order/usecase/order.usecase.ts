@@ -3,21 +3,24 @@ import type { DbClient } from '@server/db';
 
 import {
   POINT_CHANGE_SOURCE_TYPE,
+  PointIdempotencyKey,
   PointAccountRepository,
   PointBalanceUseCase,
   PointTypeUseCase,
 } from '#server/shared/modules/point';
 import {
-  ProductUnavailableError,
+  ProductPolicy,
   ProductUseCase,
   STOCK_MOVEMENT_SOURCE_TYPE,
 } from '#server/shared/modules/product';
+import { StockIdempotencyKey } from '#server/shared/modules/product';
 import { UserUseCase } from '#server/shared/modules/user';
 
 import {
   OrderNo,
+  OrderIdempotencyKey,
   OrderNotFoundError,
-  OrderStatusInvalidError,
+  OrderPolicy,
   OrderUpdateFailedError,
 } from '../domain';
 import { OrderRepository } from '../repository';
@@ -58,9 +61,7 @@ export class OrderUseCase {
 
       const pointType = await this.deps.pointTypeUseCase.getAvailableById(product.pointTypeId, tx);
 
-      if (product.status !== 'active') {
-        throw new ProductUnavailableError();
-      }
+      ProductPolicy.assertAvailable(product);
 
       const order = await this.deps.orderRepo.create(tx, {
         orderNo: OrderNo.create(),
@@ -71,12 +72,12 @@ export class OrderUseCase {
         pointTypeNameSnapshot: pointType.name,
         price: product.price,
         deliveryTypeSnapshot: product.deliveryType,
-        status: product.deliveryType === 'automatic' ? 'completed' : 'pending',
+        status: OrderPolicy.initialStatusForDeliveryType(product.deliveryType),
         receiverPhoneEncrypted: user.phoneEncrypted,
         receiverAddressEncrypted: user.addressEncrypted,
-        idempotencyKey: `order:create:${orderData.nonce}`,
+        idempotencyKey: OrderIdempotencyKey.create({ nonce: orderData.nonce }),
         userRemark: orderData.remark,
-        completedAt: product.deliveryType === 'automatic' ? new Date() : undefined,
+        completedAt: OrderPolicy.completedAtForDeliveryType(product.deliveryType),
       });
 
       if (!order) {
@@ -90,7 +91,7 @@ export class OrderUseCase {
         delta: -product.price,
         sourceType: POINT_CHANGE_SOURCE_TYPE.OrderConsume,
         sourceId: order.id,
-        idempotencyKey: `order:${order.id}:points:consume`,
+        idempotencyKey: PointIdempotencyKey.orderConsume({ orderId: order.id }),
         remark: `兑换商品：${product.name}`,
         metadata: {
           orderId: order.id,
@@ -105,7 +106,7 @@ export class OrderUseCase {
         delta: -1,
         sourceType: STOCK_MOVEMENT_SOURCE_TYPE.consume,
         sourceId: order.id,
-        idempotencyKey: `order:${order.id}:stock:consume`,
+        idempotencyKey: StockIdempotencyKey.orderConsume({ orderId: order.id }),
         remark: `兑换商品：${product.name}`,
         metadata: {
           orderId: order.id,
@@ -133,9 +134,7 @@ export class OrderUseCase {
   async complete(orderId: string) {
     const order = await this.get(orderId);
 
-    if (order.status !== 'pending') {
-      throw new OrderStatusInvalidError('只有待完成订单可以完成');
-    }
+    OrderPolicy.assertCanComplete(order);
 
     const updateOrder = await this.deps.orderRepo.update(orderId, {
       status: 'completed',
@@ -157,9 +156,7 @@ export class OrderUseCase {
         throw new OrderNotFoundError();
       }
 
-      if (order.status !== 'pending' && order.status !== 'completed') {
-        throw new OrderStatusInvalidError('只有待完成或已完成订单可以退款');
-      }
+      OrderPolicy.assertCanRefund(order);
 
       const product = await this.deps.productUseCase.requireByIdForUpdate(tx, order.productId);
 
@@ -176,7 +173,7 @@ export class OrderUseCase {
         delta: order.price,
         sourceType: POINT_CHANGE_SOURCE_TYPE.OrderRefund,
         sourceId: order.id,
-        idempotencyKey: `order:${order.id}:points:refund`,
+        idempotencyKey: PointIdempotencyKey.orderRefund({ orderId: order.id }),
         remark: `订单退款：${order.productNameSnapshot}`,
         metadata: {
           orderId: order.id,
@@ -192,7 +189,7 @@ export class OrderUseCase {
         delta: 1,
         sourceType: STOCK_MOVEMENT_SOURCE_TYPE.restore,
         sourceId: order.id,
-        idempotencyKey: `order:${order.id}:stock:restore`,
+        idempotencyKey: StockIdempotencyKey.orderRestore({ orderId: order.id }),
         remark: `订单退款恢复库存：${order.productNameSnapshot}`,
         metadata: {
           orderId: order.id,

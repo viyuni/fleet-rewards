@@ -3,6 +3,10 @@ import { expect, it } from 'bun:test';
 import { orders, pointTransactions, productStockMovements } from '@server/db/schema';
 import { and, count, eq } from 'drizzle-orm';
 
+import { OrderIdempotencyKey } from '#server/shared/modules/order';
+import { PointIdempotencyKey } from '#server/shared/modules/point';
+import { StockIdempotencyKey } from '#server/shared/modules/product';
+
 import {
   countFulfilled,
   countRejected,
@@ -107,15 +111,32 @@ describeWithDatabase('订单真实数据库并发保护', () => {
     const [orderRows] = await db
       .select({ total: count() })
       .from(orders)
-      .where(eq(orders.idempotencyKey, `order:create:${prefix}_same_nonce`));
+      .where(
+        eq(
+          orders.idempotencyKey,
+          OrderIdempotencyKey.create({
+            nonce: `${prefix}_same_nonce`,
+          }),
+        ),
+      );
     const [consumeRows] = await db
       .select({ total: count() })
       .from(pointTransactions)
-      .where(eq(pointTransactions.idempotencyKey, `order:${fulfilledOrder.id}:points:consume`));
+      .where(
+        eq(
+          pointTransactions.idempotencyKey,
+          PointIdempotencyKey.orderConsume({ orderId: fulfilledOrder.id }),
+        ),
+      );
     const [stockRows] = await db
       .select({ total: count() })
       .from(productStockMovements)
-      .where(eq(productStockMovements.idempotencyKey, `order:${fulfilledOrder.id}:stock:consume`));
+      .where(
+        eq(
+          productStockMovements.idempotencyKey,
+          StockIdempotencyKey.orderConsume({ orderId: fulfilledOrder.id }),
+        ),
+      );
 
     expect(countFulfilled(results)).toBe(1);
     expect(countRejected(results)).toBe(4);

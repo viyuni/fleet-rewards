@@ -50,7 +50,7 @@ export class PointTypeUseCase {
 
     PointTypePolicy.assertExists(pointType);
 
-    if (pointType.status === 'active') {
+    if (!PointTypePolicy.shouldEnable(pointType)) {
       return pointType;
     }
 
@@ -62,7 +62,7 @@ export class PointTypeUseCase {
 
     PointTypePolicy.assertExists(pointType);
 
-    if (pointType.status === 'disabled') {
+    if (!PointTypePolicy.shouldDisable(pointType)) {
       return pointType;
     }
 

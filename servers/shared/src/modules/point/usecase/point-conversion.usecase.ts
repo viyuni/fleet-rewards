@@ -8,6 +8,7 @@ import type { InsertPointConversionRule, UpdatePointConversionRule } from '@serv
 
 import {
   POINT_CHANGE_SOURCE_TYPE,
+  PointIdempotencyKey,
   PointConversionRuleInvalidError,
   PointConversionRuleNotFoundError,
   PointConversionRulePolicy,
@@ -118,7 +119,10 @@ export class PointConversionUseCase {
         delta: -conversionData.fromAmount,
         sourceType: POINT_CHANGE_SOURCE_TYPE.Conversion,
         sourceId,
-        idempotencyKey: `point:conversion:${rule.id}:${conversionData.nonce}:consume`,
+        idempotencyKey: PointIdempotencyKey.conversionConsume({
+          ruleId: rule.id,
+          nonce: conversionData.nonce,
+        }),
         remark,
         metadata: {
           ruleId: rule.id,
@@ -135,7 +139,10 @@ export class PointConversionUseCase {
         delta: toAmount,
         sourceType: POINT_CHANGE_SOURCE_TYPE.Conversion,
         sourceId,
-        idempotencyKey: `point:conversion:${rule.id}:${conversionData.nonce}:grant`,
+        idempotencyKey: PointIdempotencyKey.conversionGrant({
+          ruleId: rule.id,
+          nonce: conversionData.nonce,
+        }),
         remark,
         metadata: {
           ruleId: rule.id,

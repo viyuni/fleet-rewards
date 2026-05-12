@@ -13,7 +13,7 @@ import { order } from './modules/order';
 import { point } from './modules/point';
 import { product } from './modules/product';
 import { reward } from './modules/reward';
-import { users } from './modules/users';
+import { userManagement } from './modules/user-management';
 import { env } from './utils/env';
 import { logger } from './utils/logger';
 
@@ -35,7 +35,7 @@ export const app = new Elysia({
   .use(reward)
   .use(product)
   .use(order)
-  .use(users)
+  .use(userManagement)
   .use(email)
   .use(health)
   .get('/', () => 'Viyuni guard rewards server running... :)', { tags: ['Index'] });

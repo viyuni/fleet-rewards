@@ -63,6 +63,7 @@ export function createContainer({ db, env }: CreateSharedContextOptions) {
 
   const pointBalanceUseCase = new PointBalanceUseCase({
     pointAccountRepo,
+    pointTransactionRepo,
     pointTypeUseCase,
     userUseCase,
   });

@@ -14,7 +14,8 @@ import { PointTypeUseCase } from '#server/shared/modules/point';
 import {
   ProductInputPolicy,
   ProductNotFoundError,
-  ProductUnavailableError,
+  ProductPolicy,
+  StockIdempotencyKey,
   StockAmountPolicy,
   StockMovementCreateFailedError,
   StockMovementPolicy,
@@ -78,7 +79,7 @@ export class ProductUseCase {
   async active(productId: string) {
     const product = await this.get(productId);
 
-    if (product.status === 'active') {
+    if (!ProductPolicy.shouldActivate(product)) {
       return product;
     }
 
@@ -91,7 +92,7 @@ export class ProductUseCase {
   async disable(productId: string) {
     const product = await this.get(productId);
 
-    if (product.status === 'disabled') {
+    if (!ProductPolicy.shouldDisable(product)) {
       return product;
     }
 
@@ -111,9 +112,7 @@ export class ProductUseCase {
       throw new ProductNotFoundError();
     }
 
-    if (product.status !== 'active') {
-      throw new ProductUnavailableError();
-    }
+    ProductPolicy.assertAvailable(product);
 
     return product;
   }
@@ -187,7 +186,11 @@ export class ProductUseCase {
         delta: adjustmentData.delta,
         sourceType: STOCK_MOVEMENT_SOURCE_TYPE.adjust,
         sourceId: adminId,
-        idempotencyKey: `admin:stock:adjust:${productId}:${adminId}:${adjustmentData.nonce}`,
+        idempotencyKey: StockIdempotencyKey.adminAdjust({
+          productId,
+          adminId,
+          nonce: adjustmentData.nonce,
+        }),
         remark: adjustmentData.remark ?? `管理员调整库存：${product.name}`,
         metadata: {
           adminId,

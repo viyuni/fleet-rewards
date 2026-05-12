@@ -26,7 +26,6 @@
     "studio:test": "bun --env-file=.env.test run studio"
   },
   "dependencies": {
-    "@server/shared": "workspace:*",
     "drizzle-orm": "^1.0.0-beta.22"
   },
   "devDependencies": {

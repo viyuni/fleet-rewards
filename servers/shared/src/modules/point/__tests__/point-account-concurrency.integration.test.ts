@@ -4,6 +4,12 @@ import { pointTransactions } from '@server/db/schema';
 import { count, eq } from 'drizzle-orm';
 
 import {
+  PointAccountMismatchError,
+  PointIdempotencyKey,
+  PointTransactionAlreadyReversedError,
+  PointTransactionIdempotencyConflictError,
+} from '..';
+import {
   countFulfilled,
   countRejected,
   runConcurrent,
@@ -12,6 +18,7 @@ import {
   createDeps,
   db,
   describeWithDatabase,
+  expectRejectsInstanceOf,
   grantPoints,
   installConcurrencyTestHooks,
   newBatch,
@@ -79,16 +86,108 @@ describeWithDatabase('积分账户真实数据库并发保护', () => {
       .where(
         eq(
           pointTransactions.idempotencyKey,
-          `admin:points:adjust:${prefix}_admin:${prefix}_same_key`,
+          PointIdempotencyKey.adminAdjust({
+            adminId: `${prefix}_admin`,
+            nonce: `${prefix}_same_key`,
+          }),
         ),
       );
     const account = await db.query.pointAccounts.findFirst({
       where: { userId: user.id, pointTypeId: pointType.id },
     });
 
-    expect(countFulfilled(results)).toBe(1);
-    expect(countRejected(results)).toBe(4);
+    expect(countFulfilled(results)).toBe(5);
+    expect(countRejected(results)).toBe(0);
     expect(row?.total).toBe(1);
     expect(account?.balance).toBe(1);
+  });
+
+  it('余额变更会拒绝账户和输入参数不匹配', async () => {
+    const prefix = newBatch();
+    const pointType = await seedPointType(`${prefix}_mismatch_point`);
+    const otherPointType = await seedPointType(`${prefix}_mismatch_other_point`);
+    const user = await seedUser(`${prefix}_mismatch_user`);
+    const { pointAccountRepo, pointBalanceUseCase } = createDeps();
+
+    await expectRejectsInstanceOf(
+      db.transaction(async tx => {
+        const account = await pointAccountRepo.ensureAccountAndLock(tx, {
+          userId: user.id,
+          pointTypeId: pointType.id,
+        });
+
+        return pointBalanceUseCase.changeBalance(tx, account, {
+          type: 'grant',
+          userId: user.id,
+          pointTypeId: otherPointType.id,
+          delta: 1,
+          sourceType: 'test',
+          sourceId: `${prefix}_mismatch`,
+          idempotencyKey: `${prefix}_mismatch`,
+        });
+      }),
+      PointAccountMismatchError,
+    );
+  });
+
+  it('同一幂等键不能复用到不同余额变更参数', async () => {
+    const prefix = newBatch();
+    const pointType = await seedPointType(`${prefix}_idempotency_conflict_point`);
+    const user = await seedUser(`${prefix}_idempotency_conflict_user`);
+    const { pointAccountUseCase } = createDeps();
+    const input = {
+      userId: user.id,
+      pointTypeId: pointType.id,
+      nonce: `${prefix}_same_nonce`,
+    };
+
+    await pointAccountUseCase.adjustBalance(`${prefix}_admin`, {
+      ...input,
+      delta: 1,
+    });
+
+    await expectRejectsInstanceOf(
+      pointAccountUseCase.adjustBalance(`${prefix}_admin`, {
+        ...input,
+        delta: 2,
+      }),
+      PointTransactionIdempotencyConflictError,
+    );
+  });
+
+  it('重复冲正只会创建一条冲正流水', async () => {
+    const prefix = newBatch();
+    const pointType = await seedPointType(`${prefix}_reversal_point`);
+    const user = await seedUser(`${prefix}_reversal_user`);
+    const { pointTransactionUseCase } = createDeps();
+    const grantResult = await grantPoints({
+      adminId: `${prefix}_admin`,
+      userId: user.id,
+      pointTypeId: pointType.id,
+      delta: 3,
+      nonce: `${prefix}_grant`,
+    });
+
+    const results = await runConcurrent(5, () =>
+      pointTransactionUseCase.reversal(`${prefix}_admin`, {
+        transactionId: grantResult.transaction.id,
+      }),
+    );
+
+    const [row] = await db
+      .select({ total: count() })
+      .from(pointTransactions)
+      .where(eq(pointTransactions.reversalOfTransactionId, grantResult.transaction.id));
+    const account = await db.query.pointAccounts.findFirst({
+      where: { userId: user.id, pointTypeId: pointType.id },
+    });
+
+    expect(countFulfilled(results)).toBe(1);
+    expect(countRejected(results)).toBe(4);
+    expect(results.filter(result => result.status === 'rejected')[0]?.reason).toBeInstanceOf(
+      PointTransactionAlreadyReversedError,
+    );
+    expect(row?.total).toBe(1);
+    expect(account?.balance).toBe(0);
   });
 });
