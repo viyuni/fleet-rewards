@@ -15,7 +15,7 @@ const { data } = useQuery({
 
 <template>
   <div
-    class="container mx-auto grid grid-cols-2 gap-10 p-5 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6"
+    class="container mx-auto grid grid-cols-2 gap-10 p-5 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
   >
     <div v-for="item in data?.items" class="w-full">
       <div
