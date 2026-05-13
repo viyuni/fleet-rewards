@@ -24,7 +24,7 @@ export const product = new Elysia({
     },
     {
       query: ProductPageQuerySchema,
-      requiredAuth: true,
+      requiredAdminAuth: true,
       detail: {
         description: '商品列表',
       },
@@ -37,7 +37,7 @@ export const product = new Elysia({
     },
     {
       query: StockMovementPageQuerySchema,
-      requiredAuth: true,
+      requiredAdminAuth: true,
       detail: {
         description: '商品库存流水',
       },
@@ -54,7 +54,7 @@ export const product = new Elysia({
     {
       query: StockMovementPageQuerySchema,
       params: ProductIdParamsSchema,
-      requiredAuth: true,
+      requiredAdminAuth: true,
       detail: {
         description: '商品库存流水',
       },
@@ -67,7 +67,7 @@ export const product = new Elysia({
     },
     {
       params: ProductIdParamsSchema,
-      requiredAuth: true,
+      requiredAdminAuth: true,
       detail: {
         description: '商品详情',
       },
@@ -80,7 +80,7 @@ export const product = new Elysia({
     },
     {
       body: CreateProductSchema,
-      requiredAuth: true,
+      requiredAdminAuth: true,
       detail: {
         description: '创建商品',
         requestBody: {
@@ -99,7 +99,7 @@ export const product = new Elysia({
     {
       body: UpdateProductSchema,
       params: ProductIdParamsSchema,
-      requiredAuth: true,
+      requiredAdminAuth: true,
       detail: {
         description: '更新商品',
       },
@@ -112,7 +112,7 @@ export const product = new Elysia({
     },
     {
       params: ProductIdParamsSchema,
-      requiredAuth: true,
+      requiredAdminAuth: true,
       detail: {
         description: '上架商品',
       },
@@ -125,7 +125,7 @@ export const product = new Elysia({
     },
     {
       params: ProductIdParamsSchema,
-      requiredAuth: true,
+      requiredAdminAuth: true,
       detail: {
         description: '下架商品',
       },
@@ -146,7 +146,7 @@ export const product = new Elysia({
     {
       body: StockAdjustmentSchema,
       params: ProductIdParamsSchema,
-      requiredAuth: true,
+      requiredAdminAuth: true,
       detail: {
         description: '调整商品库存',
       },

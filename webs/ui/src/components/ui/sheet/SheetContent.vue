@@ -1,12 +1,11 @@
 <script setup lang="ts">
 import { reactiveOmit } from '@vueuse/core';
+import { Button } from '@web/ui/components/ui/button';
+import { cn } from '@web/ui/lib/utils';
 import { XIcon } from 'lucide-vue-next';
 import type { DialogContentEmits, DialogContentProps } from 'reka-ui';
 import { DialogClose, DialogContent, DialogPortal, useForwardPropsEmits } from 'reka-ui';
 import type { HTMLAttributes } from 'vue';
-
-import { Button } from '#ui/components/ui/button';
-import { cn } from '#ui/lib/utils';
 
 import SheetOverlay from './SheetOverlay.vue';
 

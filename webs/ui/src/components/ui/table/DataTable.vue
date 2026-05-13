@@ -81,9 +81,6 @@ import {
   getSortedRowModel,
   useVueTable,
 } from '@tanstack/vue-table';
-import { ChevronLeft, ChevronRight, ChevronsRight, ChevronsLeft } from 'lucide-vue-next';
-import { computed, ref, watch } from 'vue';
-
 import {
   Pagination,
   PaginationContent,
@@ -93,8 +90,10 @@ import {
   PaginationNext,
   PaginationLast,
   PaginationFirst,
-} from '#ui/components/ui/pagination';
-import { cn } from '#ui/lib/utils';
+} from '@web/ui/components/ui/pagination';
+import { cn } from '@web/ui/lib/utils';
+import { ChevronLeft, ChevronRight, ChevronsRight, ChevronsLeft } from 'lucide-vue-next';
+import { computed, ref, watch } from 'vue';
 
 import Table from './Table.vue';
 import TableBody from './TableBody.vue';

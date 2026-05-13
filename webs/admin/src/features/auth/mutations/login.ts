@@ -1,7 +1,7 @@
 import type { AdminLoginBody } from '@internal/shared/admin';
 import { defineMutation, useMutation } from '@pinia/colada';
 
-import { api } from '#eden';
+import { api } from '#web/admin/libs';
 
 import { useAuthStore } from '../store';
 

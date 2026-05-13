@@ -18,7 +18,7 @@ export const user = new Elysia({
     },
     {
       query: UserPageQuerySchema,
-      requiredAuth: true,
+      requiredAdminAuth: true,
       detail: {
         description: '用户列表',
       },
@@ -31,7 +31,7 @@ export const user = new Elysia({
     },
     {
       body: UserRegisterSchema,
-      requiredAuth: true,
+      requiredAdminAuth: true,
       detail: {
         description: '用户注册',
       },
@@ -49,7 +49,7 @@ export const user = new Elysia({
     },
     {
       params: UserIdParamsSchema,
-      requiredAuth: true,
+      requiredAdminAuth: true,
       detail: {
         description: '封禁用户',
       },
@@ -67,7 +67,7 @@ export const user = new Elysia({
     },
     {
       params: UserIdParamsSchema,
-      requiredAuth: true,
+      requiredAdminAuth: true,
       detail: {
         description: '恢复用户',
       },

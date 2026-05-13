@@ -18,7 +18,7 @@ export const pointTransactionRoute = new Elysia({
     },
     {
       query: TransactionPageQuerySchema,
-      requiredAuth: true,
+      requiredAdminAuth: true,
       detail: {
         description: ' 查询积分流水',
       },

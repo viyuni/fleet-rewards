@@ -54,7 +54,6 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      '#eden': fileURLToPath(new URL('./eden', import.meta.url)),
       '#web/admin': '/src',
       '#ui': fileURLToPath(new URL('../ui/src', import.meta.url)),
     },

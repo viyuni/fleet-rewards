@@ -19,6 +19,10 @@ import { logger } from './utils/logger';
 
 export const app = new Elysia({
   name: 'AdminServer',
+  serve: {
+    port: env.PORT,
+    reusePort: true,
+  },
 })
   .use(
     cors({
@@ -49,4 +53,4 @@ if (env.NODE_ENV === 'development') {
   );
 }
 
-app.compile().listen({ port: env.PORT }, logger.printUrls);
+app.compile().listen({}, logger.printUrls);

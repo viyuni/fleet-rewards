@@ -17,7 +17,7 @@ export const pointAccountRoute = new Elysia({
       return pointAccountUseCase.adjustBalance(adminId, body);
     },
     {
-      requiredAuth: true,
+      requiredAdminAuth: true,
       body: AdjustBalanceSchema,
       detail: {
         description: ' 账号积分调整',

@@ -6,6 +6,8 @@ import { and, count, eq } from 'drizzle-orm';
 import {
   PointAccountBannedError,
   PointConversionRuleInvalidError,
+  PointConversionRuleNameExistsError,
+  PointConversionRulePairExistsError,
   PointConversionRuleUnavailableError,
   PointIdempotencyKey,
 } from '..';
@@ -82,6 +84,56 @@ describeWithDatabase('积分转换真实数据库并发保护', () => {
         toAmount: 1,
       }),
       PointConversionRuleInvalidError,
+    );
+  });
+
+  it('积分转换规则创建会拒绝重复名称', async () => {
+    const prefix = newBatch();
+    const fromPointType = await seedPointType(`${prefix}_name_from_point`);
+    const toPointType = await seedPointType(`${prefix}_name_to_point`);
+    const otherFromPointType = await seedPointType(`${prefix}_name_other_from_point`);
+    const otherToPointType = await seedPointType(`${prefix}_name_other_to_point`);
+    const { pointConversionUseCase } = createDeps();
+
+    await pointConversionUseCase.create({
+      name: `${prefix}_same_name_rule`,
+      fromPointTypeId: fromPointType.id,
+      toPointTypeId: toPointType.id,
+      toAmount: 1,
+    });
+
+    await expectRejectsInstanceOf(
+      pointConversionUseCase.create({
+        name: `${prefix}_same_name_rule`,
+        fromPointTypeId: otherFromPointType.id,
+        toPointTypeId: otherToPointType.id,
+        toAmount: 1,
+      }),
+      PointConversionRuleNameExistsError,
+    );
+  });
+
+  it('积分转换规则创建会拒绝重复来源和目标积分类型', async () => {
+    const prefix = newBatch();
+    const fromPointType = await seedPointType(`${prefix}_pair_from_point`);
+    const toPointType = await seedPointType(`${prefix}_pair_to_point`);
+    const { pointConversionUseCase } = createDeps();
+
+    await pointConversionUseCase.create({
+      name: `${prefix}_first_pair_rule`,
+      fromPointTypeId: fromPointType.id,
+      toPointTypeId: toPointType.id,
+      toAmount: 1,
+    });
+
+    await expectRejectsInstanceOf(
+      pointConversionUseCase.create({
+        name: `${prefix}_second_pair_rule`,
+        fromPointTypeId: fromPointType.id,
+        toPointTypeId: toPointType.id,
+        toAmount: 1,
+      }),
+      PointConversionRulePairExistsError,
     );
   });
 

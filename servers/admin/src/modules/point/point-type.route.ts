@@ -21,7 +21,7 @@ export const pointTypeRoute = new Elysia({
       return pointTypeUseCase.list();
     },
     {
-      requiredAuth: true,
+      requiredAdminAuth: true,
 
       detail: {
         description: '积分类型列表',
@@ -35,7 +35,7 @@ export const pointTypeRoute = new Elysia({
     },
     {
       params: PointTypeIdParamsSchema,
-      requiredAuth: true,
+      requiredAdminAuth: true,
       detail: {
         description: '积分类型详情',
       },
@@ -48,7 +48,7 @@ export const pointTypeRoute = new Elysia({
     },
     {
       body: CreatePointTypeSchema,
-      requiredAuth: true,
+      requiredAdminAuth: true,
       detail: {
         description: '创建积分类型',
       },
@@ -62,7 +62,7 @@ export const pointTypeRoute = new Elysia({
     {
       body: UpdatePointTypeSchema,
       params: PointTypeIdParamsSchema,
-      requiredAuth: true,
+      requiredAdminAuth: true,
       detail: {
         description: '更新积分类型',
       },
@@ -75,7 +75,7 @@ export const pointTypeRoute = new Elysia({
     },
     {
       params: PointTypeIdParamsSchema,
-      requiredAuth: true,
+      requiredAdminAuth: true,
       detail: {
         description: '启用积分类型',
       },
@@ -88,7 +88,7 @@ export const pointTypeRoute = new Elysia({
     },
     {
       params: PointTypeIdParamsSchema,
-      requiredAuth: true,
+      requiredAdminAuth: true,
       detail: {
         description: '停用积分类型',
       },

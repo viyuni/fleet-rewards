@@ -3,13 +3,11 @@ import Elysia from 'elysia';
 
 import type { SharedEnv } from '#server/shared/utils';
 
-import { ImageUseCase } from './usecase';
-
 export * from './usecase';
 export * from './domain';
 
-export const imageModule = (env: SharedEnv) =>
-  new Elysia({ name: 'ImageModule' }).decorate('image', new ImageUseCase(env.IMAGE_SAVE_PATH)).use(
+export const image = (env: SharedEnv) =>
+  new Elysia({ name: 'ImageModule' }).use(
     staticPlugin({
       assets: env.IMAGE_SAVE_PATH,
       prefix: '/images',

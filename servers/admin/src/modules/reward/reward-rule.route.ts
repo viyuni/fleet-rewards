@@ -23,7 +23,7 @@ export const rewardRuleRoute = new Elysia({
       return rewardRuleUseCase.listManage();
     },
     {
-      requiredAuth: true,
+      requiredAdminAuth: true,
       detail: {
         description: '积分奖励规则列表',
       },
@@ -36,7 +36,7 @@ export const rewardRuleRoute = new Elysia({
     },
     {
       params: RewardRuleIdParamsSchema,
-      requiredAuth: true,
+      requiredAdminAuth: true,
       detail: {
         description: '积分奖励规则详情',
       },
@@ -49,7 +49,7 @@ export const rewardRuleRoute = new Elysia({
     },
     {
       body: CreateRewardRuleSchema,
-      requiredAuth: true,
+      requiredAdminAuth: true,
       detail: {
         description: '创建积分奖励规则',
       },
@@ -63,7 +63,7 @@ export const rewardRuleRoute = new Elysia({
     {
       body: UpdateRewardRuleSchema,
       params: RewardRuleIdParamsSchema,
-      requiredAuth: true,
+      requiredAdminAuth: true,
       detail: {
         description: '更新积分奖励规则',
       },
@@ -76,7 +76,7 @@ export const rewardRuleRoute = new Elysia({
     },
     {
       params: RewardRuleIdParamsSchema,
-      requiredAuth: true,
+      requiredAdminAuth: true,
       detail: {
         description: '启用积分奖励规则',
       },
@@ -89,7 +89,7 @@ export const rewardRuleRoute = new Elysia({
     },
     {
       params: RewardRuleIdParamsSchema,
-      requiredAuth: true,
+      requiredAdminAuth: true,
       detail: {
         description: '停用积分奖励规则',
       },
@@ -102,7 +102,7 @@ export const rewardRuleRoute = new Elysia({
     },
     {
       params: RewardRuleIdParamsSchema,
-      requiredAuth: true,
+      requiredAdminAuth: true,
       detail: {
         description: '删除积分奖励规则',
       },

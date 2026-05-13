@@ -5,10 +5,10 @@ import { Button } from '@web/ui/button';
 import { DataTable } from '@web/ui/table';
 import { MoreHorizontal, Settings2 } from 'lucide-vue-next';
 
-import { api } from '#eden';
 import type { UserPageQuery } from '#shared/user';
 import { useDebouncedPageQuery } from '#web/admin/composables/useDebouncedPageQuery';
 import { usePageQuery } from '#web/admin/composables/usePageQuery';
+import { api } from '#web/admin/libs';
 
 import { userPageQuery } from '../queries/user';
 

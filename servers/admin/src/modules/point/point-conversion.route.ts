@@ -23,7 +23,7 @@ export const pointConversionRoute = new Elysia({
       return pointConversionUseCase.list();
     },
     {
-      requiredAuth: true,
+      requiredAdminAuth: true,
       detail: {
         description: '积分转换规则列表',
       },
@@ -37,7 +37,7 @@ export const pointConversionRoute = new Elysia({
     },
     {
       body: CreatePointConversionRuleSchema,
-      requiredAuth: true,
+      requiredAdminAuth: true,
       detail: {
         description: '创建积分转换规则',
       },
@@ -51,7 +51,7 @@ export const pointConversionRoute = new Elysia({
     {
       body: UpdatePointConversionRuleSchema,
       params: PointConversionRuleIdParamsSchema,
-      requiredAuth: true,
+      requiredAdminAuth: true,
       detail: {
         description: '更新积分转换规则',
       },
@@ -64,7 +64,7 @@ export const pointConversionRoute = new Elysia({
     },
     {
       params: PointConversionRuleIdParamsSchema,
-      requiredAuth: true,
+      requiredAdminAuth: true,
       detail: {
         description: '启用积分转换规则',
       },
@@ -77,7 +77,7 @@ export const pointConversionRoute = new Elysia({
     },
     {
       params: PointConversionRuleIdParamsSchema,
-      requiredAuth: true,
+      requiredAdminAuth: true,
       detail: {
         description: '停用积分转换规则',
       },
@@ -90,7 +90,7 @@ export const pointConversionRoute = new Elysia({
     },
     {
       body: ConvertPointSchema,
-      requiredAuth: true,
+      requiredAdminAuth: true,
       detail: {
         description: '执行积分转换',
       },

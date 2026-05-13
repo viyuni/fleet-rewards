@@ -1,9 +1,8 @@
 <script setup lang="ts">
+import { Skeleton } from '@web/ui/components/ui/skeleton';
+import { cn } from '@web/ui/lib/utils';
 import type { HTMLAttributes } from 'vue';
 import { computed } from 'vue';
-
-import { Skeleton } from '#ui/components/ui/skeleton';
-import { cn } from '#ui/lib/utils';
 
 const props = defineProps<{
   showIcon?: boolean;

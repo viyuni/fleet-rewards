@@ -25,6 +25,8 @@ function order(input: Partial<Order> = {}): Order {
     refundReason: null,
     completedAt: null,
     refundedAt: null,
+    expressCompany: null,
+    expressNo: null,
     idempotencyKey: `order:${crypto.randomUUID()}`,
     metadata: null,
     createdAt: new Date(),

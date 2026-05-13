@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { reactiveOmit } from '@vueuse/core';
+import { cn } from '@web/ui/lib/utils';
 import type { AlertDialogContentEmits, AlertDialogContentProps } from 'reka-ui';
 import {
   AlertDialogContent,
@@ -8,8 +9,6 @@ import {
   useForwardPropsEmits,
 } from 'reka-ui';
 import type { HTMLAttributes } from 'vue';
-
-import { cn } from '#ui/lib/utils';
 
 defineOptions({
   inheritAttrs: false,

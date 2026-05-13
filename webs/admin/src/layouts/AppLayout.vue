@@ -46,7 +46,7 @@ const breadcrumbs = computed(() => {
         <ThemeToggle class="ml-auto" />
       </header>
 
-      <div>
+      <div class="w-full">
         <RouterView />
       </div>
     </SidebarInset>

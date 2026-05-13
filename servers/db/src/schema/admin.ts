@@ -12,7 +12,7 @@ export const admins = pgTable(
   {
     id: uuid('id').primaryKey().defaultRandom(),
     uid: text('uid').notNull().unique('admins_uid_unique'),
-    username: text('username').notNull().unique(),
+    username: text('username').notNull(),
     status: adminStatusEnum('status').notNull().default('active'),
     role: adminRoleEnum('role').notNull().default('admin'),
     passwordHash: text('password_hash').notNull(),

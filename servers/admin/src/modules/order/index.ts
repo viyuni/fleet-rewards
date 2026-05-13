@@ -2,6 +2,7 @@ import {
   OrderIdParamsSchema,
   OrderPageQuerySchema,
   RefundOrderSchema,
+  UpdateOrderExpressSchema,
 } from '@internal/shared/order';
 import Elysia from 'elysia';
 
@@ -23,7 +24,7 @@ export const order = new Elysia({
     },
     {
       query: OrderPageQuerySchema,
-      requiredAuth: true,
+      requiredAdminAuth: true,
       detail: {
         description: '订单列表',
       },
@@ -36,7 +37,7 @@ export const order = new Elysia({
     },
     {
       params: OrderIdParamsSchema,
-      requiredAuth: true,
+      requiredAdminAuth: true,
       detail: {
         description: '订单详情',
       },
@@ -54,9 +55,32 @@ export const order = new Elysia({
     },
     {
       params: OrderIdParamsSchema,
-      requiredAuth: true,
+      requiredAdminAuth: true,
       detail: {
         description: '完成订单',
+      },
+    },
+  )
+  .patch(
+    '/:orderId/express',
+    async ({ body, params, orderUseCase }) => {
+      const { expressCompany, expressNo, id } = await orderUseCase.updateExpress(
+        params.orderId,
+        body,
+      );
+
+      return {
+        id,
+        expressCompany,
+        expressNo,
+      };
+    },
+    {
+      body: UpdateOrderExpressSchema,
+      params: OrderIdParamsSchema,
+      requiredAdminAuth: true,
+      detail: {
+        description: '修改订单快递信息',
       },
     },
   )
@@ -73,7 +97,7 @@ export const order = new Elysia({
     {
       body: RefundOrderSchema,
       params: OrderIdParamsSchema,
-      requiredAuth: true,
+      requiredAdminAuth: true,
       detail: {
         description: '退款订单',
       },

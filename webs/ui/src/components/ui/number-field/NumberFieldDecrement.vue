@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import { reactiveOmit } from '@vueuse/core';
+import { cn } from '@web/ui/lib/utils';
 import { MinusIcon } from 'lucide-vue-next';
 import type { NumberFieldDecrementProps } from 'reka-ui';
 import { NumberFieldDecrement, useForwardProps } from 'reka-ui';
 import type { HTMLAttributes } from 'vue';
-
-import { cn } from '#ui/lib/utils';
 
 const props = defineProps<NumberFieldDecrementProps & { class?: HTMLAttributes['class'] }>();
 

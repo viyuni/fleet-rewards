@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import { reactiveOmit, useVModel } from '@vueuse/core';
+import { cn } from '@web/ui/lib/utils';
 import { ChevronDownIcon } from 'lucide-vue-next';
 import type { AcceptableValue } from 'reka-ui';
 import type { HTMLAttributes } from 'vue';
-
-import { cn } from '#ui/lib/utils';
 
 defineOptions({
   inheritAttrs: false,

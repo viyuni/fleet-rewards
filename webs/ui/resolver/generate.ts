@@ -13,6 +13,7 @@ const __filename = fileURLToPath(import.meta.url);
 
 type ComponentExport = {
   exportName: string;
+  exportPath: string;
   sourcePath: string;
   componentNames: string[];
 };
@@ -37,9 +38,9 @@ async function scanComponentExports() {
   for (const indexFile of files) {
     const mod = (await import(pathToFileURL(indexFile).href)) as Record<string, unknown>;
 
-    const exportName = path.basename(path.dirname(indexFile));
-
     const sourcePath = withDotSlash(path.relative(packageRoot, indexFile));
+    const exportPath = sourcePath.replace(/^\.\/src\//, './').replace(/\/index\.ts$/, '');
+    const exportName = exportPath.slice(2);
 
     const componentNames = Object.entries(mod)
       .filter(([, value]) => typeof value === 'string' && value.endsWith('.vue'))
@@ -49,6 +50,7 @@ async function scanComponentExports() {
 
     result.push({
       exportName,
+      exportPath,
       sourcePath,
       componentNames,
     });
@@ -61,10 +63,17 @@ function updatePackageExports(items: ComponentExport[]) {
   const packageJsonPath = path.resolve(packageRoot, './package.json');
   const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
 
-  packageJson.exports ??= {};
+  packageJson.exports = {
+    './resolver': './resolver/index.ts',
+    '.': './src/index.ts',
+    './style.css': './src/style.css',
+    './types': './types.d.ts',
+    './components/*': './src/components/*',
+    './lib/*': './src/lib/*',
+  };
 
   for (const item of items) {
-    packageJson.exports[`./${item.exportName}`] = item.sourcePath;
+    packageJson.exports[item.exportPath] = item.sourcePath;
   }
 
   fs.writeFileSync(packageJsonPath, `${JSON.stringify(packageJson, null, 2)}\n`);

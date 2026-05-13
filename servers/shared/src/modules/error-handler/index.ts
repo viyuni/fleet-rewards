@@ -7,6 +7,8 @@ export function errorHandler<T extends Elysia>(app: T): T {
       return status(422, error.valueError?.message ?? '参数错误');
     }
 
+    console.error(error);
+
     if (code === 500 || code === 'UNKNOWN' || error instanceof SQL.PostgresError) {
       return status(500, '服务器内部错误');
     }

@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { useDark, useStorage, useToggle } from '@vueuse/core';
+import { Button } from '@web/ui/components/ui/button';
 import { Moon, Sun } from 'lucide-vue-next';
-
-import { Button } from '#ui/components/ui/button';
 
 const isDark = useDark({
   storageKey: 'theme',

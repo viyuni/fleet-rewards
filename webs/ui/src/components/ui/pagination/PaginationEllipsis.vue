@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import { reactiveOmit } from '@vueuse/core';
+import { cn } from '@web/ui/lib/utils';
 import { MoreHorizontalIcon } from 'lucide-vue-next';
 import type { PaginationEllipsisProps } from 'reka-ui';
 import { PaginationEllipsis } from 'reka-ui';
 import type { HTMLAttributes } from 'vue';
-
-import { cn } from '#ui/lib/utils';
 
 const props = defineProps<PaginationEllipsisProps & { class?: HTMLAttributes['class'] }>();
 

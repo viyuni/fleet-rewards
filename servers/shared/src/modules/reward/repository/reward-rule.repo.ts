@@ -22,6 +22,19 @@ export class RewardRuleRepository {
     });
   }
 
+  async findByName(name: string, db: DbExecutor = this.db) {
+    return (
+      (await db.query.rewardRules.findFirst({
+        where: {
+          name,
+          deletedAt: {
+            isNull: true,
+          },
+        },
+      })) ?? null
+    );
+  }
+
   async listCandidates(now = new Date(), db: DbExecutor = this.db) {
     return await db
       .select()

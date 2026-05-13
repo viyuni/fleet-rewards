@@ -17,7 +17,6 @@
 
     "types": ["@web/ui/types"],
     "paths": {
-      "#eden": ["./eden/index.ts"],
       "#server/admin/*": ["../../servers/admin/src/*"],
       "#server/shared/*": ["../../servers/shared/src/*"],
       "#shared/*": ["../../shared/src/*"],

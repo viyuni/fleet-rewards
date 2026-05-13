@@ -78,8 +78,8 @@ const ProductDetailSchema = v.pipe(v.string('请输入商品详情'), v.descript
  */
 const ProductCoverSchema = v.pipe(
   v.file('请选择商品封面图'),
-  v.mimeType(['image/*'], '请选择图片格式的商品封面图'),
-  v.maxSize(1024 * 1024 * 10, '请选择一个小于 20MB 的文件'),
+  v.mimeType(['image/jpeg', 'image/png', 'image/webp'], '商品封面图仅支持 JPG、PNG、WebP 格式'),
+  v.maxSize(1024 * 1024 * 20, '请选择一个小于 20MB 的文件'),
   v.description('商品封面图'),
 );
 

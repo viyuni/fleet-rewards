@@ -16,6 +16,14 @@ export class ProductInvalidInputError extends BadRequestError {
   }
 }
 
+export class ProductNameExistsError extends ConflictError {
+  override code = 'PRODUCT_NAME_EXISTS';
+
+  constructor(message = '商品名称已存在') {
+    super(message);
+  }
+}
+
 export class StockAmountInvalidError extends BadRequestError {
   override code = 'STOCK_AMOUNT_INVALID';
   constructor(message = '库存数量错误') {

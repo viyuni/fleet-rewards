@@ -1,5 +1,5 @@
-import { api } from '#eden';
 import type { UserPageQuery } from '#shared/user';
+import { api } from '#web/admin/libs';
 
 export const USER_QUERY_KEYS = {
   root: ['users'] as const,

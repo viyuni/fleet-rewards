@@ -6,9 +6,9 @@
     // Extra safety for array and object lookups, but may have false positives.
     "noUncheckedIndexedAccess": true,
 
-    // Path mapping for cleaner imports.
+    // Match package-name imports used by shadcn-vue aliases inside this package.
     "paths": {
-      "#ui/*": ["./src/*"]
+      "@web/ui/*": ["./src/*"]
     },
 
     // `vue-tsc --build` produces a .tsbuildinfo file for incremental type-checking.

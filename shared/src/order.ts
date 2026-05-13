@@ -79,3 +79,27 @@ export const RefundOrderSchema = v.object({
 });
 
 export type RefundOrderBody = v.InferOutput<typeof RefundOrderSchema>;
+
+/**
+ * 更新订单快递信息 Schema
+ */
+export const UpdateOrderExpressSchema = v.object({
+  expressCompany: v.optional(
+    v.pipe(
+      v.string('请输入快递公司'),
+      v.trim(),
+      v.maxLength(100, '快递公司不能超过 100 个字符'),
+      v.description('快递公司'),
+    ),
+  ),
+  expressNo: v.optional(
+    v.pipe(
+      v.string('请输入快递单号'),
+      v.trim(),
+      v.maxLength(100, '快递单号不能超过 100 个字符'),
+      v.description('快递单号'),
+    ),
+  ),
+});
+
+export type UpdateOrderExpressBody = v.InferOutput<typeof UpdateOrderExpressSchema>;

@@ -18,9 +18,6 @@ import {
   getSortedRowModel,
   useVueTable,
 } from '@tanstack/vue-table';
-import type { HTMLAttributes } from 'vue';
-import { computed, ref } from 'vue';
-
 import {
   Pagination,
   PaginationContent,
@@ -28,8 +25,10 @@ import {
   PaginationItem,
   PaginationEllipsis,
   PaginationNext,
-} from '#ui/components/ui/pagination';
-import { cn } from '#ui/lib/utils';
+} from '@web/ui/components/ui/pagination';
+import { cn } from '@web/ui/lib/utils';
+import type { HTMLAttributes } from 'vue';
+import { computed, ref } from 'vue';
 
 import { valueUpdater } from '../../ui/table';
 import {

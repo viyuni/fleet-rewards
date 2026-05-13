@@ -10,16 +10,45 @@ import {
   createRewardRule,
   db,
   describeWithDatabase,
+  expectRejectsInstanceOf,
   installConcurrencyTestHooks,
   newBatch,
   seedPointType,
   seedUser,
 } from '../../../__tests__/helpers/concurrency-fixtures';
 import { PointIdempotencyKey } from '../../point';
+import { RewardRuleNameExistsError } from '../domain';
 
 installConcurrencyTestHooks();
 
 describeWithDatabase('奖励发放真实数据库', () => {
+  it('奖励规则创建会拒绝重复名称', async () => {
+    const prefix = newBatch('reward_name');
+    const pointType = await seedPointType(`${prefix}_point`);
+    const { rewardRuleUseCase } = createDeps();
+
+    await rewardRuleUseCase.create({
+      name: `${prefix}_reward_rule`,
+      conditions: {
+        type: 'biliGuard',
+      },
+      pointTypeId: pointType.id,
+      points: 10,
+    });
+
+    await expectRejectsInstanceOf(
+      rewardRuleUseCase.create({
+        name: `${prefix}_reward_rule`,
+        conditions: {
+          type: 'biliGuard',
+        },
+        pointTypeId: pointType.id,
+        points: 10,
+      }),
+      RewardRuleNameExistsError,
+    );
+  });
+
   it('同一个大航海事件不会重复发放奖励', async () => {
     const prefix = newBatch('reward');
     const biliUid = createBiliUid();

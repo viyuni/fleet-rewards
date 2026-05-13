@@ -6,13 +6,14 @@ import type {
 } from '@internal/shared/product';
 import type { StockAdjustmentBody } from '@internal/shared/stock';
 import type { DbClient, DbTransaction } from '@server/db';
-import type { Product } from '@server/db/schema';
+import type { InsertProduct, Product, UpdateProduct } from '@server/db/schema';
 
 import { ImageUseCase } from '#server/shared/modules/image';
 import { PointTypeUseCase } from '#server/shared/modules/point';
 
 import {
   ProductInputPolicy,
+  ProductNameExistsError,
   ProductNotFoundError,
   ProductPolicy,
   StockIdempotencyKey,
@@ -66,10 +67,23 @@ export class ProductUseCase {
     await this.deps.pointTypeUseCase.getAvailableById(productData.pointTypeId);
     ProductInputPolicy.assertValid(productData);
 
-    const { cover, ...data } = productData;
-    const coverName = await this.deps.imageUseCase.save(cover);
+    const exists = await this.deps.productRepo.findByName(productData.name);
 
-    return this.deps.productRepo.create({ ...data, cover: coverName });
+    if (exists) {
+      throw new ProductNameExistsError();
+    }
+
+    const { cover, ...data } = productData;
+    const updateData: InsertProduct = data;
+
+    if (cover) {
+      const { filename, placeholder } = await this.deps.imageUseCase.save(cover);
+
+      updateData.cover = filename;
+      updateData.coverPlaceholderUrl = placeholder;
+    }
+
+    return this.deps.productRepo.create(updateData);
   }
 
   /**
@@ -79,9 +93,16 @@ export class ProductUseCase {
     ProductInputPolicy.assertValid(productData);
 
     const { cover, ...data } = productData;
-    const coverName = await this.deps.imageUseCase.save(cover);
+    const updateData: UpdateProduct = data;
 
-    return this.deps.productRepo.update(productId, { ...data, cover: coverName });
+    if (cover) {
+      const { filename, placeholder } = await this.deps.imageUseCase.save(cover);
+
+      updateData.cover = filename;
+      updateData.coverPlaceholderUrl = placeholder;
+    }
+
+    return this.deps.productRepo.update(productId, updateData);
   }
 
   /**

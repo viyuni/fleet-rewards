@@ -8,6 +8,14 @@ export class RewardRuleNotFoundError extends NotFoundError {
   }
 }
 
+export class RewardRuleNameExistsError extends ConflictError {
+  override code = 'REWARD_RULE_NAME_EXISTS';
+
+  constructor(message = '积分奖励规则名称已存在') {
+    super(message);
+  }
+}
+
 export class RewardRuleTimeRangeInvalidError extends ConflictError {
   override code = 'REWARD_RULE_TIME_RANGE_INVALID';
 
@@ -17,6 +25,7 @@ export class RewardRuleTimeRangeInvalidError extends ConflictError {
 }
 
 export const RewardErrors = {
+  RewardRuleNameExistsError,
   RewardRuleNotFoundError,
   RewardRuleTimeRangeInvalidError,
 };

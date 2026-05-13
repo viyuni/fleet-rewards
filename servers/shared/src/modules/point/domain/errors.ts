@@ -189,6 +189,22 @@ export class PointConversionRuleNotFoundError extends NotFoundError {
   }
 }
 
+export class PointConversionRuleNameExistsError extends ConflictError {
+  override code = 'POINT_CONVERSION_RULE_NAME_EXISTS';
+
+  constructor(message = '积分转换规则名称已存在') {
+    super(message);
+  }
+}
+
+export class PointConversionRulePairExistsError extends ConflictError {
+  override code = 'POINT_CONVERSION_RULE_PAIR_EXISTS';
+
+  constructor(message = '相同来源和目标积分类型的转换规则已存在') {
+    super(message);
+  }
+}
+
 export class PointConversionRuleInvalidError extends BadRequestError {
   override code = 'POINT_CONVERSION_RULE_INVALID';
 

@@ -1,9 +1,8 @@
 <script setup lang="ts">
+import { cn } from '@web/ui/lib/utils';
 // @ts-nocheck
 import type { HTMLAttributes } from 'vue';
 import { onMounted, ref, watch } from 'vue';
-
-import { cn } from '#ui/lib/utils';
 
 interface ColorRGB {
   r: number;

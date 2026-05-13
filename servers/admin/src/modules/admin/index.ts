@@ -30,7 +30,7 @@ export const admin = new Elysia({
     },
   })
   .get('/me', ({ auth: { id: adminId }, adminUseCase }) => adminUseCase.me(adminId), {
-    requiredAuth: true,
+    requiredAdminAuth: true,
     detail: {
       tags: ['Admin'],
       description: '获取当前管理员信息',
@@ -41,7 +41,7 @@ export const admin = new Elysia({
     ({ auth: { id: adminId }, body, adminUseCase }) => adminUseCase.updateMe(adminId, body),
     {
       body: AdminUpdateSchema,
-      requiredAuth: true,
+      requiredAdminAuth: true,
       detail: {
         tags: ['Admin'],
         description: '更新当前管理员信息',
@@ -90,7 +90,7 @@ export const admin = new Elysia({
     ({ auth: { id: adminId }, body, adminUseCase }) => adminUseCase.updatePassword(adminId, body),
     {
       body: AdminUpdatePasswordSchema,
-      requiredAuth: true,
+      requiredAdminAuth: true,
       detail: {
         tags: ['Admin'],
         description: '修改管理员密码',

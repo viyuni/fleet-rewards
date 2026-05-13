@@ -1,3 +1,4 @@
+import type { AdminRole } from '@server/db/schema';
 import Elysia from 'elysia';
 
 import { UnauthorizedError } from '../../errors';
@@ -38,7 +39,7 @@ export const createAuthGuard = (authUseCase: AuthUseCase) => {
         const token = ctx.cookie?.[AUTH_COOKIE_NAME]?.value;
 
         if (!token || typeof token !== 'string') {
-          throw new UnauthorizedError('Missing auth cookie, api key, or authorization header');
+          throw new UnauthorizedError('未登录');
         }
 
         const payload = await authUseCase.verify(token);
@@ -54,6 +55,22 @@ export const createAuthGuard = (authUseCase: AuthUseCase) => {
         };
       },
     })
+    .macro('requiredAdminAuth', {
+      requiredAuth: true,
+
+      async transform(ctx) {
+        const auth = getAuth(ctx);
+
+        if (auth.role !== 'admin' && auth.role !== 'superAdmin') {
+          throw new UnauthorizedError();
+        }
+      },
+      async resolve(ctx) {
+        return {
+          auth: getAuth(ctx) as AuthPayload & { role: AdminRole },
+        };
+      },
+    })
     .macro('requiredSuperAdminAuth', {
       requiredAuth: true,
 
@@ -61,7 +78,7 @@ export const createAuthGuard = (authUseCase: AuthUseCase) => {
         const auth = getAuth(ctx);
 
         if (auth.role !== 'superAdmin') {
-          throw new UnauthorizedError('Not super admin');
+          throw new UnauthorizedError();
         }
       },
 

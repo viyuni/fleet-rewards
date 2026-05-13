@@ -9,7 +9,9 @@ import {
   POINT_CHANGE_SOURCE_TYPE,
   PointIdempotencyKey,
   PointConversionRuleInvalidError,
+  PointConversionRuleNameExistsError,
   PointConversionRuleNotFoundError,
+  PointConversionRulePairExistsError,
   PointConversionRulePolicy,
 } from '../domain';
 import { PointAccountRepository, PointConversionRuleRepository } from '../repository';
@@ -44,7 +46,14 @@ export class PointConversionUseCase {
   async create(ruleData: CreatePointConversionRuleBody) {
     PointConversionRulePolicy.assertValidShape(ruleData);
 
+    const exists = await this.deps.pointConversionRuleRepo.findByName(ruleData.name);
+
+    if (exists) {
+      throw new PointConversionRuleNameExistsError();
+    }
+
     await this.assertPointTypesAvailable(ruleData.fromPointTypeId, ruleData.toPointTypeId);
+    await this.assertRulePairAvailable(ruleData.fromPointTypeId, ruleData.toPointTypeId);
 
     return this.deps.pointConversionRuleRepo.create(ruleData);
   }
@@ -169,5 +178,16 @@ export class PointConversionUseCase {
       this.deps.pointTypeUseCase.getAvailableById(fromPointTypeId),
       this.deps.pointTypeUseCase.getAvailableById(toPointTypeId),
     ]);
+  }
+
+  private async assertRulePairAvailable(fromPointTypeId: string, toPointTypeId: string) {
+    const exists = await this.deps.pointConversionRuleRepo.findByPointTypePair({
+      fromPointTypeId,
+      toPointTypeId,
+    });
+
+    if (exists) {
+      throw new PointConversionRulePairExistsError();
+    }
   }
 }

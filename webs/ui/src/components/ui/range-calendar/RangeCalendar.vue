@@ -1,10 +1,9 @@
 <script lang="ts" setup>
 import { reactiveOmit } from '@vueuse/core';
+import { cn } from '@web/ui/lib/utils';
 import type { RangeCalendarRootEmits, RangeCalendarRootProps } from 'reka-ui';
 import { RangeCalendarRoot, useForwardPropsEmits } from 'reka-ui';
 import type { HTMLAttributes } from 'vue';
-
-import { cn } from '#ui/lib/utils';
 
 import {
   RangeCalendarCell,

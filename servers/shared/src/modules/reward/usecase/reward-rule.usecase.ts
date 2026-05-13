@@ -2,7 +2,7 @@ import type { CreateRewardRuleBody, UpdateRewardRuleBody } from '@internal/share
 
 import { PointTypeUseCase } from '#server/shared/modules/point';
 
-import { RewardRuleNotFoundError, RewardRulePolicy } from '../domain';
+import { RewardRuleNameExistsError, RewardRuleNotFoundError, RewardRulePolicy } from '../domain';
 import { RewardRuleRepository } from '../repository';
 
 export interface RewardRuleUseCaseDeps {
@@ -25,6 +25,12 @@ export class RewardRuleUseCase {
 
   async create(ruleData: CreateRewardRuleBody) {
     await this.deps.pointTypeUseCase.getAvailableById(ruleData.pointTypeId);
+
+    const exists = await this.deps.rewardRuleRepo.findByName(ruleData.name);
+
+    if (exists) {
+      throw new RewardRuleNameExistsError();
+    }
 
     const rule = await this.deps.rewardRuleRepo.create(ruleData);
 

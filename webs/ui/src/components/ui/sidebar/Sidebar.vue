@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { Sheet, SheetContent } from '#ui/components/ui/sheet';
-import SheetDescription from '#ui/components/ui/sheet/SheetDescription.vue';
-import SheetHeader from '#ui/components/ui/sheet/SheetHeader.vue';
-import SheetTitle from '#ui/components/ui/sheet/SheetTitle.vue';
-import { cn } from '#ui/lib/utils';
+import { Sheet, SheetContent } from '@web/ui/components/ui/sheet';
+import SheetDescription from '@web/ui/components/ui/sheet/SheetDescription.vue';
+import SheetHeader from '@web/ui/components/ui/sheet/SheetHeader.vue';
+import SheetTitle from '@web/ui/components/ui/sheet/SheetTitle.vue';
+import { cn } from '@web/ui/lib/utils';
 
 import type { SidebarProps } from '.';
 import { SIDEBAR_WIDTH_MOBILE, useSidebar } from './utils';

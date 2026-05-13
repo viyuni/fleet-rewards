@@ -1,8 +1,6 @@
 import { createHash } from 'node:crypto';
-import { mkdir, access, writeFile } from 'node:fs/promises';
+import { mkdir, access } from 'node:fs/promises';
 import path from 'node:path';
-
-import sharp from 'sharp';
 
 import { InvalidImageSizeError } from '../domain';
 
@@ -22,20 +20,12 @@ export class ImageUseCase {
     }
   }
 
-  async save(file?: File) {
-    if (!file) {
-      return;
-    }
-
+  async save(file: File) {
     await this.ensureImageDir();
 
     const inputBuffer = Buffer.from(await file.arrayBuffer());
 
-    const image = sharp(inputBuffer, {
-      failOn: 'error',
-      // 限制图片大小
-      limitInputPixels: 10_000_000,
-    });
+    const image = new Bun.Image(inputBuffer);
 
     const metadata = await image.metadata();
 
@@ -43,31 +33,36 @@ export class ImageUseCase {
       throw new InvalidImageSizeError();
     }
 
-    const outputBuffer = await image
-      .rotate()
-      .resize({
-        width: 512,
-        height: 512,
-        fit: 'inside',
-        withoutEnlargement: true,
-      })
-      .webp({
-        quality: 82,
-        effort: 4,
-      })
-      .toBuffer();
-
     const hash = createHash('sha256').update(inputBuffer).digest('hex');
     const hashPrefix = hash.slice(0, 32);
 
     const filename = `${hashPrefix}.webp`;
     const filePath = path.join(this.imageSavePath, filename);
 
+    const isExists = await this.exists(filePath);
+
     // 避免重复上传
-    if (!(await this.exists(filePath))) {
-      await writeFile(filePath, outputBuffer);
+    if (isExists) {
+      return {
+        filename,
+      };
     }
 
-    return filename;
+    const resizeImage = image.resize(512, 512, {
+      fit: 'inside',
+    });
+
+    await resizeImage
+      .webp({
+        quality: 80,
+      })
+      .write(filePath);
+
+    const placeholder = await resizeImage.placeholder();
+
+    return {
+      filename,
+      placeholder,
+    };
   }
 }

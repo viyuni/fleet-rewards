@@ -1,12 +1,11 @@
 <script setup lang="ts">
 import { reactiveOmit } from '@vueuse/core';
+import type { ButtonVariants } from '@web/ui/components/ui/button';
+import { buttonVariants } from '@web/ui/components/ui/button';
+import { cn } from '@web/ui/lib/utils';
 import type { AlertDialogActionProps } from 'reka-ui';
 import { AlertDialogAction } from 'reka-ui';
 import type { HTMLAttributes } from 'vue';
-
-import type { ButtonVariants } from '#ui/components/ui/button';
-import { buttonVariants } from '#ui/components/ui/button';
-import { cn } from '#ui/lib/utils';
 
 const props = withDefaults(
   defineProps<

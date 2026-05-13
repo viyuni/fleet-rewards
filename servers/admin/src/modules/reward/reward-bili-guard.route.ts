@@ -19,7 +19,7 @@ export const rewardBiliGuardRoute = new Elysia({
     },
     {
       params: BiliEventIdParamsSchema,
-      requiredAuth: true,
+      requiredAdminAuth: true,
       detail: {
         description: '按事件快照回放大航海奖励',
       },

@@ -1,7 +1,7 @@
 import type { Treaty } from '@elysia/eden';
 import { useLocalStorage } from '@vueuse/core';
 
-import type { api } from '#eden';
+import type { api } from '#web/admin/libs';
 
 export type AuthUserData = Treaty.Data<typeof api.auth.login.post>;
 

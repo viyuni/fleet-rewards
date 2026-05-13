@@ -13,15 +13,40 @@ import {
   createDeps,
   db,
   describeWithDatabase,
+  expectRejectsInstanceOf,
   installConcurrencyTestHooks,
   newBatch,
   seedPointType,
   seedProduct,
 } from '../../../__tests__/helpers/concurrency-fixtures';
+import { ProductNameExistsError } from '../domain';
 
 installConcurrencyTestHooks();
 
 describeWithDatabase('产品库存真实数据库并发保护', () => {
+  it('商品创建会拒绝重复名称', async () => {
+    const prefix = newBatch('product_name');
+    const pointType = await seedPointType(`${prefix}_point`);
+    const { productUseCase } = createDeps();
+
+    await productUseCase.create({
+      name: `${prefix}_product`,
+      pointTypeId: pointType.id,
+      price: 1,
+      stock: 1,
+    });
+
+    await expectRejectsInstanceOf(
+      productUseCase.create({
+        name: `${prefix}_product`,
+        pointTypeId: pointType.id,
+        price: 1,
+        stock: 1,
+      }),
+      ProductNameExistsError,
+    );
+  });
+
   it('库存扣减不会并发超扣', async () => {
     const prefix = newBatch('product_stock');
     const pointType = await seedPointType(`${prefix}_point`);

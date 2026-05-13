@@ -29,6 +29,19 @@ export class ProductRepository {
     });
   }
 
+  async findByName(name: string, db: DbExecutor = this.db) {
+    return (
+      (await db.query.products.findFirst({
+        where: {
+          name,
+          deletedAt: {
+            isNull: true,
+          },
+        },
+      })) ?? null
+    );
+  }
+
   /**
    * 创建商品
    */
@@ -202,6 +215,7 @@ export class ProductRepository {
             name: true,
             description: true,
             cover: true,
+            coverPlaceholderUrl: true,
             price: true,
             stock: true,
             deliveryType: true,
@@ -212,6 +226,10 @@ export class ProductRepository {
                 name: true,
               },
             },
+          },
+          orderBy: {
+            createdAt: 'desc',
+            sort: 'desc',
           },
         }),
       )

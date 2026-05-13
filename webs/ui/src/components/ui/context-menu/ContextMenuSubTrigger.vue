@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import { reactiveOmit } from '@vueuse/core';
+import { cn } from '@web/ui/lib/utils';
 import { ChevronRightIcon } from 'lucide-vue-next';
 import type { ContextMenuSubTriggerProps } from 'reka-ui';
 import { ContextMenuSubTrigger, useForwardProps } from 'reka-ui';
 import type { HTMLAttributes } from 'vue';
-
-import { cn } from '#ui/lib/utils';
 
 const props = defineProps<
   ContextMenuSubTriggerProps & { class?: HTMLAttributes['class']; inset?: boolean }

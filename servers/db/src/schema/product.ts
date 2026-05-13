@@ -66,8 +66,14 @@ export const products = pgTable(
 
     /**
      * 商品封面图
+     * 全部统一512x512
      */
     cover: text('cover'),
+
+    /**
+     * 商品封面占位图
+     */
+    coverPlaceholderUrl: text('cover_placeholder_url'),
 
     /**
      * 商品详情

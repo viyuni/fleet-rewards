@@ -1,4 +1,9 @@
-import type { CreateOrderBody, OrderPageQuery, RefundOrderBody } from '@internal/shared/order';
+import type {
+  CreateOrderBody,
+  OrderPageQuery,
+  RefundOrderBody,
+  UpdateOrderExpressBody,
+} from '@internal/shared/order';
 import type { DbClient } from '@server/db';
 
 import {
@@ -216,6 +221,21 @@ export class OrderUseCase {
 
       return updateOrder;
     });
+  }
+
+  async updateExpress(orderId: string, expressData: UpdateOrderExpressBody) {
+    await this.get(orderId);
+
+    const updateOrder = await this.deps.orderRepo.update(orderId, {
+      expressCompany: expressData.expressCompany,
+      expressNo: expressData.expressNo,
+    });
+
+    if (!updateOrder) {
+      throw new OrderUpdateFailedError('订单快递信息更新失败');
+    }
+
+    return updateOrder;
   }
 
   /**

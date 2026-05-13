@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { reactiveOmit } from '@vueuse/core';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@web/ui/components/ui/tooltip';
 import type { Component } from 'vue';
-
-import { Tooltip, TooltipContent, TooltipTrigger } from '#ui/components/ui/tooltip';
 
 import type { SidebarMenuButtonProps } from './SidebarMenuButtonChild.vue';
 import SidebarMenuButtonChild from './SidebarMenuButtonChild.vue';

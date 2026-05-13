@@ -25,6 +25,34 @@ export class PointConversionRuleRepository {
     return row ?? null;
   }
 
+  async findByName(name: string, db: DbExecutor = this.db) {
+    const [row] = await db
+      .select()
+      .from(pointConversionRules)
+      .where(and(eq(pointConversionRules.name, name), deletedAtIsNull(pointConversionRules)))
+      .limit(1);
+
+    return row ?? null;
+  }
+
+  async findByPointTypePair(
+    input: { fromPointTypeId: string; toPointTypeId: string },
+    db: DbExecutor = this.db,
+  ) {
+    const [row] = await db
+      .select()
+      .from(pointConversionRules)
+      .where(
+        and(
+          eq(pointConversionRules.fromPointTypeId, input.fromPointTypeId),
+          eq(pointConversionRules.toPointTypeId, input.toPointTypeId),
+        ),
+      )
+      .limit(1);
+
+    return row ?? null;
+  }
+
   async create(input: InsertPointConversionRule, db: DbExecutor = this.db) {
     const [row] = await db.insert(pointConversionRules).values(input).returning();
     return row ?? null;

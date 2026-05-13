@@ -10,6 +10,7 @@ function product(input: Partial<Product> = {}): Product {
     name: `product_${crypto.randomUUID()}`,
     description: null,
     cover: null,
+    coverPlaceholderUrl: null,
     detail: null,
     pointTypeId: crypto.randomUUID(),
     price: 1,
