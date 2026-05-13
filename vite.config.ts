@@ -11,10 +11,10 @@ export default defineConfig({
     },
     tasks: {
       'dev:server/admin': {
-        command: 'vpr @server/admin#dev',
+        command: 'vpr @server/app#dev:admin',
       },
       'dev:server/user': {
-        command: 'vpr @server/user#dev',
+        command: 'vpr @server/app#dev:user',
       },
       'dev:web/admin': {
         command: 'vpr @web/admin#dev',

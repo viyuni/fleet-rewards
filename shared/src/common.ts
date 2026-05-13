@@ -1,6 +1,20 @@
 import * as v from 'valibot';
 
 /**
+ * 端口 Schema
+ * @param defaultPort
+ * @returns
+ */
+export const port = (defaultPort: number) =>
+  v.pipe(
+    v.optional(v.string(), String(defaultPort)),
+    v.transform(Number),
+    v.integer(),
+    v.minValue(0),
+    v.maxValue(65535),
+  );
+
+/**
  * 用户名 Schema
  */
 export const UsernameSchema = v.pipe(

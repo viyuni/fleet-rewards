@@ -1,0 +1,34 @@
+import { AppError } from '#errors';
+
+import type { BiliGuardRewardEvent } from './types';
+
+export class RewardPolicy {
+  static calculateBiliGuardPoints(basePoints: number, event: BiliGuardRewardEvent) {
+    return basePoints * event.totalNormalized;
+  }
+
+  static getBiliGuardEventTime(event: BiliGuardRewardEvent) {
+    return new Date(event.timestamp);
+  }
+
+  static getErrorSnapshot(error: unknown) {
+    if (error instanceof AppError) {
+      return {
+        lastErrorCode: error.code,
+        lastErrorMessage: error.message,
+      };
+    }
+
+    if (error instanceof Error) {
+      return {
+        lastErrorCode: error.name,
+        lastErrorMessage: error.message,
+      };
+    }
+
+    return {
+      lastErrorCode: 'UNKNOWN_ERROR',
+      lastErrorMessage: '未知错误',
+    };
+  }
+}

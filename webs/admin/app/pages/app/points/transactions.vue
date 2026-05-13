@@ -1,0 +1,4 @@
+<script setup lang="ts">
+definePageMeta({ title: '积分流水' });
+</script>
+<template>Transactions</template>

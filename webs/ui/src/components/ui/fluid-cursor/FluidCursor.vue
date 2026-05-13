@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { cn } from '@web/ui/lib/utils';
 // @ts-nocheck
+import { cn } from '@web/ui/lib/utils';
 import type { HTMLAttributes } from 'vue';
 import { onMounted, ref, watch } from 'vue';
 

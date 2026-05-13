@@ -1,5 +1,4 @@
 {
-  "extends": ["./tsconfig/common.json"],
   "compilerOptions": {
     // Environment setup & latest features
     "lib": ["ESNext"],

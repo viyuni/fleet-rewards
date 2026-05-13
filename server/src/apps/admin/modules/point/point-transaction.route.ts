@@ -1,0 +1,26 @@
+import { TransactionPageQuerySchema } from '@internal/shared/point-transaction';
+import Elysia from 'elysia';
+
+import { appContext } from '#apps/admin/context';
+
+export const pointTransactionRoute = new Elysia({
+  name: 'PointTransactionRoute',
+  prefix: '/transactions',
+  detail: {
+    tags: ['PointTransaction'],
+  },
+})
+  .use(appContext)
+  .get(
+    '/',
+    ({ pointTransactionUseCase, query }) => {
+      return pointTransactionUseCase.pageManage(query);
+    },
+    {
+      query: TransactionPageQuerySchema,
+      requiredAdminAuth: true,
+      detail: {
+        description: ' 查询积分流水',
+      },
+    },
+  );
