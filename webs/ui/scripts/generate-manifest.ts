@@ -28,7 +28,9 @@ function withDotSlash(value: string) {
 }
 
 async function scanComponentExports() {
-  const files = globSync('./src/components/**/index.ts', {
+  const glob = new Bun.Glob('./src/components/**/index.ts');
+
+  const files = glob.scanSync({
     cwd: packageRoot,
     absolute: true,
   });
@@ -64,8 +66,9 @@ function updatePackageExports(items: ComponentExport[]) {
   const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
 
   packageJson.exports = { ...basePackageExports };
+  const shortItems = items.sort((a, b) => a.exportPath.localeCompare(b.exportPath));
 
-  for (const item of items) {
+  for (const item of shortItems) {
     packageJson.exports[item.exportPath] = item.sourcePath;
   }
 
@@ -76,9 +79,13 @@ function generateComponentResolverJson(items: ComponentExport[]) {
   const jsonPath = path.resolve(packageRoot, 'nuxt', 'components.json');
 
   const resolverMap = Object.fromEntries(
-    items.flatMap(item =>
-      item.componentNames.map(componentName => [componentName, `${pkg.name}/${item.exportName}`]),
-    ),
+    items
+      .flatMap(item =>
+        item.componentNames.map(
+          componentName => [componentName, `${pkg.name}/${item.exportName}`] as const,
+        ),
+      )
+      .sort(([nameA], [nameB]) => nameA.localeCompare(nameB)),
   );
 
   fs.writeFileSync(jsonPath, `${JSON.stringify(resolverMap, null, 2)}\n`);
@@ -86,13 +93,14 @@ function generateComponentResolverJson(items: ComponentExport[]) {
 
 function generateType(items: ComponentExport[]) {
   const content = items
-    .map(item =>
-      item.componentNames.map(
-        componentName =>
-          `    ${componentName}: typeof import('${pkg.name}/${item.exportName}')['${componentName}']`,
-      ),
+    .flatMap(item =>
+      item.componentNames.map(componentName => ({
+        componentName,
+        line: `    ${componentName}: typeof import('${pkg.name}/${item.exportName}')['${componentName}']`,
+      })),
     )
-    .flat()
+    .sort((a, b) => a.componentName.localeCompare(b.componentName))
+    .map(item => item.line)
     .join('\n');
 
   const code = `/* eslint-disable */

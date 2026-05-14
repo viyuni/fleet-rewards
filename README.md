@@ -1,48 +1,29 @@
 # Guard Rewards
 
-Guard Rewards is a Vite+ monorepo for the fleet rewards system. It contains Vue web apps, shared UI components, Elysia backend services, and shared TypeScript contracts.
+Guard Rewards is a Vite+ monorepo for the fleet rewards system. It contains Nuxt web apps, a shared Vue UI package, one Elysia backend package, and shared TypeScript contracts.
 
-## Features
+## Packages
 
-- Admin and user-facing Vue applications powered by Vite+.
-- Shared `@web/ui` component library with Tailwind CSS, Reka UI, shadcn-vue patterns, and an auto-import component resolver.
-- Admin and user Elysia server workspaces with Eden client exports.
-- Shared backend infrastructure for config, database access, schema, errors, JWT, image handling, and app setup.
-- Shared cross-package TypeScript schema and types in `@internal/shared`.
+- `@server/app` in `server/`: Elysia API apps for admin and user clients, shared backend modules, Drizzle schema, migrations, and Eden type exports.
+- `@internal/shared` in `shared/`: Valibot API schemas, request/response types, and cross-package contracts.
+- `@web/admin` in `webs/admin/`: Nuxt admin console.
+- `@web/user` in `webs/user/`: Nuxt user-facing app.
+- `@web/ui` in `webs/ui/`: shared Vue components, styles, Nuxt module integration, and component metadata.
 
 ## Directory Structure
 
 ```text
 .
+├── server/           # @server/app: Elysia apps, shared backend modules, DB schema
+├── shared/           # @internal/shared: shared schemas and types
 ├── webs/
-│   ├── admin/        # Admin Vue app
-│   ├── user/         # User Vue app
-│   └── ui/           # Shared UI package (@web/ui)
-├── servers/
-│   ├── admin/        # Admin Elysia API package
-│   ├── user/         # User Elysia API package
-│   └── shared/       # Shared backend modules and infrastructure
-├── shared/           # Shared contracts and schema package
+│   ├── admin/        # @web/admin: admin Nuxt app
+│   ├── user/         # @web/user: user Nuxt app
+│   └── ui/           # @web/ui: shared UI package
 ├── AGENTS.md         # Agent and project workflow notes
 ├── package.json      # Workspace scripts and package catalog
 └── vite.config.ts    # Root Vite+ configuration
 ```
-
-## UI Component Metadata
-
-`@web/ui` exposes components through package subpath exports and an `unplugin-vue-components` resolver.
-
-When adding, removing, or renaming components under `webs/ui/src/components`, run:
-
-```bash
-vp run generate:component-meta
-```
-
-This updates:
-
-- `webs/ui/package.json` component exports
-- `webs/ui/resolver/components.json`
-- `webs/ui/types.d.ts`
 
 ## Development
 
@@ -65,17 +46,21 @@ Run tests across the workspace:
 vpr test
 ```
 
-Run type checks across the workspace:
+Start a specific app or service with its workspace script:
 
 ```bash
-vpr typecheck
-```
-
-Start a specific app or service with its workspace script, for example:
-
-```bash
+vpr @server/app#dev:admin
+vpr @server/app#dev:user
 vpr @web/admin#dev
 vpr @web/user#dev
-vpr @server/admin#dev
-vpr @server/user#dev
 ```
+
+## UI Component Manifest
+
+`@web/ui` exposes components through package subpath exports and a Nuxt component resolver. When adding, removing, or renaming components under `webs/ui/src/components`, run:
+
+```bash
+vpr @web/ui#generate:manifest
+```
+
+This updates `webs/ui/package.json`, `webs/ui/nuxt/components.json`, and `webs/ui/types.d.ts`.

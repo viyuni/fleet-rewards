@@ -1,75 +1,24 @@
-# Nuxt Minimal Starter
+# @web/user
 
-Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+Nuxt user-facing app for Guard Rewards.
 
-## Setup
+The app consumes Eden app types from `@server/app` and shared components/styles from `@web/ui`.
 
-Make sure to install dependencies:
-
-```bash
-# npm
-npm install
-
-# pnpm
-pnpm install
-
-# yarn
-yarn install
-
-# bun
-bun install
-```
-
-## Development Server
-
-Start the development server on `http://localhost:3000`:
+## Development
 
 ```bash
-# npm
-npm run dev
-
-# pnpm
-pnpm dev
-
-# yarn
-yarn dev
-
-# bun
-bun run dev
+vpr @web/user#dev
 ```
 
-## Production
-
-Build the application for production:
+## Build And Preview
 
 ```bash
-# npm
-npm run build
-
-# pnpm
-pnpm build
-
-# yarn
-yarn build
-
-# bun
-bun run build
+vpr @web/user#build
+vpr @web/user#preview
 ```
 
-Locally preview production build:
+## Notes
 
-```bash
-# npm
-npm run preview
-
-# pnpm
-pnpm preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
-```
-
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+- API client setup lives in `app/plugins/api.ts`.
+- Pages live under `app/pages`.
+- Prefer shared UI primitives from `@web/ui` before adding app-local components.

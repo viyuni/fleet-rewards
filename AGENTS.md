@@ -20,11 +20,11 @@ Docs are local at `node_modules/vite-plus/docs` or online at https://viteplus.de
 
 For imports that cross workspace package boundaries, prefer real package names:
 
-- `@server/admin`, `@server/user`, `@server/shared`
+- `@server/app`
 - `@web/admin`, `@web/user`, `@web/ui`
 - `@internal/shared`
 
-Use `#...` imports only as TypeScript path aliases for code inside the current project/package, for example local server internals such as `#server/shared/...`.
+Use `#...` imports only as TypeScript path aliases for code inside the current project/package. Inside `server/`, use aliases such as `#apps/*`, `#context`, `#db`, `#db/*`, `#modules/*`, and `#utils/*` for local backend internals.
 
 <!-- PROJECT IMPORTS END -->
 
@@ -48,9 +48,9 @@ Use `#...` imports only as TypeScript path aliases for code inside the current p
 
 `vpr tsc`
 
-## Generate UI Component Metadata
+## Generate UI Component Manifest
 
-`vpr gen:meta`
+`vpr @web/ui#generate:manifest`
 
 This command updates `webs/ui` component metadata: package exports, the component resolver map, and Vue global component types. Run it after adding, removing, or renaming components under `webs/ui/src/components`.
 

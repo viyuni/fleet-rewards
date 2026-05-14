@@ -12,13 +12,13 @@
     "build:admin": "bun build ./src/apps/admin/index.ts --compile --outfile dist/admin",
     "build:user": "bun build ./src/apps/user/index.ts --compile --outfile dist/user",
     "check": "vpr typecheck && vp lint && vp fmt",
-    "generate:dts": "vp pack",
+    "dts": "vp pack",
     "test": "bun --env-file=.env.test test --preload ./src/__tests__/setup-env.ts --pass-with-no-tests",
     "typecheck": "tsgo --build",
     "db:generate": "bun --env-file=.env drizzle-kit generate",
     "db:push": "bun --env-file=.env drizzle-kit push",
     "db:push:test": "bun --env-file=.env.test drizzle-kit push",
-    "seed": "bun --env-file=.env ./src/db/seed.ts"
+    "db:seed": "bun --env-file=.env ./src/db/seed.ts"
   },
   "dependencies": {
     "@elysia/cors": "^1.4.2",

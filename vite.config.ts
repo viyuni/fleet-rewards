@@ -10,24 +10,9 @@ export default defineConfig({
       tasks: true,
     },
     tasks: {
-      'dev:server/admin': {
-        command: 'vpr @server/app#dev:admin',
-      },
-      'dev:server/user': {
-        command: 'vpr @server/app#dev:user',
-      },
-      'dev:web/admin': {
-        command: 'vpr @web/admin#dev',
-      },
-      'dev:web/user': {
-        command: 'vpr @web/user#dev',
-      },
-      'generate:meta': {
-        command: 'vpr @web/ui#generate:meta',
-      },
       'build:all': {
         command: 'vpr -r build',
-        dependsOn: ['generate:meta'],
+        dependsOn: ['@server/app#dts', '@web/ui#generate:manifest'],
       },
       tsc: {
         command: 'vpr -r --parallel typecheck',

@@ -8,9 +8,9 @@
   ],
   "type": "module",
   "exports": {
+    ".": "./src/index.ts",
     "./nuxt": "./nuxt/index.ts",
     "./nuxt/components.json": "./nuxt/components.json",
-    ".": "./src/index.ts",
     "./style.css": "./src/style.css",
     "./types": "./types.d.ts",
     "./components/*": "./src/components/*",
@@ -53,7 +53,7 @@
   "scripts": {
     "check": "vp check",
     "typecheck": "vue-tsgo --build",
-    "generate:meta": "bun scripts/generate-meta.ts"
+    "generate:manifest": "bun scripts/generate-manifest.ts"
   },
   "dependencies": {
     "@nuxt/kit": "^4.4.5",
