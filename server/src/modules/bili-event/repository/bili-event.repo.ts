@@ -28,7 +28,7 @@ export class BiliEventRepository {
       .from(biliEvents)
       .where(
         and(
-          eq(biliEvents.eventType, 'bili_guard'),
+          eq(biliEvents.eventType, 'biliGuard'),
           eq(biliEvents.biliUid, biliUid),
           inArray(biliEvents.status, ['ignored', 'failed']),
         ),
@@ -41,7 +41,7 @@ export class BiliEventRepository {
       .page(query.page)
       .pageSize(query.pageSize)
       .where({
-        eventType: 'bili_guard',
+        eventType: 'biliGuard',
         status: query.status,
         occurredAt: {
           gte: parseDate(query.startTime),
@@ -85,10 +85,7 @@ export class BiliEventRepository {
   }
 
   async upsertProcessing(
-    input: Pick<
-      InsertBiliEvent,
-      'biliEventId' | 'eventType' | 'biliUid' | 'occurredAt' | 'eventSnapshot'
-    > & {
+    input: Pick<InsertBiliEvent, 'biliEventId' | 'biliUid' | 'occurredAt' | 'eventSnapshot'> & {
       rewardItemSnapshots: BiliEventRewardItemSnapshot[];
     },
     db: DbExecutor = this.db,
@@ -100,20 +97,8 @@ export class BiliEventRepository {
         status: 'processing',
         rewardResultSnapshots: [],
       })
-      .onConflictDoUpdate({
+      .onConflictDoNothing({
         target: biliEvents.biliEventId,
-        set: {
-          eventType: input.eventType,
-          biliUid: input.biliUid,
-          occurredAt: input.occurredAt,
-          eventSnapshot: input.eventSnapshot,
-          rewardItemSnapshots: input.rewardItemSnapshots,
-          rewardResultSnapshots: [],
-          status: 'processing',
-          lastErrorCode: null,
-          lastErrorMessage: null,
-          processedAt: null,
-        },
       })
       .returning();
 

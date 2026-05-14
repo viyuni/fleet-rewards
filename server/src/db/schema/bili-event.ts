@@ -1,15 +1,5 @@
 import { sql, type InferEnum, type InferInsertModel, type InferSelectModel } from 'drizzle-orm';
-import {
-  index,
-  integer,
-  jsonb,
-  pgEnum,
-  pgTable,
-  text,
-  timestamp,
-  uniqueIndex,
-  uuid,
-} from 'drizzle-orm/pg-core';
+import { index, integer, jsonb, pgEnum, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 
 import { timestamps } from './column-helpers';
 import type { PointType } from './point-type';
@@ -42,9 +32,11 @@ export const biliEvents = pgTable(
   'bili_events',
   {
     id: uuid('id').primaryKey().defaultRandom(),
-
-    eventId: text('bili_event_id').notNull().unique('bili_events_event_id_unique'),
-    eventType: text('event_type').notNull(),
+    biliEventId: text('bili_event_id').notNull().unique('bili_events_event_id_unique'),
+    eventType: text('event_type')
+      .notNull()
+      .default('biliGuard')
+      .$type<'biliGuard' | ({} & string)>(),
     biliUid: text('bili_uid').notNull(),
     userId: uuid('user_id').references(() => users.id),
     occurredAt: timestamp('occurred_at', { withTimezone: true }).notNull(),

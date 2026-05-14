@@ -66,6 +66,10 @@ describeWithDatabase('奖励发放真实数据库', () => {
     const first = await rewardUseCase.rewardBiliGuard(event);
     const second = await rewardUseCase.rewardBiliGuard(event);
 
+    if (!first) {
+      throw new Error('首次大航海奖励应正常处理');
+    }
+
     const account = await db.query.pointAccounts.findFirst({
       where: { userId: user.id, pointTypeId: pointType.id },
     });
@@ -83,12 +87,10 @@ describeWithDatabase('奖励发放真实数据库', () => {
       );
 
     const firstItem = first.items.find(item => item.ruleSnapshot.id === rule.id);
-    const secondItem = second.items.find(item => item.ruleSnapshot.id === rule.id);
+    expect(second).toBeNull();
 
     expect(firstItem?.points).toBe(60);
     expect(firstItem?.duplicated).toBe(false);
-    expect(secondItem?.points).toBe(60);
-    expect(secondItem?.duplicated).toBe(true);
     expect(account?.balance).toBe(60);
     expect(transactionRows?.total).toBe(1);
   });
@@ -142,6 +144,10 @@ describeWithDatabase('奖励发放真实数据库', () => {
       }),
     );
 
+    if (!result) {
+      throw new Error('首次大航海奖励应正常处理');
+    }
+
     const stackableAccount = await db.query.pointAccounts.findFirst({
       where: { userId: user.id, pointTypeId: stackablePointType.id },
     });
@@ -185,6 +191,10 @@ describeWithDatabase('奖励发放真实数据库', () => {
         timestamp: now.getTime(),
       }),
     );
+
+    if (!result) {
+      throw new Error('首次大航海奖励应正常处理');
+    }
 
     const expiredAccount = await db.query.pointAccounts.findFirst({
       where: { userId: user.id, pointTypeId: expiredPointType.id },
@@ -234,7 +244,7 @@ describeWithDatabase('奖励发放真实数据库', () => {
 
     expect(rewardItemSnapshot?.points).toBe(60);
     expect(rewardItemSnapshot?.pointTypeSnapshot.id).toBe(pointType.id);
-    expect(rewardResultSnapshot?.duplicated).toBe(true);
+    expect(rewardResultSnapshot?.duplicated).toBe(false);
   });
 
   it('未注册用户事件会记录为 ignored 并保留奖励计划快照', async () => {
@@ -249,6 +259,10 @@ describeWithDatabase('奖励发放真实数据库', () => {
     });
 
     const result = await rewardUseCase.rewardBiliGuard(event);
+
+    if (!result) {
+      throw new Error('首次大航海奖励应正常处理');
+    }
 
     const biliEvent = await db.query.biliEvents.findFirst({
       where: {

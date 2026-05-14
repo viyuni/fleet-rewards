@@ -74,7 +74,11 @@ export class RewardUseCase {
 
   async rewardBiliGuard(event: BiliGuardRewardEvent) {
     const rewardItems = await this.previewBiliGuard(event);
-    await this.recordBiliGuardProcessing(event, rewardItems);
+    const biliEvent = await this.recordBiliGuardProcessing(event, rewardItems);
+
+    if (!biliEvent) {
+      return null;
+    }
 
     return await this.executeBiliGuardReward(event, rewardItems);
   }
@@ -178,16 +182,13 @@ export class RewardUseCase {
   ) {
     const biliEvent = await this.deps.biliEventRepo.upsertProcessing({
       biliEventId: event.id,
-      eventType: 'bili_guard',
       biliUid: String(event.uid),
       occurredAt: RewardPolicy.getBiliGuardEventTime(event),
       eventSnapshot: event,
       rewardItemSnapshots: rewardItems,
     });
 
-    if (!biliEvent) {
-      throw new BiliEventPersistFailedError();
-    }
+    return biliEvent ?? null;
   }
 
   private async rewardBiliGuardItem(

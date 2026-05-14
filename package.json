@@ -10,7 +10,7 @@
   "type": "module",
   "scripts": {
     "prepare": "vp config",
-    "check": "vp fmt && vp lint && vpr typecheck"
+    "check": "vp fmt && vp lint && vpr tsc"
   },
   "dependencies": {
     "@typescript/native-preview": "^7.0.0-dev.20260512.1"

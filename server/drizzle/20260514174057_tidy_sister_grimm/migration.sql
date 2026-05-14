@@ -1,0 +1,1 @@
+ALTER TABLE "bili_events" ALTER COLUMN "event_type" SET DEFAULT 'biliGuard';
