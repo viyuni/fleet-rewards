@@ -4,7 +4,7 @@ import { eq, inArray, like } from 'drizzle-orm';
 
 import { createDatabase, type DbClient } from '#db';
 import { admins } from '#db/schema';
-import { InvalidCredentialsError } from '#errors';
+import { InvalidCredentialsError } from '#utils';
 import { PasswordUtil } from '#utils';
 
 import { AdminNotFoundError, AdminSuperAdminCannotBeBannedError } from '../domain/errors';

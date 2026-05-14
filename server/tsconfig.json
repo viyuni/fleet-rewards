@@ -28,8 +28,6 @@
       "#context/*": ["./src/context/*"],
       "#db": ["./src/db/index.ts"],
       "#db/*": ["./src/db/*"],
-      "#errors": ["./src/errors/index.ts"],
-      "#errors/*": ["./src/errors/*"],
       "#modules/*": ["./src/modules/*"],
       "#server": ["./src/index.ts"],
       "#utils": ["./src/utils/index.ts"],

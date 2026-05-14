@@ -1,4 +1,4 @@
-import { AppError } from '#errors';
+import { AppError } from '#utils';
 
 import type { BiliGuardRewardEvent } from './types';
 

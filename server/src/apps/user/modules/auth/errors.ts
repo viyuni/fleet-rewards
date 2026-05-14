@@ -1,4 +1,4 @@
-import { ConflictError, ForbiddenError } from '#errors';
+import { ConflictError, ForbiddenError } from '#utils';
 
 export class AlreadyExistsError extends ConflictError {
   override code = 'ADMIN_ALREADY_EXISTS';

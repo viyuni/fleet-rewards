@@ -1,8 +1,8 @@
 import type { UserLoginBody, UserRegisterBody } from '@internal/shared/user';
 
-import { InvalidCredentialsError } from '#errors';
 import type { AuthUseCase as SharedAuthUseCase } from '#modules/auth';
 import type { UserUseCase } from '#modules/user';
+import { InvalidCredentialsError } from '#utils';
 import { PasswordUtil } from '#utils';
 
 export class AuthUseCase {

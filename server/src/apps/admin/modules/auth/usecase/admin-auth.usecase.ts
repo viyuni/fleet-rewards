@@ -3,8 +3,8 @@ import type { AdminLoginBody } from '@internal/shared/admin';
 import { AdminPolicy } from '#apps/admin/modules/admin/domain';
 import { AdminRepository } from '#apps/admin/modules/admin/repository';
 import type { DbExecutor } from '#db';
-import { InvalidCredentialsError } from '#errors';
 import type { AuthUseCase } from '#modules/auth';
+import { InvalidCredentialsError } from '#utils';
 import { PasswordUtil } from '#utils';
 
 export interface AdminAuthUseCaseDeps {

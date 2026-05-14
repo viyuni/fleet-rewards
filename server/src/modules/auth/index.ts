@@ -1,8 +1,8 @@
 import Elysia from 'elysia';
 
 import type { AdminRole } from '#db/schema';
+import { UnauthorizedError } from '#utils';
 
-import { UnauthorizedError } from '../../errors';
 import { AUTH_COOKIE_NAME } from './constants';
 import type { AuthPayload } from './domain';
 import type { AuthUseCase } from './usecase';

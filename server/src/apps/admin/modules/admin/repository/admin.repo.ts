@@ -4,7 +4,7 @@ import { and, eq } from 'drizzle-orm';
 import type { DbExecutor } from '#db';
 import { QueryPageBuilder } from '#db/helper';
 import { admins, type InsertAdmin } from '#db/schema';
-import { BadRequestError, BaseErrors } from '#errors';
+import { BadRequestError, BaseErrors } from '#utils';
 
 export class AdminRepository {
   constructor(private db: DbExecutor) {}

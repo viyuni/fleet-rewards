@@ -1,4 +1,4 @@
-import { BadRequestError } from '#errors';
+import { BadRequestError } from '#utils';
 
 export class InvalidImageSizeError extends BadRequestError {
   override code = 'INVALID_IMAGE_SIZE';

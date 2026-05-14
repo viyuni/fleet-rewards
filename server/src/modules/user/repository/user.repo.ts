@@ -5,7 +5,7 @@ import type { DbExecutor } from '#db';
 import { defineSelectColumns, QueryPageBuilder } from '#db/helper';
 import type { InsertUser } from '#db/schema';
 import { users } from '#db/schema';
-import { BadRequestError } from '#errors';
+import { BadRequestError } from '#utils';
 
 const userSelectCols = defineSelectColumns(
   users,

@@ -1,6 +1,6 @@
 import { SignJWT, jwtVerify } from 'jose';
 
-import { UnauthorizedError } from '#errors';
+import { UnauthorizedError } from '#utils';
 
 import type { AuthPayload } from '../domain';
 

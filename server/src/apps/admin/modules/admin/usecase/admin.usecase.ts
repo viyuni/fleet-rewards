@@ -6,7 +6,7 @@ import type {
 } from '@internal/shared/admin';
 
 import type { AdminRole } from '#db/schema';
-import { InvalidCredentialsError } from '#errors';
+import { InvalidCredentialsError } from '#utils';
 import { logger } from '#utils';
 import { PasswordUtil } from '#utils';
 

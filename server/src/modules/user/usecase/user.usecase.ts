@@ -6,7 +6,7 @@ import type {
 } from '@internal/shared/user';
 
 import type { DbExecutor } from '#db';
-import { InvalidCredentialsError } from '#errors';
+import { InvalidCredentialsError } from '#utils';
 import { PasswordUtil } from '#utils';
 
 import { UserAlreadyRegisteredError, UserBasicInfoCrypto, UserPolicy } from '../domain';

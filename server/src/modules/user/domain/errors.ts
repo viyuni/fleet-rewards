@@ -1,4 +1,4 @@
-import { AppError, ConflictError, NotFoundError } from '#errors';
+import { AppError, ConflictError, NotFoundError } from '#utils';
 
 export class UserNotFoundError extends NotFoundError {
   constructor() {

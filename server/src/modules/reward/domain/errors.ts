@@ -1,4 +1,4 @@
-import { ConflictError, NotFoundError } from '#errors';
+import { ConflictError, NotFoundError } from '#utils';
 
 export class RewardRuleNotFoundError extends NotFoundError {
   override code = 'REWARD_RULE_NOT_FOUND';
