@@ -29,7 +29,7 @@ export const pointTypes = pgTable(
      * Example:
      * 舰长积分
      */
-    name: text('name').notNull(),
+    name: text('name').notNull().unique(),
 
     /**
      * 积分说明

@@ -1,7 +1,7 @@
 import type { AdminLoginBody } from '@internal/shared/admin';
 import { defineMutation, useMutation } from '@pinia/colada';
 
-import { useAuthStore } from '../store';
+import { useAuthStore } from './store';
 
 export const useLogin = defineMutation(() => {
   const { updateUser } = useAuthStore();

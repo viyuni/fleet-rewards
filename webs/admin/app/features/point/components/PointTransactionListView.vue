@@ -8,7 +8,7 @@ import { useDebouncedPageQuery } from '~/composables/useDebouncedPageQuery';
 import { usePageQuery } from '~/composables/usePageQuery';
 import type { AdminApi } from '~/plugins/api';
 
-import { pointTransactionPageQuery } from '../queries/point';
+import { pointTransactionPageQuery } from '../queries';
 
 export type PointTransactionListPage = Treaty.Data<AdminApi['points']['transactions']['get']>;
 export type PointTransaction = NonNullable<PointTransactionListPage>['items'][number];

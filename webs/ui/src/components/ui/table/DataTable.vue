@@ -43,10 +43,10 @@ type DataTableBuiltinSlots<TData> = {
   'actions-header'?: (props: DataTableHeaderSlotProps<TData>) => unknown;
   default?: (props: DataTableControlSlotProps<TData>) => unknown;
   empty?: () => unknown;
-  footer?: (props: DataTableControlSlotProps<TData>) => unknown;
   toolbar?: (props: DataTableControlSlotProps<TData>) => unknown;
   expanded?: (props: { row: Row<TData>; data: TData }) => unknown;
   select?: (props: DataTableCellSlotProps<TData>) => unknown;
+  'footer-start'?: (props: DataTableControlSlotProps<TData>) => unknown;
   'select-header'?: (props: DataTableHeaderSlotProps<TData>) => unknown;
 };
 
@@ -234,7 +234,7 @@ watch(totalPages, maxPage => {
 
     <slot name="toolbar" :table="resolvedTable" />
 
-    <div :class="cn('rounded-md border', props.class)">
+    <div :class="cn('', props.class)">
       <Table>
         <TableHeader>
           <TableRow v-for="headerGroup in resolvedTable.getHeaderGroups()" :key="headerGroup.id">
@@ -258,7 +258,7 @@ watch(totalPages, maxPage => {
           <template v-if="resolvedTable.getRowModel().rows?.length">
             <template v-for="row in resolvedTable.getRowModel().rows" :key="row.id">
               <TableRow :data-state="row.getIsSelected() && 'selected'">
-                <TableCell v-for="cell in row.getVisibleCells()" :key="cell.id">
+                <TableCell v-for="cell in row.getVisibleCells()" :key="cell.id" class="p-1.5">
                   <!-- 指定列的 body 插槽优先于 TanStack 的 cell 渲染器。 -->
                   <slot
                     v-if="hasColumnSlot(cell.column.id)"
@@ -276,6 +276,7 @@ watch(totalPages, maxPage => {
                   />
                 </TableCell>
               </TableRow>
+
               <!-- 展开内容渲染为父行下方的一整行。 -->
               <TableRow v-if="$slots.expanded && row.getIsExpanded()">
                 <TableCell :colspan="row.getVisibleCells().length || visibleColumnCount">
@@ -301,7 +302,7 @@ watch(totalPages, maxPage => {
       :show-edges="true"
       class="flex justify-between"
     >
-      <slot name="footer" :table="resolvedTable">
+      <slot name="footer-start" :table="resolvedTable">
         <div class="text-muted-foreground text-sm">共 {{ total }} 条数据</div>
       </slot>
 

@@ -5,7 +5,7 @@ import { appContext } from '../../context';
 
 export const rewardBiliGuardRoute = new Elysia({
   name: 'RewardBiliGuardRoute',
-  prefix: '/bili-guard',
+  prefix: '/biliGuard',
   detail: {
     tags: ['RewardBiliGuard'],
   },

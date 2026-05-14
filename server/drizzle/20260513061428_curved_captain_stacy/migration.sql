@@ -1,1 +1,0 @@
-ALTER TABLE "products" ADD COLUMN "cover_placeholder_url" text;

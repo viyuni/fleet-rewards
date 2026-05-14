@@ -7,7 +7,7 @@ import { MoreHorizontal } from 'lucide-vue-next';
 
 import type { AdminApi } from '~/plugins/api';
 
-import { rewardRuleListQuery } from '../queries/reward';
+import { rewardRuleListQuery } from '../queries';
 
 export type RewardRuleList = Treaty.Data<AdminApi['rewards']['rules']['get']>;
 export type RewardRule = NonNullable<RewardRuleList>[number];

@@ -67,4 +67,10 @@ export default defineNuxtConfig({
       // swr: 60,
     },
   },
+
+  typescript: {
+    sharedTsConfig: {
+      include: ['../colada.options.ts'],
+    },
+  },
 });

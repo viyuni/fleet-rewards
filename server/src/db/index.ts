@@ -3,12 +3,9 @@ import { drizzle } from 'drizzle-orm/bun-sql';
 import { sharedEnv } from '#utils';
 
 import { relations } from './relations.ts';
-import * as schema from './schema/index.ts';
 
 export function createDatabase(connection: string) {
-  return drizzle({
-    connection,
-    schema,
+  return drizzle(connection, {
     relations,
   });
 }

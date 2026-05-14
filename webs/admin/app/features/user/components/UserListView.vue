@@ -2,15 +2,14 @@
 import type { Treaty } from '@elysia/eden';
 import type { UserPageQuery } from '@internal/shared/user';
 import type { ColumnDef } from '@tanstack/vue-table';
-import { Button } from '@web/ui/components/ui/button';
 import { DataTable } from '@web/ui/components/ui/table';
-import { MoreHorizontal } from 'lucide-vue-next';
 
 import { useDebouncedPageQuery } from '~/composables/useDebouncedPageQuery';
 import { usePageQuery } from '~/composables/usePageQuery';
 import type { AdminApi } from '~/plugins/api';
 
-import { userPageQuery } from '../queries/user';
+import { userPageQuery } from '../queries';
+import UserActionsDropdown from './UserActionsDropdown.vue';
 
 export type UserListPage = Treaty.Data<AdminApi['users']['get']>;
 export type User = NonNullable<UserListPage>['items'][number];
@@ -82,21 +81,7 @@ const { items: users, meta: userMeta } = usePageQuery(() => userPageQuery(query.
     </template>
 
     <template #actions="{ row }">
-      <DropdownMenu>
-        <DropdownMenuTrigger as-child>
-          <Button variant="ghost" class="h-8 w-8 p-0">
-            <span class="sr-only">打开菜单</span>
-            <MoreHorizontal class="h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" class="w-50">
-          <DropdownMenuLabel>操作</DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem>操作积分</DropdownMenuItem>
-          <DropdownMenuItem>封禁</DropdownMenuItem>
-          <DropdownMenuItem @click="row.toggleExpanded()">查看积分账户</DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <UserActionsDropdown :user="row.original" @view-point-accounts="row.toggleExpanded()" />
     </template>
 
     <template #expanded="{ data }">

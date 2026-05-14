@@ -11,17 +11,17 @@ export const PRODUCT_QUERY_KEYS = {
 export const productPageQuery = defineQueryOptions((query: ProductPageQuery = {}) => ({
   key: PRODUCT_QUERY_KEYS.page(query),
   query: () => {
-    const api = useAdminApi();
+    const { $api } = useNuxtApp();
 
-    return api.products.get({ query }).then(res => res.data);
+    return $api.products.get({ query }).then(res => res.data);
   },
 }));
 
 export const stockMovementPageQuery = defineQueryOptions((query: StockMovementPageQuery = {}) => ({
   key: PRODUCT_QUERY_KEYS.stockMovements(query),
   query: () => {
-    const api = useAdminApi();
+    const { $api } = useNuxtApp();
 
-    return api.products.stock.movements.get({ query }).then(res => res.data);
+    return $api.products.stock.movements.get({ query }).then(res => res.data);
   },
 }));

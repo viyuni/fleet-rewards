@@ -8,7 +8,7 @@ import { useDebouncedPageQuery } from '~/composables/useDebouncedPageQuery';
 import { usePageQuery } from '~/composables/usePageQuery';
 import type { AdminApi } from '~/plugins/api';
 
-import { stockMovementPageQuery } from '../queries/product';
+import { stockMovementPageQuery } from '../queries';
 
 export type StockMovementListPage = Treaty.Data<AdminApi['products']['stock']['movements']['get']>;
 export type StockMovement = NonNullable<StockMovementListPage>['items'][number];

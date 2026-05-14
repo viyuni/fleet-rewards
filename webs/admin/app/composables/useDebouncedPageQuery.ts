@@ -53,7 +53,7 @@ export function useDebouncedPageQuery<TCustom extends object = Record<never, nev
   const state = reactive({
     ...initial,
     page: initial?.page ?? 1,
-    pageSize: initial?.pageSize ?? 15,
+    pageSize: initial?.pageSize ?? 20,
     keyword: initial?.keyword ?? '',
   }) as DebouncedPageQueryState<TCustom>;
 

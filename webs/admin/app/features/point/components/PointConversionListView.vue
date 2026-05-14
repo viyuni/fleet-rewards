@@ -7,7 +7,7 @@ import { MoreHorizontal } from 'lucide-vue-next';
 
 import type { AdminApi } from '~/plugins/api';
 
-import { pointConversionListQuery } from '../queries/point';
+import { pointConversionListQuery } from '../queries';
 
 export type PointConversionList = Treaty.Data<AdminApi['points']['conversions']['get']>;
 export type PointConversion = NonNullable<PointConversionList>[number];

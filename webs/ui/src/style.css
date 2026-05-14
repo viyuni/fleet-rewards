@@ -93,7 +93,7 @@
     /* 次要与静默 */
     --secondary: oklch(96.115% 0 0); /* #f4f4f5 */
     --secondary-foreground: oklch(35% 0 0);
-    --muted: oklch(96.115% 0 0);
+    --muted: oklch(0.97 0 0);
     --muted-foreground: oklch(55.6% 0 0);
 
     /* 强调与悬浮 */
@@ -167,7 +167,7 @@
     /* 次要与静默 */
     --secondary: oklch(26.9% 0 0); /* #202022 */
     --secondary-foreground: oklch(87.609% 0 0);
-    --muted: oklch(19.125% 0.00002 271.152);
+    --muted: oklch(0.269 0 0);
     --muted-foreground: oklch(70.8% 0 0);
 
     /* 强调与悬浮 */
@@ -176,7 +176,7 @@
 
     /* 边框与输入框 */
     --border: oklch(100% 0 0 / 10%);
-    --input: oklch(100% 0.00011 271.152 / 0.062);
+    --input: oklch(1 0 0 / 15%);
     --ring: var(--primary);
 
     /* 图表配色 */

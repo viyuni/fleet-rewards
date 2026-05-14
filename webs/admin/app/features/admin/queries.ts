@@ -8,8 +8,8 @@ export const ADMIN_QUERY_KEYS = {
 export const adminPageQuery = defineQueryOptions((query: AdminPageQuery = {}) => ({
   key: ADMIN_QUERY_KEYS.page(query),
   query: () => {
-    const api = useAdminApi();
+    const { $api } = useNuxtApp();
 
-    return api.admin.get({ query }).then(res => res.data);
+    return $api.admin.get({ query }).then(res => res.data);
   },
 }));

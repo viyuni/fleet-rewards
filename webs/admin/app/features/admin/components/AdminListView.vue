@@ -10,7 +10,7 @@ import { useDebouncedPageQuery } from '~/composables/useDebouncedPageQuery';
 import { usePageQuery } from '~/composables/usePageQuery';
 import type { AdminApi } from '~/plugins/api';
 
-import { adminPageQuery } from '../queries/admin';
+import { adminPageQuery } from '../queries';
 
 export type AdminListPage = Treaty.Data<AdminApi['admin']['get']>;
 export type Admin = NonNullable<AdminListPage>['items'][number];

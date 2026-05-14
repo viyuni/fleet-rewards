@@ -10,9 +10,9 @@ import { useDebouncedPageQuery } from '~/composables/useDebouncedPageQuery';
 import { usePageQuery } from '~/composables/usePageQuery';
 import type { AdminApi } from '~/plugins/api';
 
-import { biliGuardEventPageQuery } from '../queries/reward';
+import { biliGuardEventPageQuery } from '../queries';
 
-export type BiliGuardEventListPage = Treaty.Data<AdminApi['rewards']['bili-guard']['get']>;
+export type BiliGuardEventListPage = Treaty.Data<AdminApi['rewards']['biliGuard']['get']>;
 export type BiliGuardEvent = NonNullable<BiliGuardEventListPage>['items'][number];
 </script>
 

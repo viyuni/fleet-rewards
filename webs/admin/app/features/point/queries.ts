@@ -11,9 +11,9 @@ export const POINT_QUERY_KEYS = {
 export const pointTypeListQuery = defineQueryOptions(() => ({
   key: POINT_QUERY_KEYS.types(),
   query: () => {
-    const api = useAdminApi();
+    const { $api } = useNuxtApp();
 
-    return api.points.types.get().then(res => res.data);
+    return $api.points.types.get().then(res => res.data);
   },
 }));
 
@@ -21,9 +21,9 @@ export const pointTransactionPageQuery = defineQueryOptions(
   (query: PointTransactionPageQuery = {}) => ({
     key: POINT_QUERY_KEYS.transactions(query),
     query: () => {
-      const api = useAdminApi();
+      const { $api } = useNuxtApp();
 
-      return api.points.transactions.get({ query }).then(res => res.data);
+      return $api.points.transactions.get({ query }).then(res => res.data);
     },
   }),
 );
@@ -31,8 +31,8 @@ export const pointTransactionPageQuery = defineQueryOptions(
 export const pointConversionListQuery = defineQueryOptions(() => ({
   key: POINT_QUERY_KEYS.conversions(),
   query: () => {
-    const api = useAdminApi();
+    const { $api } = useNuxtApp();
 
-    return api.points.conversions.get().then(res => res.data);
+    return $api.points.conversions.get().then(res => res.data);
   },
 }));

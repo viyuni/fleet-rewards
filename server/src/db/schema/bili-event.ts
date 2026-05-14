@@ -43,7 +43,7 @@ export const biliEvents = pgTable(
   {
     id: uuid('id').primaryKey().defaultRandom(),
 
-    biliEventId: text('bili_event_id').notNull(),
+    eventId: text('bili_event_id').notNull().unique('bili_events_event_id_unique'),
     eventType: text('event_type').notNull(),
     biliUid: text('bili_uid').notNull(),
     userId: uuid('user_id').references(() => users.id),
@@ -66,7 +66,6 @@ export const biliEvents = pgTable(
     ...timestamps,
   },
   t => [
-    uniqueIndex('bili_events_bili_event_id_unique').on(t.biliEventId),
     index('bili_events_bili_uid_idx').on(t.biliUid),
     index('bili_events_user_id_idx').on(t.userId),
     index('bili_events_status_idx').on(t.status),

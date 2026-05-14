@@ -1,5 +1,6 @@
 CREATE TYPE "admin_role" AS ENUM('admin', 'superAdmin');--> statement-breakpoint
-CREATE TYPE "admin_status" AS ENUM('active', 'disabled');--> statement-breakpoint
+CREATE TYPE "admin_status" AS ENUM('active', 'banned');--> statement-breakpoint
+CREATE TYPE "bili_event_status" AS ENUM('processing', 'succeeded', 'failed', 'ignored');--> statement-breakpoint
 CREATE TYPE "order_status" AS ENUM('pending', 'completed', 'refunded');--> statement-breakpoint
 CREATE TYPE "point_account_status" AS ENUM('active', 'suspended', 'banned');--> statement-breakpoint
 CREATE TYPE "point_transaction_type" AS ENUM('grant', 'consume', 'refund', 'adjust', 'reversal');--> statement-breakpoint
@@ -7,16 +8,35 @@ CREATE TYPE "point_type_status" AS ENUM('active', 'disabled');--> statement-brea
 CREATE TYPE "product_delivery_type" AS ENUM('manual', 'automatic');--> statement-breakpoint
 CREATE TYPE "reward_product_status" AS ENUM('active', 'disabled');--> statement-breakpoint
 CREATE TYPE "product_stock_movement_type" AS ENUM('consume', 'restore', 'adjust');--> statement-breakpoint
-CREATE TYPE "user_status" AS ENUM('normal', 'banned');--> statement-breakpoint
+CREATE TYPE "user_status" AS ENUM('active', 'banned');--> statement-breakpoint
 CREATE TABLE "admins" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
 	"uid" text NOT NULL CONSTRAINT "admins_uid_unique" UNIQUE,
-	"username" text NOT NULL UNIQUE,
+	"username" text NOT NULL,
 	"status" "admin_status" DEFAULT 'active'::"admin_status" NOT NULL,
 	"role" "admin_role" DEFAULT 'admin'::"admin_role" NOT NULL,
 	"password_hash" text NOT NULL,
 	"last_login_at" timestamp,
 	"remark" text,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE "bili_events" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+	"bili_event_id" text NOT NULL CONSTRAINT "bili_events_event_id_unique" UNIQUE,
+	"event_type" text NOT NULL,
+	"bili_uid" text NOT NULL,
+	"user_id" uuid,
+	"occurred_at" timestamp with time zone NOT NULL,
+	"status" "bili_event_status" NOT NULL,
+	"retry_count" integer DEFAULT 0 NOT NULL,
+	"last_error_code" text,
+	"last_error_message" text,
+	"processed_at" timestamp with time zone,
+	"event_snapshot" jsonb NOT NULL,
+	"reward_item_snapshots" jsonb DEFAULT '[]' NOT NULL,
+	"reward_result_snapshots" jsonb DEFAULT '[]' NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
@@ -41,6 +61,8 @@ CREATE TABLE "orders" (
 	"completed_at" timestamp with time zone,
 	"refunded_at" timestamp with time zone,
 	"idempotency_key" text NOT NULL,
+	"express_company" text,
+	"express_no" text,
 	"metadata" jsonb,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
@@ -64,10 +86,9 @@ CREATE TABLE "point_conversion_rules" (
 	"remark" text,
 	"from_point_type_id" uuid NOT NULL,
 	"to_point_type_id" uuid NOT NULL,
-	"from_amount" integer NOT NULL,
 	"to_amount" integer NOT NULL,
-	"min_from_amount" integer,
-	"max_from_amount" integer,
+	"min_convert_amount" integer,
+	"max_convert_amount" integer,
 	"enabled" boolean DEFAULT true NOT NULL,
 	"starts_at" timestamp with time zone,
 	"ends_at" timestamp with time zone,
@@ -99,7 +120,7 @@ CREATE TABLE "point_transactions" (
 --> statement-breakpoint
 CREATE TABLE "point_types" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-	"name" text NOT NULL,
+	"name" text NOT NULL UNIQUE,
 	"description" text,
 	"icon" text,
 	"status" "point_type_status" DEFAULT 'active'::"point_type_status" NOT NULL,
@@ -113,6 +134,7 @@ CREATE TABLE "products" (
 	"name" text NOT NULL,
 	"description" text,
 	"cover" text,
+	"cover_placeholder_url" text,
 	"detail" text,
 	"point_type_id" uuid NOT NULL,
 	"price" integer NOT NULL,
@@ -145,13 +167,13 @@ CREATE TABLE "product_stock_transactions" (
 CREATE TABLE "users" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
 	"bili_uid" text NOT NULL UNIQUE,
-	"username" text NOT NULL UNIQUE,
-	"status" "user_status" DEFAULT 'normal'::"user_status" NOT NULL,
+	"username" text NOT NULL,
+	"status" "user_status" DEFAULT 'active'::"user_status" NOT NULL,
 	"password_hash" text NOT NULL,
 	"phone_encrypted" text,
 	"email_encrypted" text,
 	"address_encrypted" text,
-	"phone_hash" text UNIQUE,
+	"phone_hash" text,
 	"remark" text,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
@@ -179,6 +201,10 @@ CREATE INDEX "admins_status_idx" ON "admins" ("status");--> statement-breakpoint
 CREATE INDEX "admins_role_idx" ON "admins" ("role");--> statement-breakpoint
 CREATE INDEX "admins_uid" ON "admins" ("uid");--> statement-breakpoint
 CREATE INDEX "admins_created_at_idx" ON "admins" ("created_at");--> statement-breakpoint
+CREATE INDEX "bili_events_bili_uid_idx" ON "bili_events" ("bili_uid");--> statement-breakpoint
+CREATE INDEX "bili_events_user_id_idx" ON "bili_events" ("user_id");--> statement-breakpoint
+CREATE INDEX "bili_events_status_idx" ON "bili_events" ("status");--> statement-breakpoint
+CREATE INDEX "bili_events_occurred_at_idx" ON "bili_events" ("occurred_at");--> statement-breakpoint
 CREATE UNIQUE INDEX "reward_orders_user_id_idempotency_key_unique" ON "orders" ("user_id","idempotency_key");--> statement-breakpoint
 CREATE INDEX "reward_orders_user_id_idx" ON "orders" ("user_id");--> statement-breakpoint
 CREATE INDEX "reward_orders_product_id_idx" ON "orders" ("product_id");--> statement-breakpoint
@@ -236,6 +262,7 @@ CREATE INDEX "reward_rules_time_range_idx" ON "reward_rules" ("starts_at","ends_
 CREATE INDEX "reward_rules_priority_idx" ON "reward_rules" ("priority");--> statement-breakpoint
 CREATE INDEX "reward_rules_enabled_priority_created_at_idx" ON "reward_rules" ("enabled","priority","created_at");--> statement-breakpoint
 CREATE INDEX "reward_rules_priority_created_at_idx" ON "reward_rules" ("priority","created_at");--> statement-breakpoint
+ALTER TABLE "bili_events" ADD CONSTRAINT "bili_events_user_id_users_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id");--> statement-breakpoint
 ALTER TABLE "orders" ADD CONSTRAINT "orders_user_id_users_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id");--> statement-breakpoint
 ALTER TABLE "orders" ADD CONSTRAINT "orders_product_id_products_id_fkey" FOREIGN KEY ("product_id") REFERENCES "products"("id");--> statement-breakpoint
 ALTER TABLE "orders" ADD CONSTRAINT "orders_point_type_id_point_types_id_fkey" FOREIGN KEY ("point_type_id") REFERENCES "point_types"("id");--> statement-breakpoint

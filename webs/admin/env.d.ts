@@ -15,4 +15,29 @@ declare global {
   }
 }
 
+declare module '#app' {
+  interface PageMeta {
+    /**
+     * Whether the route requires authentication
+     */
+    requiresAuth?: boolean;
+
+    /**
+     * route title
+     */
+    title?: string;
+  }
+}
+
+declare module '@pinia/colada' {
+  interface TypesConfig {
+    queryMeta: {};
+    mutationMeta: {
+      showToast?: boolean;
+      errorMessage?: string;
+      successMessage?: string;
+    };
+  }
+}
+
 export {};

@@ -8,8 +8,8 @@ export const ORDER_QUERY_KEYS = {
 export const orderPageQuery = defineQueryOptions((query: OrderPageQuery = {}) => ({
   key: ORDER_QUERY_KEYS.page(query),
   query: () => {
-    const api = useAdminApi();
+    const { $api } = useNuxtApp();
 
-    return api.orders.get({ query }).then(res => res.data);
+    return $api.orders.get({ query }).then(res => res.data);
   },
 }));

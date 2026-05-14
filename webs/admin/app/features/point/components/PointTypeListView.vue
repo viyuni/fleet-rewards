@@ -7,7 +7,7 @@ import { MoreHorizontal } from 'lucide-vue-next';
 
 import type { AdminApi } from '~/plugins/api';
 
-import { pointTypeListQuery } from '../queries/point';
+import { pointTypeListQuery } from '../queries';
 
 export type PointTypeList = Treaty.Data<AdminApi['points']['types']['get']>;
 export type PointType = NonNullable<PointTypeList>[number];

@@ -8,8 +8,11 @@ export const USER_QUERY_KEYS = {
 export const userPageQuery = defineQueryOptions((query: UserPageQuery = {}) => ({
   key: USER_QUERY_KEYS.page(query),
   query: () => {
-    const api = useAdminApi();
+    const { $api } = useNuxtApp();
 
-    return api.users.get({ query }).then(res => res.data);
+    return $api.users.get({ query }).then(res => res.data);
+  },
+  placeholderData(previousData, previousEntry) {
+    return previousEntry ? previousData : undefined;
   },
 }));

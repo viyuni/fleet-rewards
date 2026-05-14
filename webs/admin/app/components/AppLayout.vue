@@ -15,7 +15,7 @@ const breadcrumbs = computed(() => {
 
 <template>
   <SidebarProvider class="h-svh overflow-hidden">
-    <AppSidebar variant="inset" />
+    <AppSidebar />
 
     <SidebarInset class="min-h-0">
       <header class="flex h-14 shrink-0 items-center gap-2 border-b px-4">
@@ -45,7 +45,7 @@ const breadcrumbs = computed(() => {
         <ThemeToggle class="ml-auto" />
       </header>
 
-      <div class="min-h-0 w-full flex-1 overflow-y-auto p-5">
+      <div class="min-h-0 w-full flex-1 overflow-auto p-5">
         <slot />
       </div>
     </SidebarInset>
