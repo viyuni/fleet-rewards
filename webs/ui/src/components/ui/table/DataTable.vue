@@ -228,7 +228,7 @@ watch(totalPages, maxPage => {
 </script>
 
 <template>
-  <div class="grid gap-2">
+  <div class="grid gap-4">
     <!-- 表格渲染前先暴露 table，方便调用方在上方放筛选、操作区。 -->
     <slot :table="resolvedTable" />
 

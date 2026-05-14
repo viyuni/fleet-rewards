@@ -1,7 +1,11 @@
-<script setup lang="ts">
-definePageMeta({ title: '管理员管理' });
-
-const { $api } = useNuxtApp();
+<script lang="ts">
+import { AdminListView } from '~/features/admin';
 </script>
 
-<template>Admins</template>
+<script setup lang="ts">
+definePageMeta({ title: '管理员管理' });
+</script>
+
+<template>
+  <AdminListView />
+</template>

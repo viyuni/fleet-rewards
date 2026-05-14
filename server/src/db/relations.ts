@@ -15,6 +15,12 @@ export const relations = defineRelations(schema, r => ({
       to: r.pointTypes.id,
     }),
   },
+  biliEvents: {
+    user: r.one.users({
+      from: r.biliEvents.userId,
+      to: r.users.id,
+    }),
+  },
   products: {
     pointType: r.one.pointTypes({
       from: r.products.pointTypeId,

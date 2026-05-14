@@ -1,7 +1,7 @@
 import type { Treaty } from '@elysia/eden';
 import { useLocalStorage } from '@vueuse/core';
 
-import type { AdminApi } from '~/libs';
+import type { AdminApi } from '~/plugins/api';
 
 export type AuthUserData = Treaty.Data<AdminApi['auth']['login']['post']>;
 

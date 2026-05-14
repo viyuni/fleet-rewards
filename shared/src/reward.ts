@@ -1,5 +1,7 @@
 import * as v from 'valibot';
 
+import { DateRangeQuerySchema, KeywordQuerySchema, PageQuerySchema } from './common';
+
 /**
  * 积分奖励规则 ID Params Schema。
  */
@@ -17,6 +19,19 @@ export const BiliEventIdParamsSchema = v.object({
 });
 
 export type BiliEventIdParams = v.InferOutput<typeof BiliEventIdParamsSchema>;
+
+export const BiliEventPageQuerySchema = v.intersect([
+  PageQuerySchema,
+  KeywordQuerySchema,
+  DateRangeQuerySchema,
+  v.object({
+    status: v.optional(
+      v.picklist(['processing', 'succeeded', 'failed', 'ignored'], '请选择有效的事件状态'),
+    ),
+  }),
+]);
+
+export type BiliEventPageQuery = v.InferOutput<typeof BiliEventPageQuerySchema>;
 
 /**
  * 积分奖励规则名称 Schema。

@@ -2,8 +2,6 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
-import { globSync } from 'tinyglobby';
-
 import { basePackageExports } from '../package-exports';
 import pkg from '../package.json' with { type: 'json' };
 

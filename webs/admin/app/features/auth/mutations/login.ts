@@ -1,13 +1,12 @@
 import type { AdminLoginBody } from '@internal/shared/admin';
 import { defineMutation, useMutation } from '@pinia/colada';
 
-import { api } from '~/libs';
-
 import { useAuthStore } from '../store';
 
 export const useLogin = defineMutation(() => {
   const { updateUser } = useAuthStore();
   const router = useRouter();
+  const api = useAdminApi();
 
   return useMutation({
     meta: {

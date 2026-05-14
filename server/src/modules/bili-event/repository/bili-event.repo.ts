@@ -1,6 +1,8 @@
+import type { BiliEventPageQuery } from '@internal/shared/reward';
 import { and, asc, eq, inArray, sql } from 'drizzle-orm';
 
 import type { DbExecutor } from '#db';
+import { parseDate, QueryPageBuilder } from '#db/helper';
 import {
   biliEvents,
   type BiliEventRewardItemSnapshot,
@@ -32,6 +34,54 @@ export class BiliEventRepository {
         ),
       )
       .orderBy(asc(biliEvents.occurredAt), asc(biliEvents.createdAt));
+  }
+
+  pageBiliGuard(query: BiliEventPageQuery, db: DbExecutor = this.db) {
+    return new QueryPageBuilder(db, biliEvents, db.query.biliEvents)
+      .page(query.page)
+      .pageSize(query.pageSize)
+      .where({
+        eventType: 'bili_guard',
+        status: query.status,
+        occurredAt: {
+          gte: parseDate(query.startTime),
+          lte: parseDate(query.endTime),
+        },
+        OR: query.keyword
+          ? [
+              {
+                biliEventId: {
+                  ilike: `%${query.keyword}%`,
+                },
+              },
+              {
+                biliUid: {
+                  ilike: `%${query.keyword}%`,
+                },
+              },
+            ]
+          : [],
+      })
+      .query((findMany, { where, limit, offset }) =>
+        findMany({
+          where,
+          limit,
+          offset,
+          with: {
+            user: {
+              columns: {
+                biliUid: true,
+                username: true,
+              },
+            },
+          },
+          orderBy: {
+            occurredAt: 'desc',
+            createdAt: 'desc',
+          },
+        }),
+      )
+      .paginate();
   }
 
   async upsertProcessing(

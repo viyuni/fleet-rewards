@@ -1,4 +1,4 @@
-import { BiliEventIdParamsSchema } from '@internal/shared/reward';
+import { BiliEventIdParamsSchema, BiliEventPageQuerySchema } from '@internal/shared/reward';
 import Elysia from 'elysia';
 
 import { appContext } from '../../context';
@@ -11,6 +11,19 @@ export const rewardBiliGuardRoute = new Elysia({
   },
 })
   .use(appContext)
+  .get(
+    '/',
+    ({ query, rewardUseCase }) => {
+      return rewardUseCase.pageBiliGuardEvents(query);
+    },
+    {
+      query: BiliEventPageQuerySchema,
+      requiredAdminAuth: true,
+      detail: {
+        description: '大航海事件列表',
+      },
+    },
+  )
 
   .post(
     '/:biliEventId/replay',

@@ -4,6 +4,12 @@ import tailwindcss from '@tailwindcss/vite';
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
 
+  runtimeConfig: {
+    public: {
+      serverBaseUrl: process.env.NUXT_PUBLIC_SERVER_BASE_URL ?? process.env.VITE_SERVER_BASE_URL,
+    },
+  },
+
   app: {
     head: {
       title: 'Viyuni - Guard Rewards',
@@ -36,12 +42,14 @@ export default defineNuxtConfig({
     optimizeDeps: {
       include: [
         '@elysia/eden',
-        'clsx',
-        'tailwind-merge',
         '@tanstack/vue-form',
+        '@tanstack/vue-table',
         '@vueuse/core',
         'class-variance-authority',
+        'clsx',
+        'lucide-vue-next',
         'reka-ui',
+        'tailwind-merge',
         'valibot',
         'vue-sonner',
       ],

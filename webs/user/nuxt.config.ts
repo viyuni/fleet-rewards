@@ -4,6 +4,12 @@ import tailwindcss from '@tailwindcss/vite';
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
 
+  runtimeConfig: {
+    public: {
+      serverBaseUrl: process.env.NUXT_PUBLIC_SERVER_BASE_URL ?? process.env.VITE_SERVER_BASE_URL,
+    },
+  },
+
   devtools: {
     enabled: true,
   },

@@ -160,6 +160,7 @@
   "SidebarTrigger": "@web/ui/components/ui/sidebar",
   "Skeleton": "@web/ui/components/ui/skeleton",
   "Spinner": "@web/ui/components/ui/spinner",
+  "Switch": "@web/ui/components/ui/switch",
   "Table": "@web/ui/components/ui/table",
   "TableBody": "@web/ui/components/ui/table",
   "TableCaption": "@web/ui/components/ui/table",

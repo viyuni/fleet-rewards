@@ -1,3 +1,5 @@
+import type { BiliEventPageQuery } from '@internal/shared/reward';
+
 import type { DbClient, DbExecutor, DbTransaction } from '#db';
 import type {
   BiliEvent,
@@ -44,6 +46,10 @@ export interface RewardUseCaseDeps {
 
 export class RewardUseCase {
   constructor(private readonly deps: RewardUseCaseDeps) {}
+
+  pageBiliGuardEvents(query: BiliEventPageQuery) {
+    return this.deps.biliEventRepo.pageBiliGuard(query);
+  }
 
   async previewBiliGuard(event: BiliGuardRewardEvent, db?: DbExecutor) {
     const eventTime = RewardPolicy.getBiliGuardEventTime(event);

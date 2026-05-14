@@ -21,6 +21,25 @@ type DebouncedPageQuery<TCustom extends object> = Omit<
   keyword?: string;
 };
 
+function normalizeEmptyStrings<T extends object>(query: T) {
+  const normalized = {} as T;
+
+  for (const key in query) {
+    const value = query[key];
+
+    if (typeof value === 'string') {
+      const trimmedValue = value.trim();
+
+      normalized[key] = (trimmedValue || undefined) as T[Extract<keyof T, string>];
+      continue;
+    }
+
+    normalized[key] = value;
+  }
+
+  return normalized;
+}
+
 /**
  * 创建列表页常用查询状态，并输出防抖后的请求参数。
  *
@@ -34,22 +53,16 @@ export function useDebouncedPageQuery<TCustom extends object = Record<never, nev
   const state = reactive({
     ...initial,
     page: initial?.page ?? 1,
-    pageSize: initial?.pageSize ?? 20,
+    pageSize: initial?.pageSize ?? 15,
     keyword: initial?.keyword ?? '',
   }) as DebouncedPageQueryState<TCustom>;
 
   const rawQuery = computed(() => {
-    const { keyword, ...rest } = state;
-    const normalizedKeyword = keyword.trim();
-
-    // 空关键字不进入请求参数，避免 query key 和接口收到无意义的空字符串。
-    return {
-      ...rest,
-      keyword: normalizedKeyword || undefined,
-    } as DebouncedPageQuery<TCustom>;
+    // 空字符串不进入请求参数，避免 query key 和接口收到无意义的空值。
+    return normalizeEmptyStrings(state) as DebouncedPageQuery<TCustom>;
   });
 
-  const query = refDebounced(rawQuery, options.debounce ?? 300);
+  const query = refDebounced(rawQuery, options.debounce ?? 100);
 
   return {
     state,
