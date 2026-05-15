@@ -1,5 +1,6 @@
 import { refDebounced } from '@vueuse/core';
-import { computed, reactive, toRefs } from 'vue';
+import { useRouteQuery } from '@vueuse/router';
+import { computed, reactive, toRefs, watch } from 'vue';
 
 type BasePageQueryState = {
   page: number;
@@ -12,6 +13,7 @@ type DebouncedPageQueryState<TCustom extends object> = BasePageQueryState &
 
 type DebouncedPageQueryOptions = {
   debounce?: number;
+  persistPageQuery?: boolean;
 };
 
 type DebouncedPageQuery<TCustom extends object> = Omit<
@@ -50,10 +52,22 @@ export function useDebouncedPageQuery<TCustom extends object = Record<never, nev
   initial?: Partial<DebouncedPageQueryState<TCustom>>,
   options: DebouncedPageQueryOptions = {},
 ) {
+  const shouldPersistPageQuery = options.persistPageQuery ?? true;
+  const initialPage = initial?.page ?? 1;
+  const initialPageSize = initial?.pageSize ?? 15;
+  const routePage = useRouteQuery('page', String(initialPage), {
+    mode: 'replace',
+    transform: Number,
+  });
+  const routePageSize = useRouteQuery('pageSize', String(initialPageSize), {
+    mode: 'replace',
+    transform: Number,
+  });
+
   const state = reactive({
     ...initial,
-    page: initial?.page ?? 1,
-    pageSize: initial?.pageSize ?? 20,
+    page: routePage.value,
+    pageSize: routePageSize.value,
     keyword: initial?.keyword ?? '',
   }) as DebouncedPageQueryState<TCustom>;
 
@@ -63,6 +77,16 @@ export function useDebouncedPageQuery<TCustom extends object = Record<never, nev
   });
 
   const query = refDebounced(rawQuery, options.debounce ?? 100);
+
+  if (shouldPersistPageQuery) {
+    watch(
+      () => [state.page, state.pageSize] as const,
+      ([page, pageSize]) => {
+        routePage!.value = page;
+        routePageSize!.value = pageSize;
+      },
+    );
+  }
 
   return {
     state,

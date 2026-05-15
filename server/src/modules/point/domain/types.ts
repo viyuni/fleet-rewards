@@ -7,17 +7,17 @@ export const POINT_CHANGE_SOURCE_TYPE = {
   /**
    * 订单消费
    */
-  OrderConsume: 'order_consume',
+  OrderConsume: 'orderConsume',
 
   /**
    * 订单退款
    */
-  OrderRefund: 'order_refund',
+  OrderRefund: 'orderRefund',
 
   /**
    * 管理员调整
    */
-  AdminAdjustment: 'admin_adjustment',
+  AdminAdjustment: 'adminAdjustment',
 
   /**
    * 冲正流水
@@ -27,12 +27,12 @@ export const POINT_CHANGE_SOURCE_TYPE = {
   /**
    * 大航海事件
    */
-  GuardEvent: 'guard_event',
+  GuardEvent: 'guardEvent',
 
   /**
    * 积分转换
    */
-  Conversion: 'point_conversion',
+  Conversion: 'pointConversion',
 } as const;
 
 /**

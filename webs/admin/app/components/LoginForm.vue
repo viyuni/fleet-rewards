@@ -23,17 +23,8 @@ const form = useForm({
   },
 });
 
-const formData = reactive({
-  uid: '',
-  password: '',
-});
-
 function handleNotImplemented(e: Event) {
   toast.error('Not implemented 🤣');
-}
-
-function isInvalid(field: any) {
-  return field.state.meta.isTouched && !field.state.meta.isValid;
 }
 </script>
 
@@ -60,39 +51,39 @@ function isInvalid(field: any) {
 
             <form.Field name="uid">
               <template #default="{ field }">
-                <Field :data-invalid="isInvalid(field)">
+                <Field :data-invalid="isFormFieldInvalid(field)">
                   <FieldLabel :for="field.name"> UID </FieldLabel>
                   <Input
                     :id="field.name"
                     :name="field.name"
                     :model-value="field.state.value"
-                    :aria-invalid="isInvalid(field)"
+                    :aria-invalid="isFormFieldInvalid(field)"
                     placeholder="90424564xxx"
                     autocomplete="off"
                     @blur="field.handleBlur"
                     @input="field.handleChange($event.target.value)"
                   />
-                  <FieldError v-if="isInvalid(field)" :errors="field.state.meta.errors" />
+                  <FieldError v-if="isFormFieldInvalid(field)" :errors="field.state.meta.errors" />
                 </Field>
               </template>
             </form.Field>
 
             <form.Field name="password">
               <template #default="{ field }">
-                <Field :data-invalid="isInvalid(field)">
+                <Field :data-invalid="isFormFieldInvalid(field)">
                   <FieldLabel for="password"> Password </FieldLabel>
                   <Input
                     :id="field.name"
                     :name="field.name"
                     :model-value="field.state.value"
-                    :aria-invalid="isInvalid(field)"
+                    :aria-invalid="isFormFieldInvalid(field)"
                     type="password"
                     autocomplete="off"
                     placeholder="?????"
                     @blur="field.handleBlur"
                     @input="field.handleChange($event.target.value)"
                   />
-                  <FieldError v-if="isInvalid(field)" :errors="field.state.meta.errors" />
+                  <FieldError v-if="isFormFieldInvalid(field)" :errors="field.state.meta.errors" />
                 </Field>
               </template>
             </form.Field>

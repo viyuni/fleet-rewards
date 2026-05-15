@@ -71,6 +71,20 @@ export class PointTransactionRepository {
           orderBy: {
             createdAt: 'desc',
           },
+          with: {
+            user: {
+              columns: {
+                username: true,
+                biliUid: true,
+              },
+            },
+
+            reversal: {
+              columns: {
+                id: true,
+              },
+            },
+          },
         }),
       )
       .paginate();

@@ -3,7 +3,7 @@ import type { ProductStockMovementType } from '#db/schema';
 export const STOCK_MOVEMENT_SOURCE_TYPE = {
   consume: 'consume',
   restore: 'restore',
-  adjust: 'admin_adjustment',
+  adjust: 'adminAdjustment',
 } as const;
 
 export interface ChangeStockBase<TType extends ProductStockMovementType> {

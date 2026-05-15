@@ -1,3 +1,4 @@
+import type { AdjustBalanceBody } from '@internal/shared/point-account';
 import type { UserRegisterBody } from '@internal/shared/user';
 import { defineMutation, useMutation, useQueryCache } from '@pinia/colada';
 
@@ -52,6 +53,22 @@ export const useRestoreUser = defineMutation(() => {
     },
     mutation(userId: string) {
       return $api.users({ userId }).restore.patch();
+    },
+    onSettled: invalidateUsers,
+  });
+});
+
+export const useAdjustUserPoints = defineMutation(() => {
+  const { $api } = useNuxtApp();
+  const invalidateUsers = useInvalidateUsers();
+
+  return useMutation({
+    meta: {
+      showToast: true,
+      successMessage: '积分调整成功',
+    },
+    mutation(body: AdjustBalanceBody) {
+      return $api.points.accounts.balance.adjust.patch(body);
     },
     onSettled: invalidateUsers,
   });

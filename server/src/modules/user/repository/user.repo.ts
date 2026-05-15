@@ -208,6 +208,9 @@ export class UserRepository {
               },
             },
           },
+          orderBy: {
+            createdAt: 'desc',
+          },
         }),
       )
       .paginate();

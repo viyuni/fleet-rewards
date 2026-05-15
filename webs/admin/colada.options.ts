@@ -5,6 +5,11 @@ import { toast } from 'vue-sonner';
 console.log('Loading pinia colada config...');
 
 export default {
+  queryOptions: {
+    placeholderData(previousData, previousEntry) {
+      return previousEntry ? previousData : undefined;
+    },
+  },
   mutationOptions: {
     onError(error, _vars, context) {
       const { showToast, errorMessage } = context.entry.meta;
@@ -23,9 +28,10 @@ export default {
 
         if (typeof error.value === 'string') {
           toast.error(error.value);
+          return;
         }
 
-        toast.error('请求失败喵😒');
+        toast.error('请求失败了咕嘎😒');
       } else if (error instanceof Error) {
         toast.error(errorMessage ?? error.message);
       } else {
@@ -37,7 +43,7 @@ export default {
       const { showToast, successMessage } = context.entry.meta;
 
       if (showToast) {
-        toast.success(successMessage ?? 'Success');
+        toast.success(successMessage ?? '成功了咕嘎👌');
       }
     },
   },

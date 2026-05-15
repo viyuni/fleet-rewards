@@ -8,31 +8,30 @@ import { useDebouncedPageQuery } from '~/composables/useDebouncedPageQuery';
 import { usePageQuery } from '~/composables/usePageQuery';
 import type { AdminApi } from '~/plugins/api';
 
+import { useReversePointTransaction } from '../mutations';
 import { pointTransactionPageQuery } from '../queries';
+import PointTransactionActionsDropdown from './PointTransactionActionsDropdown.vue';
 
 export type PointTransactionListPage = Treaty.Data<AdminApi['points']['transactions']['get']>;
 export type PointTransaction = NonNullable<PointTransactionListPage>['items'][number];
+type PointTransactionColumns = readonly ColumnDef<PointTransaction>[];
 </script>
 
 <script setup lang="ts">
-const columns: ColumnDef<PointTransaction>[] = [
-  { accessorKey: 'userId', header: '用户 ID' },
+const columns = [
+  { accessorKey: 'user', header: '用户名' },
+  { id: 'uid', header: 'UID' },
   { accessorKey: 'pointTypeNameSnapshot', header: '积分类型' },
-  { accessorKey: 'type', header: '类型' },
+  { accessorKey: 'title', header: '类型' },
   { accessorKey: 'delta', header: '变动' },
   { accessorKey: 'balanceBefore', header: '变动前' },
   { accessorKey: 'balanceAfter', header: '变动后' },
   { accessorKey: 'sourceType', header: '来源' },
   { accessorKey: 'createdAt', header: '创建时间' },
-];
+  { id: 'actions', enableHiding: false },
+] as const satisfies PointTransactionColumns;
 
-const pointTransactionTypeLabelMap: Record<string, string> = {
-  grant: '发放',
-  consume: '消费',
-  refund: '退款',
-  adjust: '调整',
-  reversal: '冲正',
-};
+const { mutateAsync: reverseTransaction, isLoading: isReversing } = useReversePointTransaction();
 
 const {
   stateRefs: { page, pageSize, type },
@@ -46,6 +45,16 @@ const {
 });
 
 const { items: transactions, meta } = usePageQuery(() => pointTransactionPageQuery(query.value));
+
+async function handleReverseTransaction(payload: {
+  transaction: PointTransaction;
+  remark?: string;
+}) {
+  await reverseTransaction({
+    transactionId: payload.transaction.id,
+    remark: payload.remark,
+  });
+}
 </script>
 
 <template>
@@ -67,16 +76,32 @@ const { items: transactions, meta } = usePageQuery(() => pointTransactionPageQue
       </NativeSelect>
     </template>
 
-    <template #type="{ value }">
-      {{ pointTransactionTypeLabelMap[value] ?? value }}
+    <template #user="{ value }">
+      {{ value?.username }}
+    </template>
+
+    <template #uid="{ rowData }">
+      {{ rowData?.user?.biliUid }}
+    </template>
+
+    <template #title="{ value, rowData }">
+      {{ rowData.title }}
     </template>
 
     <template #delta="{ value }">
-      <span :class="Number(value) >= 0 ? 'text-emerald-600' : 'text-destructive'">{{ value }}</span>
+      <span :class="value >= 0 ? 'text-emerald-600' : 'text-destructive'">{{ value }}</span>
     </template>
 
     <template #createdAt="{ value }">
-      {{ value ? new Date(value).toLocaleString() : '-' }}
+      {{ value?.toLocaleString() ?? '-' }}
+    </template>
+
+    <template #actions="{ rowData }">
+      <PointTransactionActionsDropdown
+        :transaction="rowData"
+        :reversing="isReversing"
+        @reverse="handleReverseTransaction"
+      />
     </template>
   </DataTable>
 </template>

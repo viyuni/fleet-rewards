@@ -263,7 +263,6 @@ export async function seedV2(targetDb = db) {
         deliveryType: funcs.valuesFromArray({ values: productDeliveryTypes }),
         sort: funcs.valuesFromArray({ values: productSorts, isUnique: true }),
         metadata: funcs.json(),
-        deletedAt: undefined,
       },
       with: {
         productStockMovements: [
@@ -314,6 +313,6 @@ if (import.meta.main) {
   const result = await seedV2(createDatabase(databaseUrl));
 
   console.log(
-    `Seed v2 completed: ${result.admins} admins, ${result.users} users, ${result.pointTypes} point types, ${result.products} products, ${result.productStockMovements} product stock movements.`,
+    `Seed completed: ${result.admins} admins, ${result.users} users, ${result.pointTypes} point types, ${result.products} products, ${result.productStockMovements} product stock movements.`,
   );
 }

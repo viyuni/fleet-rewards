@@ -1,16 +1,13 @@
 <script setup lang="ts">
 import { Button } from '@web/ui/components/ui/button';
-import { MoreHorizontal } from 'lucide-vue-next';
+import { MoreHorizontal, WalletCards, Coins, Ban, RotateCcw } from 'lucide-vue-next';
 
 import { useBanUser, useRestoreUser } from '../mutations';
-
-interface UserActionTarget {
-  id: string;
-  status: 'active' | 'banned';
-}
+import type { User } from '../types';
+import AdjustUserPointsDialog from './AdjustUserPointsDialog.vue';
 
 const props = defineProps<{
-  user: UserActionTarget;
+  user: User;
 }>();
 
 const emit = defineEmits<{
@@ -20,13 +17,8 @@ const emit = defineEmits<{
 const { mutate: banUser, isLoading: isBanningUser } = useBanUser();
 const { mutate: restoreUser, isLoading: isRestoringUser } = useRestoreUser();
 
-function toggleUserStatus() {
-  if (props.user.status === 'active') {
-    banUser(props.user.id);
-  } else {
-    restoreUser(props.user.id);
-  }
-}
+const isBanned = computed(() => props.user.status === 'banned');
+const isAdjustPointsDialogOpen = ref(false);
 </script>
 
 <template>
@@ -39,12 +31,37 @@ function toggleUserStatus() {
     </DropdownMenuTrigger>
     <DropdownMenuContent align="end" class="w-50">
       <DropdownMenuLabel>操作</DropdownMenuLabel>
+
       <DropdownMenuSeparator />
-      <DropdownMenuItem>操作积分</DropdownMenuItem>
-      <DropdownMenuItem :disabled="isBanningUser || isRestoringUser" @click="toggleUserStatus">
-        {{ user.status === 'active' ? '封禁' : '恢复' }}
+
+      <DropdownMenuItem @click="isAdjustPointsDialogOpen = true">
+        <Coins />
+        操作积分
       </DropdownMenuItem>
-      <DropdownMenuItem @click="emit('viewPointAccounts')">查看积分账户</DropdownMenuItem>
+
+      <DropdownMenuItem @click="emit('viewPointAccounts')">
+        <WalletCards />
+        查看积分账户
+      </DropdownMenuItem>
+
+      <DropdownMenuSeparator />
+
+      <DropdownMenuItem v-if="isBanned" :disabled="isRestoringUser" @click="restoreUser(user.id)">
+        <RotateCcw />
+        恢复
+      </DropdownMenuItem>
+
+      <DropdownMenuItem
+        v-else
+        variant="destructive"
+        :disabled="isBanningUser"
+        @click="banUser(user.id)"
+      >
+        <Ban />
+        封禁
+      </DropdownMenuItem>
     </DropdownMenuContent>
   </DropdownMenu>
+
+  <AdjustUserPointsDialog v-model:open="isAdjustPointsDialogOpen" :user="user" />
 </template>

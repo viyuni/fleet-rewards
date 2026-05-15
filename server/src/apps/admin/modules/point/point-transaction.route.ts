@@ -1,3 +1,4 @@
+import { ReversalTransactionSchema } from '@internal/shared/point-account';
 import { TransactionPageQuerySchema } from '@internal/shared/point-transaction';
 import Elysia from 'elysia';
 
@@ -21,6 +22,19 @@ export const pointTransactionRoute = new Elysia({
       requiredAdminAuth: true,
       detail: {
         description: ' 查询积分流水',
+      },
+    },
+  )
+  .patch(
+    '/reversal',
+    ({ pointTransactionUseCase, auth: { id: adminId }, body }) => {
+      return pointTransactionUseCase.reversal(adminId, body);
+    },
+    {
+      body: ReversalTransactionSchema,
+      requiredAdminAuth: true,
+      detail: {
+        description: '冲正积分流水',
       },
     },
   );

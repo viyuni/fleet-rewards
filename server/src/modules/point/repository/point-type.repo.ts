@@ -57,6 +57,7 @@ export class PointTypeRepository {
     return this.db.query.pointTypes.findMany({
       orderBy: {
         createdAt: 'desc',
+        sort: 'desc',
       },
     });
   }

@@ -33,6 +33,9 @@ export class StockMovementRepository {
               },
             },
           },
+          orderBy: {
+            createdAt: 'desc',
+          },
         }),
       )
       .paginate();

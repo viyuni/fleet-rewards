@@ -16,7 +16,7 @@ export type StockMovement = NonNullable<StockMovementListPage>['items'][number];
 
 <script setup lang="ts">
 const columns: ColumnDef<StockMovement>[] = [
-  { accessorKey: 'productId', header: '商品 ID' },
+  { accessorKey: 'product', header: '商品名' },
   { accessorKey: 'type', header: '类型' },
   { accessorKey: 'delta', header: '变动' },
   { accessorKey: 'stockBefore', header: '变动前' },
@@ -53,6 +53,9 @@ const { items: movements, meta } = usePageQuery(() => stockMovementPageQuery(que
         <NativeSelectOption value="restore">恢复库存</NativeSelectOption>
         <NativeSelectOption value="adjust">手动调整</NativeSelectOption>
       </NativeSelect>
+    </template>
+    <template #product="{ value }">
+      {{ value?.name }}
     </template>
 
     <template #type="{ value }">

@@ -1,18 +1,14 @@
 <script lang="ts">
-import type { Treaty } from '@elysia/eden';
 import type { UserPageQuery } from '@internal/shared/user';
 import type { ColumnDef } from '@tanstack/vue-table';
 import { DataTable } from '@web/ui/components/ui/table';
 
 import { useDebouncedPageQuery } from '~/composables/useDebouncedPageQuery';
 import { usePageQuery } from '~/composables/usePageQuery';
-import type { AdminApi } from '~/plugins/api';
 
 import { userPageQuery } from '../queries';
+import type { User } from '../types';
 import UserActionsDropdown from './UserActionsDropdown.vue';
-
-export type UserListPage = Treaty.Data<AdminApi['users']['get']>;
-export type User = NonNullable<UserListPage>['items'][number];
 </script>
 
 <script setup lang="ts">
@@ -84,9 +80,9 @@ const { items: users, meta: userMeta } = usePageQuery(() => userPageQuery(query.
       <UserActionsDropdown :user="row.original" @view-point-accounts="row.toggleExpanded()" />
     </template>
 
-    <template #expanded="{ data }">
+    <template #expanded="{ rowData }">
       <div class="space-y-1">
-        <div v-for="pointAccount in data.pointAccounts" :key="pointAccount.id">
+        <div v-for="pointAccount in rowData.pointAccounts" :key="pointAccount.id">
           {{ pointAccount.pointType?.name }}：{{ pointAccount.balance }}
         </div>
       </div>

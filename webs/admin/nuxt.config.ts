@@ -45,6 +45,7 @@ export default defineNuxtConfig({
         '@tanstack/vue-form',
         '@tanstack/vue-table',
         '@vueuse/core',
+        '@vueuse/router',
         'class-variance-authority',
         'clsx',
         'lucide-vue-next',

@@ -11,10 +11,11 @@ import { pointConversionListQuery } from '../queries';
 
 export type PointConversionList = Treaty.Data<AdminApi['points']['conversions']['get']>;
 export type PointConversion = NonNullable<PointConversionList>[number];
+export type PointConversionColumns = readonly ColumnDef<PointConversion>[];
 </script>
 
 <script setup lang="ts">
-const columns: ColumnDef<PointConversion>[] = [
+const columns = [
   { accessorKey: 'name', header: '规则名称' },
   { accessorKey: 'fromPointTypeId', header: '来源积分' },
   { accessorKey: 'toPointTypeId', header: '目标积分' },
@@ -22,7 +23,7 @@ const columns: ColumnDef<PointConversion>[] = [
   { accessorKey: 'createdAt', header: '创建时间' },
   { accessorKey: 'enabled', header: '状态' },
   { id: 'actions', enableHiding: false },
-];
+] as const satisfies PointConversionColumns;
 
 const { data: conversions } = useQuery(pointConversionListQuery);
 </script>
@@ -34,7 +35,7 @@ const { data: conversions } = useQuery(pointConversionListQuery);
     </template>
 
     <template #createdAt="{ value }">
-      {{ value ? new Date(value).toLocaleString() : '-' }}
+      {{ value?.toLocaleString() ?? '-' }}
     </template>
 
     <template #actions>

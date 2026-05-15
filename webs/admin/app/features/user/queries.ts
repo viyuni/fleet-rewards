@@ -12,7 +12,4 @@ export const userPageQuery = defineQueryOptions((query: UserPageQuery = {}) => (
 
     return $api.users.get({ query }).then(res => res.data);
   },
-  placeholderData(previousData, previousEntry) {
-    return previousEntry ? previousData : undefined;
-  },
 }));

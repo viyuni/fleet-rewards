@@ -39,4 +39,14 @@ export const relations = defineRelations(schema, r => ({
       to: r.pointTypes.id,
     }),
   },
+  pointTransactions: {
+    user: r.one.users({
+      from: r.pointTransactions.userId,
+      to: r.users.id,
+    }),
+    reversal: r.one.pointTransactions({
+      from: r.pointTransactions.id,
+      to: r.pointTransactions.reversalOfTransactionId,
+    }),
+  },
 }));
