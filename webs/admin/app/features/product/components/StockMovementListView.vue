@@ -15,7 +15,7 @@ export type StockMovement = NonNullable<StockMovementListPage>['items'][number];
 </script>
 
 <script setup lang="ts">
-const columns: ColumnDef<StockMovement>[] = [
+const columns = [
   { accessorKey: 'product', header: '商品名' },
   { accessorKey: 'type', header: '类型' },
   { accessorKey: 'delta', header: '变动' },
@@ -23,7 +23,7 @@ const columns: ColumnDef<StockMovement>[] = [
   { accessorKey: 'stockAfter', header: '变动后' },
   { accessorKey: 'sourceType', header: '来源' },
   { accessorKey: 'createdAt', header: '创建时间' },
-];
+] satisfies ColumnDef<StockMovement>[];
 
 const {
   stateRefs: { page, pageSize, type },

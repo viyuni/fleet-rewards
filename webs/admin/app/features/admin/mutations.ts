@@ -1,0 +1,88 @@
+import type { AdminCreateBody, SuperAdminUpdateBody } from '@internal/shared/admin';
+import { defineMutation, useMutation, useQueryCache } from '@pinia/colada';
+
+import { ADMIN_QUERY_KEYS } from './queries';
+
+function useInvalidateAdmins() {
+  const queryCache = useQueryCache();
+
+  return () => queryCache.invalidateQueries({ key: ADMIN_QUERY_KEYS.root });
+}
+
+export const useCreateAdmin = defineMutation(() => {
+  const { $api } = useNuxtApp();
+  const invalidateAdmins = useInvalidateAdmins();
+
+  return useMutation({
+    meta: {
+      showToast: true,
+      successMessage: '管理员已创建',
+    },
+    mutation(body: AdminCreateBody) {
+      return $api.admin.post(body);
+    },
+    onSettled: invalidateAdmins,
+  });
+});
+
+export const useUpdateAdmin = defineMutation(() => {
+  const { $api } = useNuxtApp();
+  const invalidateAdmins = useInvalidateAdmins();
+
+  return useMutation({
+    meta: {
+      showToast: true,
+      successMessage: '管理员已更新',
+    },
+    mutation(input: { adminId: string; body: SuperAdminUpdateBody }) {
+      return $api.admin({ adminId: input.adminId }).patch(input.body);
+    },
+    onSettled: invalidateAdmins,
+  });
+});
+
+export const useBanAdmin = defineMutation(() => {
+  const { $api } = useNuxtApp();
+  const invalidateAdmins = useInvalidateAdmins();
+
+  return useMutation({
+    meta: {
+      showToast: true,
+      successMessage: '管理员已封禁',
+    },
+    mutation(adminId: string) {
+      return $api.admin({ adminId }).ban.patch();
+    },
+    onSettled: invalidateAdmins,
+  });
+});
+
+export const useRestoreAdmin = defineMutation(() => {
+  const { $api } = useNuxtApp();
+  const invalidateAdmins = useInvalidateAdmins();
+
+  return useMutation({
+    meta: {
+      showToast: true,
+      successMessage: '管理员已恢复',
+    },
+    mutation(adminId: string) {
+      return $api.admin({ adminId }).restore.patch();
+    },
+    onSettled: invalidateAdmins,
+  });
+});
+
+export const useResetAdminPassword = defineMutation(() => {
+  const { $api } = useNuxtApp();
+
+  return useMutation({
+    meta: {
+      showToast: true,
+      successMessage: '管理员密码已重置',
+    },
+    mutation(adminId: string) {
+      return $api.admin({ adminId }).resetPassword.patch();
+    },
+  });
+});

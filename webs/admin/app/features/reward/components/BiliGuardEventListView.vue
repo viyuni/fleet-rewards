@@ -4,12 +4,13 @@ import type { BiliEventPageQuery } from '@internal/shared/reward';
 import type { ColumnDef } from '@tanstack/vue-table';
 import { Button } from '@web/ui/components/ui/button';
 import { DataTable } from '@web/ui/components/ui/table';
-import { MoreHorizontal } from 'lucide-vue-next';
+import { RotateCcw } from 'lucide-vue-next';
 
 import { useDebouncedPageQuery } from '~/composables/useDebouncedPageQuery';
 import { usePageQuery } from '~/composables/usePageQuery';
 import type { AdminApi } from '~/plugins/api';
 
+import { useReplayBiliGuardReward } from '../mutations';
 import { biliGuardEventPageQuery } from '../queries';
 
 export type BiliGuardEventListPage = Treaty.Data<AdminApi['rewards']['biliGuard']['get']>;
@@ -17,7 +18,7 @@ export type BiliGuardEvent = NonNullable<BiliGuardEventListPage>['items'][number
 </script>
 
 <script setup lang="ts">
-const columns: ColumnDef<BiliGuardEvent>[] = [
+const columns = [
   { accessorKey: 'biliEventId', header: '事件 ID' },
   { accessorKey: 'biliUid', header: 'UID' },
   { accessorKey: 'user.username', header: '用户' },
@@ -26,7 +27,7 @@ const columns: ColumnDef<BiliGuardEvent>[] = [
   { accessorKey: 'occurredAt', header: '发生时间' },
   { accessorKey: 'processedAt', header: '处理时间' },
   { id: 'actions', enableHiding: false },
-];
+] satisfies ColumnDef<BiliGuardEvent>[];
 
 const {
   stateRefs: { page, pageSize, keyword, status },
@@ -38,6 +39,7 @@ const {
 });
 
 const { items: events, meta } = usePageQuery(() => biliGuardEventPageQuery(query.value));
+const { mutate: replayBiliGuardReward, isLoading: isReplaying } = useReplayBiliGuardReward();
 
 const statusLabel: Record<string, string> = {
   processing: '处理中',
@@ -84,27 +86,23 @@ const statusLabel: Record<string, string> = {
     </template>
 
     <template #occurredAt="{ value }">
-      {{ value ? new Date(value).toLocaleString() : '-' }}
+      {{ value.toLocaleString() ?? '-' }}
     </template>
 
     <template #processedAt="{ value }">
-      {{ value ? new Date(value).toLocaleString() : '-' }}
+      {{ value?.toLocaleString() ?? '-' }}
     </template>
 
-    <template #actions>
-      <DropdownMenu>
-        <DropdownMenuTrigger as-child>
-          <Button variant="ghost" class="h-8 w-8 p-0">
-            <span class="sr-only">打开菜单</span>
-            <MoreHorizontal class="h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" class="w-50">
-          <DropdownMenuLabel>操作</DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem>回放奖励</DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+    <template #actions="{ rowData }">
+      <Button
+        variant="ghost"
+        size="sm"
+        :disabled="isReplaying"
+        @click="replayBiliGuardReward(rowData.biliEventId)"
+      >
+        <RotateCcw />
+        回放奖励
+      </Button>
     </template>
   </DataTable>
 </template>

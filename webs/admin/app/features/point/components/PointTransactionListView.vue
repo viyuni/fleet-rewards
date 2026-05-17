@@ -8,7 +8,6 @@ import { useDebouncedPageQuery } from '~/composables/useDebouncedPageQuery';
 import { usePageQuery } from '~/composables/usePageQuery';
 import type { AdminApi } from '~/plugins/api';
 
-import { useReversePointTransaction } from '../mutations';
 import { pointTransactionPageQuery } from '../queries';
 import PointTransactionActionsDropdown from './PointTransactionActionsDropdown.vue';
 
@@ -31,8 +30,6 @@ const columns = [
   { id: 'actions', enableHiding: false },
 ] as const satisfies PointTransactionColumns;
 
-const { mutateAsync: reverseTransaction, isLoading: isReversing } = useReversePointTransaction();
-
 const {
   stateRefs: { page, pageSize, type },
   query,
@@ -45,16 +42,6 @@ const {
 });
 
 const { items: transactions, meta } = usePageQuery(() => pointTransactionPageQuery(query.value));
-
-async function handleReverseTransaction(payload: {
-  transaction: PointTransaction;
-  remark?: string;
-}) {
-  await reverseTransaction({
-    transactionId: payload.transaction.id,
-    remark: payload.remark,
-  });
-}
 </script>
 
 <template>
@@ -97,11 +84,7 @@ async function handleReverseTransaction(payload: {
     </template>
 
     <template #actions="{ rowData }">
-      <PointTransactionActionsDropdown
-        :transaction="rowData"
-        :reversing="isReversing"
-        @reverse="handleReverseTransaction"
-      />
+      <PointTransactionActionsDropdown :transaction="rowData" />
     </template>
   </DataTable>
 </template>

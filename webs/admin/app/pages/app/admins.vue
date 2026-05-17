@@ -1,11 +1,20 @@
 <script lang="ts">
 import { AdminListView } from '~/features/admin';
+import { useAuthStore } from '~/features/auth/store';
 </script>
 
 <script setup lang="ts">
 definePageMeta({ title: '管理员管理' });
+
+const { user } = storeToRefs(useAuthStore());
+
+watchEffect(() => {
+  if (user.value && user.value.role !== 'superAdmin') {
+    navigateTo('/app/dashboard', { replace: true });
+  }
+});
 </script>
 
 <template>
-  <AdminListView />
+  <AdminListView v-if="user?.role === 'superAdmin'" />
 </template>

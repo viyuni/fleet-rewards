@@ -50,6 +50,7 @@ type DataTableProps<
   total?: number;
   pageSize?: number;
   class?: HTMLAttributes['class'];
+  hideFooter?: boolean;
   loading?: boolean;
 };
 
@@ -391,6 +392,7 @@ watch(totalPages, maxPage => {
     </div>
 
     <Pagination
+      v-if="!hideFooter"
       v-slot="{ page: currentPage }"
       v-model:page="tablePage"
       :items-per-page="pageSize"

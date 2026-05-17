@@ -1,18 +1,22 @@
 <script lang="ts">
 import type { UserPageQuery } from '@internal/shared/user';
 import type { ColumnDef } from '@tanstack/vue-table';
+import { Button } from '@web/ui/components/ui/button';
+import { useOverlay } from '@web/ui/components/ui/overlay';
 import { DataTable } from '@web/ui/components/ui/table';
+import { UserPlus } from 'lucide-vue-next';
 
 import { useDebouncedPageQuery } from '~/composables/useDebouncedPageQuery';
 import { usePageQuery } from '~/composables/usePageQuery';
 
 import { userPageQuery } from '../queries';
 import type { User } from '../types';
+import CreateUserDialog from './CreateUserDialog.vue';
 import UserActionsDropdown from './UserActionsDropdown.vue';
 </script>
 
 <script setup lang="ts">
-const columns: ColumnDef<User>[] = [
+const columns = [
   { accessorKey: 'biliUid', header: 'UID' },
   { accessorKey: 'username', header: '用户名' },
   { accessorKey: 'email', header: '邮箱' },
@@ -20,7 +24,7 @@ const columns: ColumnDef<User>[] = [
   { accessorKey: 'address', header: '地址' },
   { accessorKey: 'status', header: '状态' },
   { id: 'actions', enableHiding: false },
-];
+] satisfies ColumnDef<User>[];
 
 const userStatusOptions = [
   { label: '正常', value: 'active' },
@@ -34,6 +38,7 @@ const {
   status: undefined,
 });
 
+const [handleCreateUser] = useOverlay(CreateUserDialog);
 const { items: users, meta: userMeta } = usePageQuery(() => userPageQuery(query.value));
 </script>
 
@@ -46,7 +51,7 @@ const { items: users, meta: userMeta } = usePageQuery(() => userPageQuery(query.
     :page-size="pageSize"
   >
     <template #toolbar>
-      <div class="flex w-full items-center gap-2">
+      <div class="flex w-full flex-wrap items-center gap-2">
         <Input class="max-w-xs" placeholder="搜索用户名 / UID" v-model:model-value.trim="keyword" />
 
         <NativeSelect v-model:model-value="status">
@@ -59,6 +64,11 @@ const { items: users, meta: userMeta } = usePageQuery(() => userPageQuery(query.
             {{ option.label }}
           </NativeSelectOption>
         </NativeSelect>
+
+        <Button class="ml-auto" @click="handleCreateUser">
+          <UserPlus />
+          添加用户
+        </Button>
       </div>
     </template>
 
@@ -83,7 +93,7 @@ const { items: users, meta: userMeta } = usePageQuery(() => userPageQuery(query.
     <template #expanded="{ rowData }">
       <div class="space-y-1">
         <div v-for="pointAccount in rowData.pointAccounts" :key="pointAccount.id">
-          {{ pointAccount.pointType?.name }}：{{ pointAccount.balance }}
+          {{ pointAccount.pointType?.name }}: {{ pointAccount.balance }}
         </div>
       </div>
     </template>

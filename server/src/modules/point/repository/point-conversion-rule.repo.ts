@@ -1,4 +1,4 @@
-import { and, desc, eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 
 import type { DbExecutor } from '#db';
 import { deletedAtIsNull } from '#db/helper';
@@ -87,10 +87,19 @@ export class PointConversionRuleRepository {
   }
 
   list(db: DbExecutor = this.db) {
-    return db
-      .select()
-      .from(pointConversionRules)
-      .where(deletedAtIsNull(pointConversionRules))
-      .orderBy(desc(pointConversionRules.createdAt));
+    return db.query.pointConversionRules.findMany({
+      where: {
+        deletedAt: {
+          isNull: true,
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      with: {
+        fromPointType: true,
+        toPointType: true,
+      },
+    });
   }
 }

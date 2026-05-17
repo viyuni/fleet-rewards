@@ -10,9 +10,8 @@ export default defineConfig({
       tasks: true,
     },
     tasks: {
-      'build:all': {
-        command: 'vpr -r build',
-        dependsOn: ['@server/app#dts', '@web/ui#generate:manifest'],
+      check: {
+        command: 'vp fmt && vp lint && vpr tsc',
       },
       tsc: {
         command: 'vpr -r --parallel typecheck',

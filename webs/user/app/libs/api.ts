@@ -3,8 +3,8 @@ import type { UserApp } from '@server/app';
 
 export type UserApi = ReturnType<typeof createApi>;
 
-export function createApi(serverBaseUrl: string) {
-  return treaty<UserApp>(serverBaseUrl, {
+export function createApi(apiBaseUrl: string) {
+  return treaty<UserApp>(apiBaseUrl, {
     throwHttpError: true,
     fetch: {
       credentials: 'include',

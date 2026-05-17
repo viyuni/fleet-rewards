@@ -22,7 +22,6 @@ const activePointTypes = computed(
 );
 
 const selectedPointTypeId = ref('');
-const deltaPreview = ref(1);
 
 function createDefaultValues(userId: string): AdjustBalanceBody {
   return {
@@ -43,7 +42,6 @@ const selectedPointAccount = computed(() =>
   ),
 );
 const currentBalance = computed(() => selectedPointAccount.value?.balance ?? 0);
-const adjustedBalance = computed(() => currentBalance.value + deltaPreview.value);
 
 const form = useForm({
   validators: {
@@ -70,7 +68,6 @@ const form = useForm({
       remark: '',
       nonce: crypto.randomUUID(),
     });
-    deltaPreview.value = 1;
   },
 });
 
@@ -108,14 +105,13 @@ watch(
       </DialogHeader>
 
       <form class="space-y-4" @submit.prevent="form.handleSubmit">
-        <form.Field name="pointTypeId">
-          <template #default="{ field }">
-            <Field :data-invalid="isFormFieldInvalid(field)">
-              <FieldLabel :for="field.name">积分类型</FieldLabel>
+        <form.Field name="pointTypeId" #default="{ field }">
+          <FieldControl :field="field" label="积分类型">
+            <template #default="{ id, invalid }">
               <NativeSelect
-                :id="field.name"
+                :id="id"
                 :model-value="field.state.value"
-                :aria-invalid="isFormFieldInvalid(field)"
+                :aria-invalid="invalid"
                 @blur="field.handleBlur"
                 @update:model-value="
                   selectedPointTypeId = String($event);
@@ -131,52 +127,42 @@ watch(
                   {{ pointType.name }}
                 </NativeSelectOption>
               </NativeSelect>
-              <FieldDescription>当前积分：{{ currentBalance }}</FieldDescription>
-              <FieldError v-if="isFormFieldInvalid(field)" :errors="field.state.meta.errors" />
-            </Field>
-          </template>
+            </template>
+            <template #description>当前积分：{{ currentBalance }}</template>
+          </FieldControl>
         </form.Field>
 
-        <form.Field name="delta">
-          <template #default="{ field }">
-            <Field :data-invalid="isFormFieldInvalid(field)">
-              <FieldLabel :for="field.name">变动数量</FieldLabel>
+        <form.Field name="delta" #default="{ field }">
+          <FieldControl :field="field" label="变动数量">
+            <template #default="{ id, invalid }">
               <Input
-                :id="field.name"
+                :id="id"
                 :model-value="field.state.value"
-                :aria-invalid="isFormFieldInvalid(field)"
+                :aria-invalid="invalid"
                 type="number"
                 step="1"
                 placeholder="正数增加，负数扣减"
                 @blur="field.handleBlur"
-                @input="
-                  deltaPreview = Number($event.target.value);
-                  field.handleChange(deltaPreview);
-                "
+                @input="field.handleChange(Number($event.target.value))"
               />
-              <FieldDescription>
-                输入正数增加积分，输入负数扣减积分。调整后：{{ adjustedBalance }}
-              </FieldDescription>
-              <FieldError v-if="isFormFieldInvalid(field)" :errors="field.state.meta.errors" />
-            </Field>
-          </template>
+            </template>
+            <template #description>
+              扣减请优先使用冲正流水。调整后：{{ currentBalance + Number(field.state.value) }}
+            </template>
+          </FieldControl>
         </form.Field>
 
-        <form.Field name="remark">
-          <template #default="{ field }">
-            <Field :data-invalid="isFormFieldInvalid(field)">
-              <FieldLabel :for="field.name">备注</FieldLabel>
-              <Textarea
-                :id="field.name"
-                :model-value="field.state.value"
-                :aria-invalid="isFormFieldInvalid(field)"
-                placeholder="例如：活动补发 / 违规扣减"
-                @blur="field.handleBlur"
-                @input="field.handleChange($event.target.value)"
-              />
-              <FieldError v-if="isFormFieldInvalid(field)" :errors="field.state.meta.errors" />
-            </Field>
-          </template>
+        <form.Field name="remark" #default="{ field }">
+          <FieldControl :field="field" label="备注" v-slot="{ id, invalid }">
+            <Textarea
+              :id="id"
+              :model-value="field.state.value"
+              :aria-invalid="invalid"
+              placeholder="例如：活动补发 / 违规扣减"
+              @blur="field.handleBlur"
+              @input="field.handleChange($event.target.value)"
+            />
+          </FieldControl>
         </form.Field>
 
         <DialogFooter>

@@ -1,3 +1,5 @@
+import type { AdminApi } from './app/plugins/api';
+
 declare module '*.vue' {
   import type { DefineComponent } from 'vue';
   const component: DefineComponent<{}, {}, unknown>;
@@ -7,7 +9,7 @@ declare module '*.vue' {
 declare global {
   interface ImportMetaEnv {
     readonly VITE_SERVER_BASE_URL: string;
-    readonly NUXT_PUBLIC_SERVER_BASE_URL: string;
+    readonly NUXT_PUBLIC_API_BASE_URL: string;
   }
 
   interface ImportMeta {

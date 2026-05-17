@@ -2,40 +2,74 @@
 import type { Treaty } from '@elysia/eden';
 import type { ColumnDef } from '@tanstack/vue-table';
 import { Button } from '@web/ui/components/ui/button';
+import { useOverlay } from '@web/ui/components/ui/overlay';
 import { DataTable } from '@web/ui/components/ui/table';
-import { MoreHorizontal } from 'lucide-vue-next';
+import { MoreHorizontal, Plus, Pencil } from 'lucide-vue-next';
 
 import type { AdminApi } from '~/plugins/api';
 
+import { useDisablePointType, useEnablePointType } from '../mutations';
 import { pointTypeListQuery } from '../queries';
+import PointTypeDialog from './PointTypeDialog.vue';
 
 export type PointTypeList = Treaty.Data<AdminApi['points']['types']['get']>;
 export type PointType = NonNullable<PointTypeList>[number];
 </script>
 
 <script setup lang="ts">
-const columns: ColumnDef<PointType>[] = [
+const columns = [
   { accessorKey: 'name', header: '名称' },
   { accessorKey: 'description', header: '描述' },
+  { accessorKey: 'sort', header: '排序' },
   { accessorKey: 'createdAt', header: '创建时间' },
   { accessorKey: 'status', header: '状态' },
   { id: 'actions', enableHiding: false },
-];
+] satisfies ColumnDef<PointType>[];
 
 const { data: pointTypes } = useQuery(pointTypeListQuery);
+const { mutate: enablePointType, isLoading: isEnabling } = useEnablePointType();
+const { mutate: disablePointType, isLoading: isDisabling } = useDisablePointType();
+const [openPointTypeDialog] = useOverlay(PointTypeDialog);
+
+const isUpdatingStatus = computed(() => isEnabling.value || isDisabling.value);
+
+function togglePointTypeStatus(pointType: PointType, enabled: boolean) {
+  if (enabled) {
+    enablePointType(pointType.id);
+  } else {
+    disablePointType(pointType.id);
+  }
+}
 </script>
 
 <template>
-  <DataTable :data="pointTypes ?? []" :columns="columns">
-    <template #status="{ value }">
-      <Switch :model-value="value === 'active'" />
+  <DataTable :data="pointTypes ?? []" :columns="columns" hide-footer>
+    <template #toolbar>
+      <div class="flex w-full items-center justify-end">
+        <Button @click="openPointTypeDialog()">
+          <Plus />
+          添加积分类型
+        </Button>
+      </div>
+    </template>
+
+    <template #description="{ value }">
+      {{ value ?? '-' }}
+    </template>
+
+    <template #status="{ value, rowData }">
+      <Switch
+        :model-value="value === 'active'"
+        :disabled="isUpdatingStatus"
+        @update:model-value="togglePointTypeStatus(rowData, $event)"
+      />
     </template>
 
     <template #createdAt="{ value }">
-      {{ value ? new Date(value).toLocaleString() : '-' }}
+      {{ value?.toLocaleString() ?? '-' }}
     </template>
 
-    <template #actions>
+    <template #actions="{ rowData }">
       <DropdownMenu>
         <DropdownMenuTrigger as-child>
           <Button variant="ghost" class="h-8 w-8 p-0">
@@ -46,7 +80,10 @@ const { data: pointTypes } = useQuery(pointTypeListQuery);
         <DropdownMenuContent align="end" class="w-50">
           <DropdownMenuLabel>操作</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem>编辑</DropdownMenuItem>
+          <DropdownMenuItem @click="openPointTypeDialog({ pointType: rowData })">
+            <Pencil />
+            编辑
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     </template>

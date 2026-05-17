@@ -28,6 +28,32 @@ Use `#...` imports only as TypeScript path aliases for code inside the current p
 
 <!-- PROJECT IMPORTS END -->
 
+<!-- PROJECT VUE START -->
+
+# Vue Template Conventions
+
+When a component only passes a default scoped slot, prefer the shorthand on the component tag:
+
+```vue
+<form.Field name="delta" #default="{ field }">
+  ...
+</form.Field>
+```
+
+Avoid wrapping the same content in an extra default template:
+
+```vue
+<form.Field name="delta">
+  <template #default="{ field }">
+    ...
+  </template>
+</form.Field>
+```
+
+Use an explicit `<template #default>` only when the component also has named slots or when the slot structure would be ambiguous.
+
+<!-- PROJECT VUE END -->
+
 <!-- PROJECT SCRIPT START -->
 
 # Project Scripts

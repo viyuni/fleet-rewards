@@ -58,6 +58,20 @@ export const useRestoreUser = defineMutation(() => {
   });
 });
 
+export const useResetUserPassword = defineMutation(() => {
+  const { $api } = useNuxtApp();
+
+  return useMutation({
+    meta: {
+      showToast: true,
+      successMessage: '密码已重置',
+    },
+    mutation(userId: string) {
+      return $api.users({ userId }).resetPassword.patch();
+    },
+  });
+});
+
 export const useAdjustUserPoints = defineMutation(() => {
   const { $api } = useNuxtApp();
   const invalidateUsers = useInvalidateUsers();

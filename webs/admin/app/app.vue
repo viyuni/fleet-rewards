@@ -3,6 +3,7 @@ import 'vue-sonner/style.css';
 </script>
 
 <template>
-  <Toaster rich-colors position="top-center" />
   <NuxtPage />
+  <Toaster rich-colors position="top-center" />
+  <OverlayProvider />
 </template>

@@ -1,0 +1,294 @@
+<script setup lang="ts">
+import type {
+  CreatePointConversionRuleBody,
+  UpdatePointConversionRuleBody,
+} from '@internal/shared/point-conversion';
+import { useForm } from '@tanstack/vue-form';
+import { Button } from '@web/ui/components/ui/button';
+import { Loader2 } from 'lucide-vue-next';
+
+import { useCreatePointConversionRule, useUpdatePointConversionRule } from '../mutations';
+import { pointTypeListQuery } from '../queries';
+import type { PointConversion } from './PointConversionListView.vue';
+
+const props = defineProps<{
+  conversion?: PointConversion;
+}>();
+
+const open = defineModel<boolean>('open', { default: false });
+
+const { data: pointTypes } = useQuery(pointTypeListQuery);
+const { mutateAsync: createConversionRule, isLoading: isCreating } = useCreatePointConversionRule();
+const { mutateAsync: updateConversionRule, isLoading: isUpdating } = useUpdatePointConversionRule();
+
+const activePointTypes = computed(
+  () => pointTypes.value?.filter(pointType => pointType.status === 'active') ?? [],
+);
+const isEditing = computed(() => Boolean(props.conversion));
+const isLoading = computed(() => isCreating.value || isUpdating.value);
+
+function optionalText(value: string) {
+  const trimmed = value.trim();
+
+  return trimmed || undefined;
+}
+
+function optionalNumber(value: string) {
+  return value === '' ? undefined : Number(value);
+}
+
+function toDatetimeLocalValue(value: Date | string | null | undefined) {
+  if (!value) {
+    return '';
+  }
+
+  const date = value instanceof Date ? value : new Date(value);
+  const local = new Date(date.getTime() - date.getTimezoneOffset() * 60_000);
+
+  return local.toISOString().slice(0, 16);
+}
+
+function fromDatetimeLocalValue(value: string) {
+  return value ? new Date(value) : undefined;
+}
+
+function createDefaultValues(conversion?: PointConversion): CreatePointConversionRuleBody {
+  return {
+    name: conversion?.name ?? '',
+    description: conversion?.description ?? undefined,
+    remark: conversion?.remark ?? undefined,
+    fromPointTypeId: conversion?.fromPointTypeId ?? activePointTypes.value[0]?.id ?? '',
+    toPointTypeId: conversion?.toPointTypeId ?? activePointTypes.value[1]?.id ?? '',
+    toAmount: conversion?.toAmount ?? 1,
+    minConvertAmount: conversion?.minConvertAmount ?? undefined,
+    maxConvertAmount: conversion?.maxConvertAmount ?? undefined,
+    enabled: conversion?.enabled ?? false,
+    startsAt: conversion?.startsAt ?? undefined,
+    endsAt: conversion?.endsAt ?? undefined,
+  };
+}
+
+const form = useForm({
+  defaultValues: createDefaultValues(props.conversion),
+  async onSubmit({ value }: { value: CreatePointConversionRuleBody }) {
+    if (props.conversion) {
+      await updateConversionRule({
+        pointConversionRuleId: props.conversion.id,
+        body: value satisfies UpdatePointConversionRuleBody,
+      });
+    } else {
+      await createConversionRule(value);
+    }
+
+    form.reset(createDefaultValues(props.conversion));
+    open.value = false;
+  },
+});
+
+watch(
+  () => props.conversion,
+  conversion => {
+    form.reset(createDefaultValues(conversion));
+  },
+);
+
+watch(open, isOpen => {
+  if (!isOpen) {
+    form.reset(createDefaultValues(props.conversion));
+  }
+});
+</script>
+
+<template>
+  <Dialog v-model:open="open">
+    <DialogContent class="sm:max-w-2xl">
+      <DialogHeader>
+        <DialogTitle>{{ isEditing ? '编辑积分转换' : '添加积分转换' }}</DialogTitle>
+        <DialogDescription>
+          {{ isEditing ? '更新积分类型之间的转换规则。' : '创建积分类型之间的转换规则。' }}
+        </DialogDescription>
+      </DialogHeader>
+
+      <form class="grid gap-4 sm:grid-cols-2" @submit.prevent="form.handleSubmit">
+        <form.Field name="name" #default="{ field }">
+          <FieldControl :field="field" label="规则名称" v-slot="{ id, invalid }">
+            <Input
+              :id="id"
+              :model-value="field.state.value"
+              :aria-invalid="invalid"
+              placeholder="例如：督级积分兑换舰级积分"
+              @blur="field.handleBlur"
+              @input="field.handleChange($event.target.value)"
+            />
+          </FieldControl>
+        </form.Field>
+
+        <form.Field name="toAmount" #default="{ field }">
+          <FieldControl
+            :field="field"
+            label="目标数量"
+            description="每 1 个来源积分可兑换的目标积分数量。"
+            v-slot="{ id, invalid }"
+          >
+            <Input
+              :id="id"
+              :model-value="field.state.value"
+              :aria-invalid="invalid"
+              type="number"
+              min="1"
+              step="1"
+              @blur="field.handleBlur"
+              @input="field.handleChange(Number($event.target.value))"
+            />
+          </FieldControl>
+        </form.Field>
+
+        <form.Field name="fromPointTypeId" #default="{ field }">
+          <FieldControl :field="field" label="来源积分" v-slot="{ id, invalid }">
+            <NativeSelect
+              :id="id"
+              :model-value="field.state.value"
+              :aria-invalid="invalid"
+              @blur="field.handleBlur"
+              @update:model-value="field.handleChange(String($event))"
+            >
+              <NativeSelectOption value="" disabled>选择来源积分</NativeSelectOption>
+              <NativeSelectOption
+                v-for="pointType in activePointTypes"
+                :key="pointType.id"
+                :value="pointType.id"
+              >
+                {{ pointType.name }}
+              </NativeSelectOption>
+            </NativeSelect>
+          </FieldControl>
+        </form.Field>
+
+        <form.Field name="toPointTypeId" #default="{ field }">
+          <FieldControl :field="field" label="目标积分" v-slot="{ id, invalid }">
+            <NativeSelect
+              :id="id"
+              :model-value="field.state.value"
+              :aria-invalid="invalid"
+              @blur="field.handleBlur"
+              @update:model-value="field.handleChange(String($event))"
+            >
+              <NativeSelectOption value="" disabled>选择目标积分</NativeSelectOption>
+              <NativeSelectOption
+                v-for="pointType in activePointTypes"
+                :key="pointType.id"
+                :value="pointType.id"
+              >
+                {{ pointType.name }}
+              </NativeSelectOption>
+            </NativeSelect>
+          </FieldControl>
+        </form.Field>
+
+        <form.Field name="minConvertAmount" #default="{ field }">
+          <FieldControl :field="field" label="单次最小转换" v-slot="{ id, invalid }">
+            <Input
+              :id="id"
+              :model-value="field.state.value ?? ''"
+              :aria-invalid="invalid"
+              type="number"
+              min="1"
+              step="1"
+              placeholder="不限制"
+              @blur="field.handleBlur"
+              @input="field.handleChange(optionalNumber($event.target.value))"
+            />
+          </FieldControl>
+        </form.Field>
+
+        <form.Field name="maxConvertAmount" #default="{ field }">
+          <FieldControl :field="field" label="单次最大转换" v-slot="{ id, invalid }">
+            <Input
+              :id="id"
+              :model-value="field.state.value ?? ''"
+              :aria-invalid="invalid"
+              type="number"
+              min="1"
+              step="1"
+              placeholder="不限制"
+              @blur="field.handleBlur"
+              @input="field.handleChange(optionalNumber($event.target.value))"
+            />
+          </FieldControl>
+        </form.Field>
+
+        <form.Field name="enabled" #default="{ field }">
+          <FieldControl :field="field" label="启用状态" v-slot="{ invalid }">
+            <Switch
+              :model-value="field.state.value ?? false"
+              :aria-invalid="invalid"
+              @update:model-value="field.handleChange(Boolean($event))"
+            />
+          </FieldControl>
+        </form.Field>
+
+        <form.Field name="startsAt" #default="{ field }">
+          <FieldControl :field="field" label="开始时间" v-slot="{ id, invalid }">
+            <Input
+              :id="id"
+              :model-value="toDatetimeLocalValue(field.state.value)"
+              :aria-invalid="invalid"
+              type="datetime-local"
+              @blur="field.handleBlur"
+              @input="field.handleChange(fromDatetimeLocalValue($event.target.value))"
+            />
+          </FieldControl>
+        </form.Field>
+
+        <form.Field name="endsAt" #default="{ field }">
+          <FieldControl :field="field" label="结束时间" v-slot="{ id, invalid }">
+            <Input
+              :id="id"
+              :model-value="toDatetimeLocalValue(field.state.value)"
+              :aria-invalid="invalid"
+              type="datetime-local"
+              @blur="field.handleBlur"
+              @input="field.handleChange(fromDatetimeLocalValue($event.target.value))"
+            />
+          </FieldControl>
+        </form.Field>
+
+        <form.Field name="description" #default="{ field }">
+          <FieldControl class="sm:col-span-2" :field="field" label="描述" v-slot="{ id, invalid }">
+            <Textarea
+              :id="id"
+              :model-value="field.state.value ?? ''"
+              :aria-invalid="invalid"
+              placeholder="可选"
+              @blur="field.handleBlur"
+              @input="field.handleChange(optionalText($event.target.value))"
+            />
+          </FieldControl>
+        </form.Field>
+
+        <form.Field name="remark" #default="{ field }">
+          <FieldControl class="sm:col-span-2" :field="field" label="备注" v-slot="{ id, invalid }">
+            <Textarea
+              :id="id"
+              :model-value="field.state.value ?? ''"
+              :aria-invalid="invalid"
+              placeholder="可选"
+              @blur="field.handleBlur"
+              @input="field.handleChange(optionalText($event.target.value))"
+            />
+          </FieldControl>
+        </form.Field>
+
+        <DialogFooter class="sm:col-span-2">
+          <DialogClose as-child>
+            <Button variant="outline" type="button">取消</Button>
+          </DialogClose>
+          <Button type="submit" :disabled="isLoading || activePointTypes.length < 2">
+            <Loader2 v-if="isLoading" class="animate-spin" />
+            {{ isEditing ? '保存' : '创建' }}
+          </Button>
+        </DialogFooter>
+      </form>
+    </DialogContent>
+  </Dialog>
+</template>

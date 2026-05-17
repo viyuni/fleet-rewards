@@ -18,9 +18,6 @@
     "./point-transaction": "./src/point-transaction.ts",
     "./point-conversion": "./src/point-conversion.ts"
   },
-  "scripts": {
-    "typecheck": "tsgo --build"
-  },
   "dependencies": {
     "valibot": "^1.4.0"
   },

@@ -2,38 +2,82 @@
 import type { Treaty } from '@elysia/eden';
 import type { ColumnDef } from '@tanstack/vue-table';
 import { Button } from '@web/ui/components/ui/button';
+import { useOverlay } from '@web/ui/components/ui/overlay';
 import { DataTable } from '@web/ui/components/ui/table';
-import { MoreHorizontal } from 'lucide-vue-next';
+import { MoreHorizontal, Pencil, Plus, Trash2 } from 'lucide-vue-next';
 
 import type { AdminApi } from '~/plugins/api';
 
+import { useDeleteRewardRule, useDisableRewardRule, useEnableRewardRule } from '../mutations';
 import { rewardRuleListQuery } from '../queries';
+import RewardRuleDialog from './RewardRuleDialog.vue';
 
 export type RewardRuleList = Treaty.Data<AdminApi['rewards']['rules']['get']>;
 export type RewardRule = NonNullable<RewardRuleList>[number];
 </script>
 
 <script setup lang="ts">
-const columns: ColumnDef<RewardRule>[] = [
+const columns = [
   { accessorKey: 'name', header: '规则名称' },
   { accessorKey: 'pointType.name', header: '积分类型' },
   { accessorKey: 'points', header: '奖励积分' },
   { accessorKey: 'group', header: '互斥分组' },
   { accessorKey: 'priority', header: '优先级' },
+  { accessorKey: 'startsAt', header: '开始时间' },
+  { accessorKey: 'endsAt', header: '结束时间' },
   { accessorKey: 'enabled', header: '状态' },
   { id: 'actions', enableHiding: false },
-];
+] satisfies ColumnDef<RewardRule>[];
 
 const { data: rules } = useQuery(rewardRuleListQuery);
+const { mutate: enableRewardRule, isLoading: isEnabling } = useEnableRewardRule();
+const { mutate: disableRewardRule, isLoading: isDisabling } = useDisableRewardRule();
+const { mutate: deleteRewardRule, isLoading: isDeleting } = useDeleteRewardRule();
+const [openRewardRuleDialog] = useOverlay(RewardRuleDialog);
+
+const isUpdatingEnabled = computed(() => isEnabling.value || isDisabling.value);
+
+function toggleRewardRuleEnabled(rule: RewardRule, enabled: boolean) {
+  if (enabled) {
+    enableRewardRule(rule.id);
+  } else {
+    disableRewardRule(rule.id);
+  }
+}
 </script>
 
 <template>
-  <DataTable :data="rules ?? []" :columns="columns">
-    <template #enabled="{ value }">
-      <Switch :model-value="value" disabled />
+  <DataTable :data="rules ?? []" :columns="columns" hide-footer>
+    <template #toolbar>
+      <div class="flex w-full items-center justify-end">
+        <Button @click="openRewardRuleDialog()">
+          <Plus />
+          添加积分规则
+        </Button>
+      </div>
     </template>
 
-    <template #actions>
+    <template #group="{ value }">
+      {{ value ?? '-' }}
+    </template>
+
+    <template #startsAt="{ value }">
+      {{ value?.toLocaleString() ?? '-' }}
+    </template>
+
+    <template #endsAt="{ value }">
+      {{ value?.toLocaleString() ?? '-' }}
+    </template>
+
+    <template #enabled="{ value, rowData }">
+      <Switch
+        :model-value="value"
+        :disabled="isUpdatingEnabled"
+        @update:model-value="toggleRewardRuleEnabled(rowData, $event)"
+      />
+    </template>
+
+    <template #actions="{ rowData }">
       <DropdownMenu>
         <DropdownMenuTrigger as-child>
           <Button variant="ghost" class="h-8 w-8 p-0">
@@ -44,8 +88,18 @@ const { data: rules } = useQuery(rewardRuleListQuery);
         <DropdownMenuContent align="end" class="w-50">
           <DropdownMenuLabel>操作</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem>编辑</DropdownMenuItem>
-          <DropdownMenuItem variant="destructive">删除</DropdownMenuItem>
+          <DropdownMenuItem @click="openRewardRuleDialog({ rule: rowData })">
+            <Pencil />
+            编辑
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            variant="destructive"
+            :disabled="isDeleting"
+            @click="deleteRewardRule(rowData.id)"
+          >
+            <Trash2 />
+            删除
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     </template>

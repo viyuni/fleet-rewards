@@ -72,4 +72,18 @@ export const user = new Elysia({
         description: '恢复用户',
       },
     },
+  )
+
+  .patch(
+    '/:userId/resetPassword',
+    async ({ params, userUseCase }) => {
+      return await userUseCase.resetPassword(params.userId);
+    },
+    {
+      params: UserIdParamsSchema,
+      requiredAdminAuth: true,
+      detail: {
+        description: '重置用户密码',
+      },
+    },
   );

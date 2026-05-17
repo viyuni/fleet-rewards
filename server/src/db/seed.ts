@@ -263,6 +263,7 @@ export async function seedV2(targetDb = db) {
         deliveryType: funcs.valuesFromArray({ values: productDeliveryTypes }),
         sort: funcs.valuesFromArray({ values: productSorts, isUnique: true }),
         metadata: funcs.json(),
+        deletedAt: false,
       },
       with: {
         productStockMovements: [

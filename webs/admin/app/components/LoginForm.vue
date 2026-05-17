@@ -49,43 +49,35 @@ function handleNotImplemented(e: Event) {
               OR
             </FieldSeparator>
 
-            <form.Field name="uid">
-              <template #default="{ field }">
-                <Field :data-invalid="isFormFieldInvalid(field)">
-                  <FieldLabel :for="field.name"> UID </FieldLabel>
-                  <Input
-                    :id="field.name"
-                    :name="field.name"
-                    :model-value="field.state.value"
-                    :aria-invalid="isFormFieldInvalid(field)"
-                    placeholder="90424564xxx"
-                    autocomplete="off"
-                    @blur="field.handleBlur"
-                    @input="field.handleChange($event.target.value)"
-                  />
-                  <FieldError v-if="isFormFieldInvalid(field)" :errors="field.state.meta.errors" />
-                </Field>
-              </template>
+            <form.Field name="uid" #default="{ field }">
+              <FieldControl :field="field" label="UID" v-slot="{ id, invalid }">
+                <Input
+                  :id="id"
+                  :name="field.name"
+                  :model-value="field.state.value"
+                  :aria-invalid="invalid"
+                  placeholder="90424564xxx"
+                  autocomplete="off"
+                  @blur="field.handleBlur"
+                  @input="field.handleChange($event.target.value)"
+                />
+              </FieldControl>
             </form.Field>
 
-            <form.Field name="password">
-              <template #default="{ field }">
-                <Field :data-invalid="isFormFieldInvalid(field)">
-                  <FieldLabel for="password"> Password </FieldLabel>
-                  <Input
-                    :id="field.name"
-                    :name="field.name"
-                    :model-value="field.state.value"
-                    :aria-invalid="isFormFieldInvalid(field)"
-                    type="password"
-                    autocomplete="off"
-                    placeholder="?????"
-                    @blur="field.handleBlur"
-                    @input="field.handleChange($event.target.value)"
-                  />
-                  <FieldError v-if="isFormFieldInvalid(field)" :errors="field.state.meta.errors" />
-                </Field>
-              </template>
+            <form.Field name="password" #default="{ field }">
+              <FieldControl :field="field" label="Password" v-slot="{ id, invalid }">
+                <Input
+                  :id="id"
+                  :name="field.name"
+                  :model-value="field.state.value"
+                  :aria-invalid="invalid"
+                  type="password"
+                  autocomplete="off"
+                  placeholder="?????"
+                  @blur="field.handleBlur"
+                  @input="field.handleChange($event.target.value)"
+                />
+              </FieldControl>
             </form.Field>
 
             <Field>

@@ -20,7 +20,7 @@ export const menus = [
     icon: UserRound,
     items: [
       { title: '用户列表', to: '/app/users' },
-      { title: '管理员管理', to: '/app/admins' },
+      { title: '管理员管理', to: '/app/admins', superAdminOnly: true },
     ],
   },
   {

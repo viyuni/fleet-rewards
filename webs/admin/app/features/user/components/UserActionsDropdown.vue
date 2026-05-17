@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { Button } from '@web/ui/components/ui/button';
-import { MoreHorizontal, WalletCards, Coins, Ban, RotateCcw } from 'lucide-vue-next';
+import { useOverlay } from '@web/ui/components/ui/overlay';
+import { MoreHorizontal, WalletCards, Coins, Ban, RotateCcw, KeyRound } from 'lucide-vue-next';
 
 import { useBanUser, useRestoreUser } from '../mutations';
 import type { User } from '../types';
 import AdjustUserPointsDialog from './AdjustUserPointsDialog.vue';
+import ResetUserPasswordDialog from './ResetUserPasswordDialog.vue';
 
 const props = defineProps<{
   user: User;
@@ -18,7 +20,8 @@ const { mutate: banUser, isLoading: isBanningUser } = useBanUser();
 const { mutate: restoreUser, isLoading: isRestoringUser } = useRestoreUser();
 
 const isBanned = computed(() => props.user.status === 'banned');
-const isAdjustPointsDialogOpen = ref(false);
+const [openAdjustUserPointsDialog] = useOverlay(AdjustUserPointsDialog);
+const [openResetUserPasswordDialog] = useOverlay(ResetUserPasswordDialog);
 </script>
 
 <template>
@@ -29,12 +32,13 @@ const isAdjustPointsDialogOpen = ref(false);
         <MoreHorizontal class="h-4 w-4" />
       </Button>
     </DropdownMenuTrigger>
+
     <DropdownMenuContent align="end" class="w-50">
       <DropdownMenuLabel>操作</DropdownMenuLabel>
 
       <DropdownMenuSeparator />
 
-      <DropdownMenuItem @click="isAdjustPointsDialogOpen = true">
+      <DropdownMenuItem @click="openAdjustUserPointsDialog({ user })" :disabled="isBanned">
         <Coins />
         操作积分
       </DropdownMenuItem>
@@ -42,6 +46,11 @@ const isAdjustPointsDialogOpen = ref(false);
       <DropdownMenuItem @click="emit('viewPointAccounts')">
         <WalletCards />
         查看积分账户
+      </DropdownMenuItem>
+
+      <DropdownMenuItem @click="openResetUserPasswordDialog({ user })">
+        <KeyRound />
+        重置密码
       </DropdownMenuItem>
 
       <DropdownMenuSeparator />
@@ -62,6 +71,4 @@ const isAdjustPointsDialogOpen = ref(false);
       </DropdownMenuItem>
     </DropdownMenuContent>
   </DropdownMenu>
-
-  <AdjustUserPointsDialog v-model:open="isAdjustPointsDialogOpen" :user="user" />
 </template>

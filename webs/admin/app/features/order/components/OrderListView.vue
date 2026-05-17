@@ -17,7 +17,7 @@ export type Order = NonNullable<OrderListPage>['items'][number];
 </script>
 
 <script setup lang="ts">
-const columns: ColumnDef<Order>[] = [
+const columns = [
   { accessorKey: 'orderNo', header: '订单号' },
   { accessorKey: 'productNameSnapshot', header: '商品' },
   { accessorKey: 'pointTypeNameSnapshot', header: '积分类型' },
@@ -25,7 +25,7 @@ const columns: ColumnDef<Order>[] = [
   { accessorKey: 'status', header: '状态' },
   { accessorKey: 'createdAt', header: '创建时间' },
   { id: 'actions', enableHiding: false },
-];
+] satisfies ColumnDef<Order>[];
 
 const {
   stateRefs: { page, pageSize, keyword, status },
