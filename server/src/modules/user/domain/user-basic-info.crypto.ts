@@ -7,10 +7,10 @@ export interface UserBasicInfo {
 }
 
 export interface UserEncryptedBasicInfo {
-  phoneEncrypted: string | null;
-  emailEncrypted: string | null;
-  phoneHash: string | null;
-  addressEncrypted: string | null;
+  phoneEncrypted: string | null | undefined;
+  emailEncrypted: string | null | undefined;
+  phoneHash: string | null | undefined;
+  addressEncrypted: string | null | undefined;
 }
 
 const ALGORITHM = 'aes-256-gcm';
@@ -33,6 +33,19 @@ export class UserBasicInfoCrypto {
     };
   }
 
+  encryptBasicInfoPatch(input: UserBasicInfo): Partial<UserEncryptedBasicInfo> {
+    return {
+      ...('phone' in input
+        ? {
+            phoneEncrypted: this.encryptNullable(input.phone),
+            phoneHash: this.hashNullable(input.phone),
+          }
+        : {}),
+      ...('email' in input ? { emailEncrypted: this.encryptNullable(input.email) } : {}),
+      ...('address' in input ? { addressEncrypted: this.encryptNullable(input.address) } : {}),
+    };
+  }
+
   decryptBasicInfo(input: {
     phoneEncrypted?: string | null;
     emailEncrypted?: string | null;
@@ -46,6 +59,10 @@ export class UserBasicInfoCrypto {
   }
 
   encryptNullable(value: string | null | undefined) {
+    if (value === undefined) {
+      return undefined;
+    }
+
     if (!value) {
       return null;
     }
@@ -84,6 +101,10 @@ export class UserBasicInfoCrypto {
   }
 
   hashNullable(value: string | null | undefined) {
+    if (value === undefined) {
+      return undefined;
+    }
+
     if (!value) {
       return null;
     }

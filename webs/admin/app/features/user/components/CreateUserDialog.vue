@@ -4,18 +4,14 @@ import { UserRegisterSchema, type UserRegisterBody } from '@internal/shared/user
 import { useForm } from '@tanstack/vue-form';
 import { Button } from '@web/ui/components/ui/button';
 import { Loader2 } from 'lucide-vue-next';
-import * as v from 'valibot';
+
+import { optionalText } from '~/utils/form';
 
 import { useCreateUser } from '../mutations';
 
 const open = defineModel<boolean>('open', { default: false });
 
 const { mutateAsync: createUser, isLoading } = useCreateUser();
-
-const OptionalEmailSchema = v.optional(
-  v.pipe(v.string('请输入邮箱'), v.email('请输入有效的邮箱地址')),
-);
-const OptionalTextSchema = v.optional(v.string());
 
 function createDefaultValues(): UserRegisterBody {
   return {
@@ -26,12 +22,6 @@ function createDefaultValues(): UserRegisterBody {
     phone: undefined,
     address: undefined,
   };
-}
-
-function optionalText(value: string) {
-  const trimmed = value.trim();
-
-  return trimmed || undefined;
 }
 
 const form = useForm({
@@ -122,11 +112,7 @@ watch(open, isOpen => {
           </Field>
         </form.Field>
 
-        <form.Field
-          name="email"
-          :validators="{ onSubmit: OptionalEmailSchema, onChange: OptionalEmailSchema }"
-          #default="{ field }"
-        >
+        <form.Field name="email" #default="{ field }">
           <Field :data-invalid="field.state.meta.errors.length > 0">
             <FieldLabel :for="field.name">邮箱</FieldLabel>
             <Input
@@ -142,11 +128,7 @@ watch(open, isOpen => {
           </Field>
         </form.Field>
 
-        <form.Field
-          name="phone"
-          :validators="{ onSubmit: OptionalTextSchema, onChange: OptionalTextSchema }"
-          #default="{ field }"
-        >
+        <form.Field name="phone" #default="{ field }">
           <Field :data-invalid="field.state.meta.errors.length > 0">
             <FieldLabel :for="field.name">手机号</FieldLabel>
             <Input
@@ -161,11 +143,7 @@ watch(open, isOpen => {
           </Field>
         </form.Field>
 
-        <form.Field
-          name="address"
-          :validators="{ onSubmit: OptionalTextSchema, onChange: OptionalTextSchema }"
-          #default="{ field }"
-        >
+        <form.Field name="address" #default="{ field }">
           <Field :data-invalid="field.state.meta.errors.length > 0">
             <FieldLabel :for="field.name">收货地址</FieldLabel>
             <Input

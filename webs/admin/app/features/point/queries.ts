@@ -8,31 +8,31 @@ export const POINT_QUERY_KEYS = {
   conversions: () => [...POINT_QUERY_KEYS.root, 'conversions'] as const,
 };
 
-export const pointTypeListQuery = defineQueryOptions(() => ({
-  key: POINT_QUERY_KEYS.types(),
-  query: () => {
-    const { $api } = useNuxtApp();
+export const pointTypeListQuery = defineQueryOptions(() => {
+  const { $api } = useNuxtApp();
 
-    return $api.points.types.get().then(res => res.data);
-  },
-}));
+  return {
+    key: POINT_QUERY_KEYS.types(),
+    query: () => $api.points.types.get().then(res => res.data),
+  };
+});
 
 export const pointTransactionPageQuery = defineQueryOptions(
-  (query: PointTransactionPageQuery = {}) => ({
-    key: POINT_QUERY_KEYS.transactions(query),
-    query: () => {
-      const { $api } = useNuxtApp();
-
-      return $api.points.transactions.get({ query }).then(res => res.data);
-    },
-  }),
-);
-
-export const pointConversionListQuery = defineQueryOptions(() => ({
-  key: POINT_QUERY_KEYS.conversions(),
-  query: () => {
+  (query: PointTransactionPageQuery = {}) => {
     const { $api } = useNuxtApp();
 
-    return $api.points.conversions.get().then(res => res.data);
+    return {
+      key: POINT_QUERY_KEYS.transactions(query),
+      query: () => $api.points.transactions.get({ query }).then(res => res.data),
+    };
   },
-}));
+);
+
+export const pointConversionListQuery = defineQueryOptions(() => {
+  const { $api } = useNuxtApp();
+
+  return {
+    key: POINT_QUERY_KEYS.conversions(),
+    query: () => $api.points.conversions.get().then(res => res.data),
+  };
+});

@@ -162,7 +162,7 @@ export type CreateRewardRuleBody = v.InferOutput<typeof CreateRewardRuleSchema>;
  */
 export const UpdateRewardRuleSchema = v.object({
   name: v.optional(RewardRuleNameSchema),
-  description: v.optional(RewardRuleDescriptionSchema),
+  description: v.nullish(RewardRuleDescriptionSchema),
 
   conditions: v.optional(RewardRuleConditionSchema),
 
@@ -177,9 +177,9 @@ export const UpdateRewardRuleSchema = v.object({
   ),
 
   enabled: v.optional(v.pipe(v.boolean('请选择是否启用'), v.description('是否启用'))),
-  group: v.optional(RewardRuleGroupSchema),
+  group: v.nullish(RewardRuleGroupSchema),
 
-  startsAt: v.optional(
+  startsAt: v.nullish(
     v.pipe(
       v.number('请输入生效开始时间戳'),
       v.integer('生效开始时间戳必须是整数'),
@@ -187,7 +187,7 @@ export const UpdateRewardRuleSchema = v.object({
       v.description('生效开始时间戳'),
     ),
   ),
-  endsAt: v.optional(
+  endsAt: v.nullish(
     v.pipe(
       v.number('请输入生效结束时间戳'),
       v.integer('生效结束时间戳必须是整数'),

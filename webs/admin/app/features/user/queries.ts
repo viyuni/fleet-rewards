@@ -5,11 +5,11 @@ export const USER_QUERY_KEYS = {
   page: (query: UserPageQuery = {}) => [...USER_QUERY_KEYS.root, 'page', query] as const,
 };
 
-export const userPageQuery = defineQueryOptions((query: UserPageQuery = {}) => ({
-  key: USER_QUERY_KEYS.page(query),
-  query: () => {
-    const { $api } = useNuxtApp();
+export const userPageQuery = defineQueryOptions((query: UserPageQuery = {}) => {
+  const { $api } = useNuxtApp();
 
-    return $api.users.get({ query }).then(res => res.data);
-  },
-}));
+  return {
+    key: USER_QUERY_KEYS.page(query),
+    query: () => $api.users.get({ query }).then(res => res.data),
+  };
+});

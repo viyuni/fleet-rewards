@@ -3,6 +3,10 @@ const { $api } = useNuxtApp();
 
 const page = ref(1);
 
+const {
+  public: { apiBaseUrl },
+} = useRuntimeConfig();
+
 const { data } = useQuery({
   key: () => ['products', page.value],
   async query() {
@@ -32,7 +36,7 @@ const { data } = useQuery({
       >
         <img
           v-if="item.cover"
-          :src="`http://192.168.2.4:3600/images/${item.cover}`"
+          :src="`${apiBaseUrl}images/${item.cover}`"
           class="w-full"
           loading="lazy"
         />

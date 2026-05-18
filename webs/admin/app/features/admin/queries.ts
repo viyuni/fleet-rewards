@@ -5,11 +5,11 @@ export const ADMIN_QUERY_KEYS = {
   page: (query: AdminPageQuery = {}) => [...ADMIN_QUERY_KEYS.root, 'page', query] as const,
 };
 
-export const adminPageQuery = defineQueryOptions((query: AdminPageQuery = {}) => ({
-  key: ADMIN_QUERY_KEYS.page(query),
-  query: () => {
-    const { $api } = useNuxtApp();
+export const adminPageQuery = defineQueryOptions((query: AdminPageQuery = {}) => {
+  const { $api } = useNuxtApp();
 
-    return $api.admin.get({ query }).then(res => res.data);
-  },
-}));
+  return {
+    key: ADMIN_QUERY_KEYS.page(query),
+    query: () => $api.admin.get({ query }).then(res => res.data),
+  };
+});

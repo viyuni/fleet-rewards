@@ -4,6 +4,8 @@ import { useForm } from '@tanstack/vue-form';
 import { Button } from '@web/ui/components/ui/button';
 import { Loader2 } from 'lucide-vue-next';
 
+import { optionalText } from '~/utils/form';
+
 import { useAdjustProductStock } from '../mutations';
 import type { Product } from './ProductListView.vue';
 
@@ -14,12 +16,6 @@ const props = defineProps<{
 const open = defineModel<boolean>('open', { default: false });
 
 const { mutateAsync: adjustProductStock, isLoading } = useAdjustProductStock();
-
-function optionalText(value: string) {
-  const trimmed = value.trim();
-
-  return trimmed || undefined;
-}
 
 function createDefaultValues(): StockAdjustmentBody {
   return {

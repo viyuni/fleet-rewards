@@ -42,7 +42,7 @@ export type AdminCreateBody = v.InferOutput<typeof AdminCreateSchema>;
  */
 export const SuperAdminUpdateSchema = v.object({
   username: v.optional(UsernameSchema),
-  remark: v.optional(
+  remark: v.nullish(
     v.pipe(
       v.string('请输入备注'),
       v.maxLength(500, '备注不能超过 500 个字符'),

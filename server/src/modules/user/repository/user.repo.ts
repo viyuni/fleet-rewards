@@ -1,9 +1,9 @@
-import type { UpdateUserBody, UserPageQuery } from '@internal/shared/user';
+import type { UserPageQuery } from '@internal/shared/user';
 import { and, eq } from 'drizzle-orm';
 
 import type { DbExecutor } from '#db';
 import { defineSelectColumns, QueryPageBuilder } from '#db/helper';
-import type { InsertUser } from '#db/schema';
+import type { InsertUser, UpdateUser } from '#db/schema';
 import { users } from '#db/schema';
 import { BadRequestError } from '#utils';
 
@@ -136,7 +136,7 @@ export class UserRepository {
     return user;
   }
 
-  async update(userId: string, data: UpdateUserBody) {
+  async update(userId: string, data: UpdateUser) {
     const [user] = await this.db
       .update(users)
       .set(data)

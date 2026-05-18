@@ -4,6 +4,8 @@ import { useForm } from '@tanstack/vue-form';
 import { Button } from '@web/ui/components/ui/button';
 import { Loader2 } from 'lucide-vue-next';
 
+import { optionalText } from '~/utils/form';
+
 import UserSelect from '../../user/components/UserSelect.vue';
 import { useConvertPoint } from '../mutations';
 import type { PointConversion } from './PointConversionListView.vue';
@@ -29,12 +31,6 @@ const toPointTypeName = computed(
     props.conversion.toPointType?.name ??
     props.conversion.toPointTypeId,
 );
-
-function optionalText(value: string) {
-  const trimmed = value.trim();
-
-  return trimmed || undefined;
-}
 
 function createDefaultValues(ruleId: string): ConvertPointBody {
   return {

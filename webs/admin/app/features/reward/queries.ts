@@ -7,20 +7,20 @@ export const REWARD_QUERY_KEYS = {
     [...REWARD_QUERY_KEYS.root, 'biliGuardEvents', query] as const,
 };
 
-export const rewardRuleListQuery = defineQueryOptions(() => ({
-  key: REWARD_QUERY_KEYS.rules(),
-  query: () => {
-    const { $api } = useNuxtApp();
+export const rewardRuleListQuery = defineQueryOptions(() => {
+  const { $api } = useNuxtApp();
 
-    return $api.rewards.rules.get().then(res => res.data);
-  },
-}));
+  return {
+    key: REWARD_QUERY_KEYS.rules(),
+    query: () => $api.rewards.rules.get().then(res => res.data),
+  };
+});
 
-export const biliGuardEventPageQuery = defineQueryOptions((query: BiliEventPageQuery = {}) => ({
-  key: REWARD_QUERY_KEYS.biliGuardEvents(query),
-  query: () => {
-    const { $api } = useNuxtApp();
+export const biliGuardEventPageQuery = defineQueryOptions((query: BiliEventPageQuery = {}) => {
+  const { $api } = useNuxtApp();
 
-    return $api.rewards.biliGuard.get({ query }).then(res => res.data);
-  },
-}));
+  return {
+    key: REWARD_QUERY_KEYS.biliGuardEvents(query),
+    query: () => $api.rewards.biliGuard.get({ query }).then(res => res.data),
+  };
+});

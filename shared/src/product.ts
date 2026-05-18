@@ -188,9 +188,9 @@ export type CreateProductBody = v.InferOutput<typeof CreateProductSchema>;
 export const UpdateProductSchema = v.object({
   name: v.optional(ProductNameSchema),
 
-  description: v.optional(ProductDescriptionSchema),
+  description: v.nullish(ProductDescriptionSchema),
   cover: v.optional(ProductCoverSchema),
-  detail: v.optional(ProductDetailSchema),
+  detail: v.nullish(ProductDetailSchema),
 
   pointTypeId: v.optional(ProductPointTypeIdSchema),
   price: v.optional(ProductPriceSchema),
@@ -200,7 +200,7 @@ export const UpdateProductSchema = v.object({
   deliveryType: v.optional(ProductDeliveryTypeSchema),
   allowCancel: v.optional(ProductAllowCancelSchema),
   sort: v.optional(ProductSortSchema),
-  metadata: v.optional(ProductMetadataSchema),
+  metadata: v.nullish(ProductMetadataSchema),
 });
 
 export type UpdateProductBody = v.InferOutput<typeof UpdateProductSchema>;

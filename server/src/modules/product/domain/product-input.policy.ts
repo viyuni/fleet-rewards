@@ -3,7 +3,7 @@ import type { CreateProductBody, UpdateProductBody } from '@internal/shared/prod
 import { ProductInvalidInputError } from './errors';
 
 export class ProductInputPolicy {
-  static assertValid(input: Partial<CreateProductBody & UpdateProductBody>) {
+  static assertValid(input: CreateProductBody | UpdateProductBody) {
     if (input.price !== undefined) {
       ProductInputPolicy.assertPositiveInteger(input.price, '商品价格必须是正整数');
     }

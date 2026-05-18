@@ -10,6 +10,8 @@ import { Button } from '@web/ui/components/ui/button';
 import { useOverlay } from '@web/ui/components/ui/overlay';
 import { ImagePlus, Loader2, Upload, X } from 'lucide-vue-next';
 
+import { optionalText } from '~/utils/form';
+
 import { pointTypeListQuery } from '../../point/queries';
 import { useCreateProduct, useUpdateProduct } from '../mutations';
 import ProductCoverCropDialog, { type ProductCoverCropResult } from './ProductCoverCropDialog.vue';
@@ -55,12 +57,6 @@ const {
 } = useRuntimeConfig();
 const imageBaseUrl = computed(() => apiBaseUrl.replace(/\/$/, ''));
 const currentCoverUrl = computed(() => getImageUrl(props.product?.cover));
-
-function optionalText(value: string) {
-  const trimmed = value.trim();
-
-  return trimmed || undefined;
-}
 
 function createDefaultValues(product?: Product): CreateProductBody {
   return {
@@ -198,23 +194,24 @@ function omitUndefined<T extends Record<string, unknown>>(value: T) {
   ) as Partial<T>;
 }
 
-function toProductPayload(value: CreateProductBody): ProductPayload {
+function toProductPayload(value: CreateProductBody, options: { omitUndefined?: boolean } = {}) {
   const { allowCancel, metadata, ...product } = value;
-
-  return omitUndefined({
+  const payload = {
     ...product,
     allowCancel: allowCancel === undefined ? undefined : String(allowCancel),
     metadata: metadata === undefined ? undefined : JSON.stringify(metadata),
     price: String(value.price),
     sort: value.sort === undefined ? undefined : String(value.sort),
     stock: value.stock === undefined ? undefined : String(value.stock),
-  }) as ProductPayload;
+  } as ProductPayload;
+
+  return options.omitUndefined === false ? payload : (omitUndefined(payload) as ProductPayload);
 }
 
 const form = useForm({
   defaultValues: createDefaultValues(props.product),
   async onSubmit({ value }: { value: CreateProductBody }) {
-    const body = toProductPayload(value);
+    const body = toProductPayload(value, { omitUndefined: !props.product });
 
     if (croppedCoverFile.value) {
       body.cover = croppedCoverFile.value;

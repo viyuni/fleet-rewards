@@ -1,65 +1,58 @@
 <script setup lang="ts">
-import type { AdminCreateBody, SuperAdminUpdateBody } from '@internal/shared/admin';
+import { UsernameSchema } from '@internal/shared/common';
+import { UserUpdateSchema, type UpdateUserBody } from '@internal/shared/user';
 import { useForm } from '@tanstack/vue-form';
 import { Button } from '@web/ui/components/ui/button';
 import { Loader2 } from 'lucide-vue-next';
 
 import { optionalText } from '~/utils/form';
 
-import { useCreateAdmin, useUpdateAdmin } from '../mutations';
-import type { Admin } from './AdminListView.vue';
+import { useUpdateUser } from '../mutations';
+import type { User } from '../types';
 
 const props = defineProps<{
-  admin?: Admin;
+  user: User;
 }>();
 
 const open = defineModel<boolean>('open', { default: false });
 
-const { mutateAsync: createAdmin, isLoading: isCreating } = useCreateAdmin();
-const { mutateAsync: updateAdmin, isLoading: isUpdating } = useUpdateAdmin();
+const { mutateAsync: updateUser, isLoading } = useUpdateUser();
 
-const isEditing = computed(() => Boolean(props.admin));
-const isLoading = computed(() => isCreating.value || isUpdating.value);
-
-function createDefaultValues(admin?: Admin): AdminCreateBody {
+function createDefaultValues(user: User): UpdateUserBody {
   return {
-    uid: admin?.uid ?? '',
-    username: admin?.username ?? '',
-    password: '',
-    remark: admin?.remark ?? undefined,
+    username: user.username,
+    email: user.email ?? undefined,
+    phone: user.phone ?? undefined,
+    address: user.address ?? undefined,
   };
 }
 
 const form = useForm({
-  defaultValues: createDefaultValues(props.admin),
-  async onSubmit({ value }: { value: AdminCreateBody }) {
-    if (props.admin) {
-      await updateAdmin({
-        adminId: props.admin.id,
-        body: {
-          username: value.username,
-          remark: value.remark,
-        } satisfies SuperAdminUpdateBody,
-      });
-    } else {
-      await createAdmin(value);
-    }
+  validators: {
+    onSubmit: UserUpdateSchema,
+  },
+  defaultValues: createDefaultValues(props.user),
+  async onSubmit({ value }: { value: UpdateUserBody }) {
+    await updateUser({
+      userId: props.user.id,
+      body: value,
+    });
 
-    form.reset(createDefaultValues(props.admin));
+    form.reset(createDefaultValues(props.user));
     open.value = false;
   },
 });
 
 watch(
-  () => props.admin,
-  admin => {
-    form.reset(createDefaultValues(admin));
+  () => props.user,
+  user => {
+    form.reset(createDefaultValues(user));
   },
 );
 
 watch(open, isOpen => {
   if (!isOpen) {
-    form.reset(createDefaultValues(props.admin));
+    form.reset(createDefaultValues(props.user));
   }
 });
 </script>
@@ -68,65 +61,55 @@ watch(open, isOpen => {
   <Dialog v-model:open="open">
     <DialogContent class="sm:max-w-md">
       <DialogHeader>
-        <DialogTitle>{{ isEditing ? '编辑管理员' : '添加管理员' }}</DialogTitle>
-        <DialogDescription>
-          {{ isEditing ? '更新管理员资料。' : '创建普通管理员账号。' }}
-        </DialogDescription>
+        <DialogTitle>编辑用户</DialogTitle>
+        <DialogDescription>更新用户基础资料。</DialogDescription>
       </DialogHeader>
 
       <form class="space-y-4" @submit.prevent="form.handleSubmit">
-        <form.Field name="uid" #default="{ field }">
-          <Field :data-invalid="field.state.meta.errors.length > 0">
-            <FieldLabel :for="field.name">UID</FieldLabel>
-            <Input
-              :id="field.name"
-              :model-value="field.state.value"
-              :aria-invalid="field.state.meta.errors.length > 0"
-              :disabled="isEditing"
-              inputmode="numeric"
-              @blur="field.handleBlur"
-              @input="field.handleChange($event.target.value)"
-            />
+        <Field>
+          <FieldLabel>UID</FieldLabel>
+          <Input :model-value="user.biliUid" disabled />
+        </Field>
 
-            <FieldError :errors="field.state.meta.errors" />
-          </Field>
-        </form.Field>
-
-        <form.Field name="username" #default="{ field }">
+        <form.Field
+          name="username"
+          :validators="{ onSubmit: UsernameSchema, onChange: UsernameSchema }"
+          #default="{ field }"
+        >
           <Field :data-invalid="field.state.meta.errors.length > 0">
             <FieldLabel :for="field.name">用户名</FieldLabel>
             <Input
               :id="field.name"
               :model-value="field.state.value"
               :aria-invalid="field.state.meta.errors.length > 0"
+              placeholder="3-32 位用户名"
               @blur="field.handleBlur"
               @input="field.handleChange($event.target.value)"
             />
-
             <FieldError :errors="field.state.meta.errors" />
           </Field>
         </form.Field>
 
-        <form.Field v-if="!isEditing" name="password" #default="{ field }">
+        <form.Field name="email" #default="{ field }">
           <Field :data-invalid="field.state.meta.errors.length > 0">
-            <FieldLabel :for="field.name">初始密码</FieldLabel>
+            <FieldLabel :for="field.name">邮箱</FieldLabel>
             <Input
               :id="field.name"
-              :model-value="field.state.value"
+              :model-value="field.state.value ?? ''"
               :aria-invalid="field.state.meta.errors.length > 0"
-              type="password"
+              type="email"
+              placeholder="可选"
               @blur="field.handleBlur"
-              @input="field.handleChange($event.target.value)"
+              @input="field.handleChange(optionalText($event.target.value))"
             />
-
             <FieldError :errors="field.state.meta.errors" />
           </Field>
         </form.Field>
 
-        <form.Field name="remark" #default="{ field }">
+        <form.Field name="phone" #default="{ field }">
           <Field :data-invalid="field.state.meta.errors.length > 0">
-            <FieldLabel :for="field.name">备注</FieldLabel>
-            <Textarea
+            <FieldLabel :for="field.name">手机号</FieldLabel>
+            <Input
               :id="field.name"
               :model-value="field.state.value ?? ''"
               :aria-invalid="field.state.meta.errors.length > 0"
@@ -134,7 +117,21 @@ watch(open, isOpen => {
               @blur="field.handleBlur"
               @input="field.handleChange(optionalText($event.target.value))"
             />
+            <FieldError :errors="field.state.meta.errors" />
+          </Field>
+        </form.Field>
 
+        <form.Field name="address" #default="{ field }">
+          <Field :data-invalid="field.state.meta.errors.length > 0">
+            <FieldLabel :for="field.name">收货地址</FieldLabel>
+            <Input
+              :id="field.name"
+              :model-value="field.state.value ?? ''"
+              :aria-invalid="field.state.meta.errors.length > 0"
+              placeholder="可选"
+              @blur="field.handleBlur"
+              @input="field.handleChange(optionalText($event.target.value))"
+            />
             <FieldError :errors="field.state.meta.errors" />
           </Field>
         </form.Field>
@@ -145,7 +142,7 @@ watch(open, isOpen => {
           </DialogClose>
           <Button type="submit" :disabled="isLoading">
             <Loader2 v-if="isLoading" class="animate-spin" />
-            {{ isEditing ? '保存' : '创建' }}
+            保存
           </Button>
         </DialogFooter>
       </form>

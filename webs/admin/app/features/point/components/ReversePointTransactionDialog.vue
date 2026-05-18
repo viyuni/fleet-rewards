@@ -6,6 +6,8 @@ import {
 import { useForm } from '@tanstack/vue-form';
 import { Button } from '@web/ui/components/ui/button';
 
+import { optionalText } from '~/utils/form';
+
 import type { PointTransaction } from './PointTransactionListView.vue';
 
 const props = defineProps<{
@@ -31,12 +33,6 @@ function createDefaultValues(transactionId: string): ReversalPointTransactionBod
     transactionId,
     remark: undefined,
   };
-}
-
-function optionalText(value: string) {
-  const trimmed = value.trim();
-
-  return trimmed || undefined;
 }
 
 const form = useForm({

@@ -7,6 +7,8 @@ import { useForm } from '@tanstack/vue-form';
 import { Button } from '@web/ui/components/ui/button';
 import { Loader2 } from 'lucide-vue-next';
 
+import { fromDatetimeLocalValue, optionalText, toDatetimeLocalValue } from '~/utils/form';
+
 import { useCreatePointConversionRule, useUpdatePointConversionRule } from '../mutations';
 import { pointTypeListQuery } from '../queries';
 import type { PointConversion } from './PointConversionListView.vue';
@@ -27,32 +29,12 @@ const activePointTypes = computed(
 const isEditing = computed(() => Boolean(props.conversion));
 const isLoading = computed(() => isCreating.value || isUpdating.value);
 
-function optionalText(value: string) {
-  const trimmed = value.trim();
+type PointConversionRuleFormValues = Omit<CreatePointConversionRuleBody, 'endsAt' | 'startsAt'> & {
+  endsAt?: number;
+  startsAt?: number;
+};
 
-  return trimmed || undefined;
-}
-
-function optionalNumber(value: string) {
-  return value === '' ? undefined : Number(value);
-}
-
-function toDatetimeLocalValue(value: Date | string | null | undefined) {
-  if (!value) {
-    return '';
-  }
-
-  const date = value instanceof Date ? value : new Date(value);
-  const local = new Date(date.getTime() - date.getTimezoneOffset() * 60_000);
-
-  return local.toISOString().slice(0, 16);
-}
-
-function fromDatetimeLocalValue(value: string) {
-  return value ? new Date(value) : undefined;
-}
-
-function createDefaultValues(conversion?: PointConversion): CreatePointConversionRuleBody {
+function createDefaultValues(conversion?: PointConversion): PointConversionRuleFormValues {
   return {
     name: conversion?.name ?? '',
     description: conversion?.description ?? undefined,
@@ -63,21 +45,21 @@ function createDefaultValues(conversion?: PointConversion): CreatePointConversio
     minConvertAmount: conversion?.minConvertAmount ?? undefined,
     maxConvertAmount: conversion?.maxConvertAmount ?? undefined,
     enabled: conversion?.enabled ?? false,
-    startsAt: conversion?.startsAt ?? undefined,
-    endsAt: conversion?.endsAt ?? undefined,
+    startsAt: conversion?.startsAt ? new Date(conversion.startsAt).getTime() : undefined,
+    endsAt: conversion?.endsAt ? new Date(conversion.endsAt).getTime() : undefined,
   };
 }
 
 const form = useForm({
   defaultValues: createDefaultValues(props.conversion),
-  async onSubmit({ value }: { value: CreatePointConversionRuleBody }) {
+  async onSubmit({ value }: { value: PointConversionRuleFormValues }) {
     if (props.conversion) {
       await updateConversionRule({
         pointConversionRuleId: props.conversion.id,
-        body: value satisfies UpdatePointConversionRuleBody,
+        body: value as unknown as UpdatePointConversionRuleBody,
       });
     } else {
-      await createConversionRule(value);
+      await createConversionRule(value as unknown as CreatePointConversionRuleBody);
     }
 
     form.reset(createDefaultValues(props.conversion));
@@ -205,7 +187,7 @@ watch(open, isOpen => {
               step="1"
               placeholder="不限制"
               @blur="field.handleBlur"
-              @input="field.handleChange(optionalNumber($event.target.value))"
+              @input="field.handleChange($event.target.value)"
             />
 
             <FieldError :errors="field.state.meta.errors" />
@@ -224,20 +206,7 @@ watch(open, isOpen => {
               step="1"
               placeholder="不限制"
               @blur="field.handleBlur"
-              @input="field.handleChange(optionalNumber($event.target.value))"
-            />
-
-            <FieldError :errors="field.state.meta.errors" />
-          </Field>
-        </form.Field>
-
-        <form.Field name="enabled" #default="{ field }">
-          <Field :data-invalid="field.state.meta.errors.length > 0">
-            <FieldLabel :for="field.name">启用状态</FieldLabel>
-            <Switch
-              :model-value="field.state.value ?? false"
-              :aria-invalid="field.state.meta.errors.length > 0"
-              @update:model-value="field.handleChange(Boolean($event))"
+              @input="field.handleChange($event.target.value)"
             />
 
             <FieldError :errors="field.state.meta.errors" />
@@ -252,6 +221,7 @@ watch(open, isOpen => {
               :model-value="toDatetimeLocalValue(field.state.value)"
               :aria-invalid="field.state.meta.errors.length > 0"
               type="datetime-local"
+              step="1"
               @blur="field.handleBlur"
               @input="field.handleChange(fromDatetimeLocalValue($event.target.value))"
             />
@@ -268,8 +238,22 @@ watch(open, isOpen => {
               :model-value="toDatetimeLocalValue(field.state.value)"
               :aria-invalid="field.state.meta.errors.length > 0"
               type="datetime-local"
+              step="1"
               @blur="field.handleBlur"
               @input="field.handleChange(fromDatetimeLocalValue($event.target.value))"
+            />
+
+            <FieldError :errors="field.state.meta.errors" />
+          </Field>
+        </form.Field>
+
+        <form.Field name="enabled" #default="{ field }">
+          <Field :data-invalid="field.state.meta.errors.length > 0">
+            <FieldLabel :for="field.name">启用状态</FieldLabel>
+            <Switch
+              :model-value="field.state.value ?? false"
+              :aria-invalid="field.state.meta.errors.length > 0"
+              @update:model-value="field.handleChange(Boolean($event))"
             />
 
             <FieldError :errors="field.state.meta.errors" />

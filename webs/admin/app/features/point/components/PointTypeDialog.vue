@@ -8,6 +8,8 @@ import { useForm } from '@tanstack/vue-form';
 import { Button } from '@web/ui/components/ui/button';
 import { Loader2 } from 'lucide-vue-next';
 
+import { optionalText } from '~/utils/form';
+
 import { useCreatePointType, useUpdatePointType } from '../mutations';
 import type { PointType } from './PointTypeListView.vue';
 
@@ -28,12 +30,6 @@ function createDefaultValues(pointType?: PointType): CreatePointTypeBody {
     name: pointType?.name ?? '',
     description: pointType?.description ?? undefined,
   };
-}
-
-function optionalText(value: string) {
-  const trimmed = value.trim();
-
-  return trimmed || undefined;
 }
 
 const form = useForm({

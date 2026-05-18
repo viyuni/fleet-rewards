@@ -104,8 +104,8 @@ export type CreatePointConversionRuleBody = v.InferOutput<typeof CreatePointConv
  */
 export const UpdatePointConversionRuleSchema = v.object({
   name: v.optional(ConversionRuleNameSchema),
-  description: v.optional(ConversionRuleDescriptionSchema),
-  remark: v.optional(ConversionRuleRemarkSchema),
+  description: v.nullish(ConversionRuleDescriptionSchema),
+  remark: v.nullish(ConversionRuleRemarkSchema),
 
   fromPointTypeId: v.optional(
     v.pipe(v.string('请输入来源积分类型 ID'), v.description('来源积分类型 ID')),
@@ -123,7 +123,7 @@ export const UpdatePointConversionRuleSchema = v.object({
     ),
   ),
 
-  minConvertAmount: v.optional(
+  minConvertAmount: v.nullish(
     v.pipe(
       v.number('请输入单次最小转换数量'),
       v.integer('单次最小转换数量必须是整数'),
@@ -131,7 +131,7 @@ export const UpdatePointConversionRuleSchema = v.object({
       v.description('单次最小转换数量'),
     ),
   ),
-  maxConvertAmount: v.optional(
+  maxConvertAmount: v.nullish(
     v.pipe(
       v.number('请输入单次最大转换数量'),
       v.integer('单次最大转换数量必须是整数'),
@@ -142,7 +142,7 @@ export const UpdatePointConversionRuleSchema = v.object({
 
   enabled: v.optional(v.pipe(v.boolean('请选择是否启用'), v.description('是否启用'))),
 
-  startsAt: v.optional(
+  startsAt: v.nullish(
     v.pipe(
       v.number('请输入生效时间戳'),
       v.integer('生效时间戳必须是整数'),
@@ -150,7 +150,7 @@ export const UpdatePointConversionRuleSchema = v.object({
       v.description('生效时间戳'),
     ),
   ),
-  endsAt: v.optional(
+  endsAt: v.nullish(
     v.pipe(
       v.number('请输入失效时间戳'),
       v.integer('失效时间戳必须是整数'),

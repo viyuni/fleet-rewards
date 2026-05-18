@@ -8,20 +8,20 @@ export const PRODUCT_QUERY_KEYS = {
     [...PRODUCT_QUERY_KEYS.root, 'stockMovements', query] as const,
 };
 
-export const productPageQuery = defineQueryOptions((query: ProductPageQuery = {}) => ({
-  key: PRODUCT_QUERY_KEYS.page(query),
-  query: () => {
-    const { $api } = useNuxtApp();
+export const productPageQuery = defineQueryOptions((query: ProductPageQuery = {}) => {
+  const { $api } = useNuxtApp();
 
-    return $api.products.get({ query }).then(res => res.data);
-  },
-}));
+  return {
+    key: PRODUCT_QUERY_KEYS.page(query),
+    query: () => $api.products.get({ query }).then(res => res.data),
+  };
+});
 
-export const stockMovementPageQuery = defineQueryOptions((query: StockMovementPageQuery = {}) => ({
-  key: PRODUCT_QUERY_KEYS.stockMovements(query),
-  query: () => {
-    const { $api } = useNuxtApp();
+export const stockMovementPageQuery = defineQueryOptions((query: StockMovementPageQuery = {}) => {
+  const { $api } = useNuxtApp();
 
-    return $api.products.stock.movements.get({ query }).then(res => res.data);
-  },
-}));
+  return {
+    key: PRODUCT_QUERY_KEYS.stockMovements(query),
+    query: () => $api.products.stock.movements.get({ query }).then(res => res.data),
+  };
+});

@@ -49,7 +49,7 @@ async function confirm() {
           ref="cropper"
           :src="src"
           :preview-size="previewSize"
-          :output-size="256"
+          :output-size="512"
         />
       </div>
 

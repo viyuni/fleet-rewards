@@ -61,7 +61,7 @@ export type CreatePointTypeBody = v.InferOutput<typeof CreatePointTypeSchema>;
  */
 export const UpdatePointTypeSchema = v.object({
   name: v.optional(PointTypeNameSchema),
-  description: v.optional(PointTypeDescriptionSchema),
+  description: v.nullish(PointTypeDescriptionSchema),
 });
 
 export type UpdatePointTypeBody = v.InferOutput<typeof UpdatePointTypeSchema>;

@@ -1,11 +1,20 @@
 <script setup lang="ts">
 import { Button } from '@web/ui/components/ui/button';
 import { useOverlay } from '@web/ui/components/ui/overlay';
-import { MoreHorizontal, WalletCards, Coins, Ban, RotateCcw, KeyRound } from 'lucide-vue-next';
+import {
+  MoreHorizontal,
+  WalletCards,
+  Coins,
+  Ban,
+  RotateCcw,
+  KeyRound,
+  Pencil,
+} from 'lucide-vue-next';
 
 import { useBanUser, useRestoreUser } from '../mutations';
 import type { User } from '../types';
 import AdjustUserPointsDialog from './AdjustUserPointsDialog.vue';
+import EditUserDialog from './EditUserDialog.vue';
 import ResetUserPasswordDialog from './ResetUserPasswordDialog.vue';
 
 const props = defineProps<{
@@ -21,6 +30,7 @@ const { mutate: restoreUser, isLoading: isRestoringUser } = useRestoreUser();
 
 const isBanned = computed(() => props.user.status === 'banned');
 const [openAdjustUserPointsDialog] = useOverlay(AdjustUserPointsDialog);
+const [openEditUserDialog] = useOverlay(EditUserDialog);
 const [openResetUserPasswordDialog] = useOverlay(ResetUserPasswordDialog);
 </script>
 
@@ -37,6 +47,11 @@ const [openResetUserPasswordDialog] = useOverlay(ResetUserPasswordDialog);
       <DropdownMenuLabel>操作</DropdownMenuLabel>
 
       <DropdownMenuSeparator />
+
+      <DropdownMenuItem @click="openEditUserDialog({ user })">
+        <Pencil />
+        编辑信息
+      </DropdownMenuItem>
 
       <DropdownMenuItem @click="openAdjustUserPointsDialog({ user })" :disabled="isBanned">
         <Coins />

@@ -5,11 +5,11 @@ export const ORDER_QUERY_KEYS = {
   page: (query: OrderPageQuery = {}) => [...ORDER_QUERY_KEYS.root, 'page', query] as const,
 };
 
-export const orderPageQuery = defineQueryOptions((query: OrderPageQuery = {}) => ({
-  key: ORDER_QUERY_KEYS.page(query),
-  query: () => {
-    const { $api } = useNuxtApp();
+export const orderPageQuery = defineQueryOptions((query: OrderPageQuery = {}) => {
+  const { $api } = useNuxtApp();
 
-    return $api.orders.get({ query }).then(res => res.data);
-  },
-}));
+  return {
+    key: ORDER_QUERY_KEYS.page(query),
+    query: () => $api.orders.get({ query }).then(res => res.data),
+  };
+});

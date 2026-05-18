@@ -1,4 +1,9 @@
-import { UserIdParamsSchema, UserPageQuerySchema, UserRegisterSchema } from '@internal/shared/user';
+import {
+  UserIdParamsSchema,
+  UserPageQuerySchema,
+  UserRegisterSchema,
+  UserUpdateSchema,
+} from '@internal/shared/user';
 import Elysia from 'elysia';
 
 import { appContext } from '#apps/admin/context';
@@ -34,6 +39,20 @@ export const user = new Elysia({
       requiredAdminAuth: true,
       detail: {
         description: '用户注册',
+      },
+    },
+  )
+  .patch(
+    '/:userId',
+    async ({ params, body, userUseCase }) => {
+      return await userUseCase.update(params.userId, body);
+    },
+    {
+      params: UserIdParamsSchema,
+      body: UserUpdateSchema,
+      requiredAdminAuth: true,
+      detail: {
+        description: '更新用户信息',
       },
     },
   )

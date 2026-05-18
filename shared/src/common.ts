@@ -19,9 +19,10 @@ export const port = (defaultPort: number) =>
  */
 export const UsernameSchema = v.pipe(
   v.string('请输入用户名'),
+  v.nonEmpty('用户名不能为空'),
   v.minLength(3, '用户名不能少于 3 个字符'),
   v.maxLength(32, '用户名不能超过 32 个字符'),
-  v.regex(/^[A-Za-z0-9_-]+$/, '用户名只能包含字母、数字、下划线和连字符'),
+  v.regex(/^[\p{Script=Han}A-Za-z0-9_-]+$/u, '用户名只能包含中文、字母、数字、下划线和连字符'),
   v.description('用户名'),
 );
 

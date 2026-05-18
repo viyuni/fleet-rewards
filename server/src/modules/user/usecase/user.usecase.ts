@@ -134,20 +134,24 @@ export class UserUseCase {
   }
 
   async update(userId: string, data: UpdateUserBody) {
-    const user = await this.getAvailableById(userId);
+    const user = await this.deps.userRepo.findById(userId);
+    UserPolicy.assertExists(user);
 
-    const updatedUser = await this.deps.userRepo.update(user.id, {
-      ...data,
-      ...this.deps.userBasicInfoCrypto.encryptBasicInfo(data),
-    });
+    const updateData = {
+      ...(data.username === undefined ? {} : { username: data.username }),
+      ...this.deps.userBasicInfoCrypto.encryptBasicInfoPatch(data),
+    };
+
+    const updatedUser = await this.deps.userRepo.update(user.id, updateData);
+    const basicInfo = this.deps.userBasicInfoCrypto.decryptBasicInfo(updatedUser);
 
     return {
       id: updatedUser.id,
       biliUid: updatedUser.biliUid,
       username: updatedUser.username,
-      email: data.email,
-      phone: data.phone,
-      address: data.address,
+      email: basicInfo.email,
+      phone: basicInfo.phone,
+      address: basicInfo.address,
     };
   }
 

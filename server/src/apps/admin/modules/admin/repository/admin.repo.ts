@@ -1,9 +1,9 @@
-import type { AdminPageQuery, AdminUpdateBody } from '@internal/shared/admin';
+import type { AdminPageQuery } from '@internal/shared/admin';
 import { and, eq } from 'drizzle-orm';
 
 import type { DbExecutor } from '#db';
 import { QueryPageBuilder } from '#db/helper';
-import { admins, type InsertAdmin } from '#db/schema';
+import { admins, type InsertAdmin, type UpdateAdmin } from '#db/schema';
 import { BadRequestError, BaseErrors } from '#utils';
 
 export class AdminRepository {
@@ -53,7 +53,7 @@ export class AdminRepository {
     return admin;
   }
 
-  async update(adminId: string, input: AdminUpdateBody) {
+  async update(adminId: string, input: UpdateAdmin) {
     const [admin] = await this.db
       .update(admins)
       .set(input)

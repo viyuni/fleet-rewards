@@ -8,6 +8,8 @@ import { useForm } from '@tanstack/vue-form';
 import { Button } from '@web/ui/components/ui/button';
 import { Loader2 } from 'lucide-vue-next';
 
+import { fromDatetimeLocalValue, optionalText, toDatetimeLocalValue } from '~/utils/form';
+
 import { pointTypeListQuery } from '../../point/queries';
 import { useCreateRewardRule, useUpdateRewardRule } from '../mutations';
 import type { RewardRule } from './RewardRuleListView.vue';
@@ -34,28 +36,12 @@ const activePointTypes = computed(
 const isEditing = computed(() => Boolean(props.rule));
 const isLoading = computed(() => isCreating.value || isUpdating.value);
 
-function optionalText(value: string) {
-  const trimmed = value.trim();
+type RewardRuleFormValues = Omit<CreateRewardRuleBody, 'endsAt' | 'startsAt'> & {
+  endsAt?: number;
+  startsAt?: number;
+};
 
-  return trimmed || undefined;
-}
-
-function toDatetimeLocalValue(value: Date | string | null | undefined) {
-  if (!value) {
-    return '';
-  }
-
-  const date = value instanceof Date ? value : new Date(value);
-  const local = new Date(date.getTime() - date.getTimezoneOffset() * 60_000);
-
-  return local.toISOString().slice(0, 16);
-}
-
-function fromDatetimeLocalValue(value: string) {
-  return value ? new Date(value) : undefined;
-}
-
-function createDefaultValues(rule?: RewardRule): CreateRewardRuleBody {
+function createDefaultValues(rule?: RewardRule): RewardRuleFormValues {
   return {
     name: rule?.name ?? '',
     description: rule?.description ?? undefined,
@@ -67,8 +53,8 @@ function createDefaultValues(rule?: RewardRule): CreateRewardRuleBody {
     points: rule?.points ?? 1,
     enabled: rule?.enabled ?? false,
     group: rule?.group ?? undefined,
-    startsAt: rule?.startsAt ?? undefined,
-    endsAt: rule?.endsAt ?? undefined,
+    startsAt: rule?.startsAt ? new Date(rule.startsAt).getTime() : undefined,
+    endsAt: rule?.endsAt ? new Date(rule.endsAt).getTime() : undefined,
     priority: rule?.priority ?? 0,
   };
 }
@@ -94,14 +80,14 @@ function toggleGuardType(
 
 const form = useForm({
   defaultValues: createDefaultValues(props.rule),
-  async onSubmit({ value }: { value: CreateRewardRuleBody }) {
+  async onSubmit({ value }: { value: RewardRuleFormValues }) {
     if (props.rule) {
       await updateRewardRule({
         rewardRuleId: props.rule.id,
-        body: value satisfies UpdateRewardRuleBody,
+        body: value as unknown as UpdateRewardRuleBody,
       });
     } else {
-      await createRewardRule(value);
+      await createRewardRule(value as unknown as CreateRewardRuleBody);
     }
 
     form.reset(createDefaultValues(props.rule));
@@ -247,6 +233,7 @@ watch(open, isOpen => {
               :model-value="toDatetimeLocalValue(field.state.value)"
               :aria-invalid="field.state.meta.errors.length > 0"
               type="datetime-local"
+              step="1"
               @blur="field.handleBlur"
               @input="field.handleChange(fromDatetimeLocalValue($event.target.value))"
             />
@@ -263,6 +250,7 @@ watch(open, isOpen => {
               :model-value="toDatetimeLocalValue(field.state.value)"
               :aria-invalid="field.state.meta.errors.length > 0"
               type="datetime-local"
+              step="1"
               @blur="field.handleBlur"
               @input="field.handleChange(fromDatetimeLocalValue($event.target.value))"
             />

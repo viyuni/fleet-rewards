@@ -32,11 +32,11 @@ export type UserRegisterBody = v.InferOutput<typeof UserRegisterSchema>;
  */
 export const UserUpdateSchema = v.object({
   username: v.optional(UsernameSchema),
-  email: v.optional(
+  email: v.nullish(
     v.pipe(v.string('请输入邮箱'), v.email('请输入有效的邮箱地址'), v.description('邮箱')),
   ),
-  address: v.optional(v.pipe(v.string('请输入收获地址'), v.description('收获地址'))),
-  phone: v.optional(v.pipe(v.string('请输入手机号码'), v.description('手机号码'))),
+  address: v.nullish(v.pipe(v.string('请输入收获地址'), v.description('收获地址'))),
+  phone: v.nullish(v.pipe(v.string('请输入手机号码'), v.description('手机号码'))),
 });
 
 export type UpdateUserBody = v.InferOutput<typeof UserUpdateSchema>;

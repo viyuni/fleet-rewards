@@ -1,6 +1,8 @@
 import type { AdjustBalanceBody } from '@internal/shared/point-account';
-import type { UserRegisterBody } from '@internal/shared/user';
+import type { UpdateUserBody, UserRegisterBody } from '@internal/shared/user';
 import { defineMutation, useMutation, useQueryCache } from '@pinia/colada';
+
+import { normalizeNullableBody } from '~/utils/form';
 
 import { USER_QUERY_KEYS } from './queries';
 
@@ -37,6 +39,22 @@ export const useBanUser = defineMutation(() => {
     },
     mutation(userId: string) {
       return $api.users({ userId }).ban.patch();
+    },
+    onSettled: invalidateUsers,
+  });
+});
+
+export const useUpdateUser = defineMutation(() => {
+  const { $api } = useNuxtApp();
+  const invalidateUsers = useInvalidateUsers();
+
+  return useMutation({
+    meta: {
+      showToast: true,
+      successMessage: '用户信息已更新',
+    },
+    mutation(input: { userId: string; body: UpdateUserBody }) {
+      return $api.users({ userId: input.userId }).patch(normalizeNullableBody(input.body));
     },
     onSettled: invalidateUsers,
   });
