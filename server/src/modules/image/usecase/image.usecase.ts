@@ -48,7 +48,7 @@ export class ImageUseCase {
       };
     }
 
-    const resizeImage = image.resize(512, 512, {
+    const resizeImage = image.resize(256, 256, {
       fit: 'inside',
     });
 

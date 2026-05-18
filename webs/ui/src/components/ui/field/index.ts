@@ -23,7 +23,6 @@ export type FieldVariants = VariantProps<typeof fieldVariants>;
 
 export { default as Field } from './Field.vue';
 export { default as FieldContent } from './FieldContent.vue';
-export { default as FieldControl } from './FieldControl.vue';
 export { default as FieldDescription } from './FieldDescription.vue';
 export { default as FieldError } from './FieldError.vue';
 export { default as FieldGroup } from './FieldGroup.vue';

@@ -50,34 +50,40 @@ function handleNotImplemented(e: Event) {
             </FieldSeparator>
 
             <form.Field name="uid" #default="{ field }">
-              <FieldControl :field="field" label="UID" v-slot="{ id, invalid }">
+              <Field :data-invalid="field.state.meta.errors.length > 0">
+                <FieldLabel :for="field.name">UID</FieldLabel>
                 <Input
-                  :id="id"
+                  :id="field.name"
                   :name="field.name"
                   :model-value="field.state.value"
-                  :aria-invalid="invalid"
+                  :aria-invalid="field.state.meta.errors.length > 0"
                   placeholder="90424564xxx"
                   autocomplete="off"
                   @blur="field.handleBlur"
                   @input="field.handleChange($event.target.value)"
                 />
-              </FieldControl>
+
+                <FieldError :errors="field.state.meta.errors" />
+              </Field>
             </form.Field>
 
             <form.Field name="password" #default="{ field }">
-              <FieldControl :field="field" label="Password" v-slot="{ id, invalid }">
+              <Field :data-invalid="field.state.meta.errors.length > 0">
+                <FieldLabel :for="field.name">Password</FieldLabel>
                 <Input
-                  :id="id"
+                  :id="field.name"
                   :name="field.name"
                   :model-value="field.state.value"
-                  :aria-invalid="invalid"
+                  :aria-invalid="field.state.meta.errors.length > 0"
                   type="password"
                   autocomplete="off"
                   placeholder="?????"
                   @blur="field.handleBlur"
                   @input="field.handleChange($event.target.value)"
                 />
-              </FieldControl>
+
+                <FieldError :errors="field.state.meta.errors" />
+              </Field>
             </form.Field>
 
             <Field>

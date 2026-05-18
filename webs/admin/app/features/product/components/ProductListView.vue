@@ -22,6 +22,7 @@ export type Product = NonNullable<ProductListPage>['items'][number];
 
 <script setup lang="ts">
 const columns = [
+  { accessorKey: 'cover', header: '封面' },
   { accessorKey: 'name', header: '商品名称' },
   { accessorKey: 'pointType.name', header: '积分类型' },
   { accessorKey: 'price', header: '价格' },
@@ -47,6 +48,10 @@ const { mutate: enableProduct, isLoading: isEnabling } = useEnableProduct();
 const { mutate: disableProduct, isLoading: isDisabling } = useDisableProduct();
 
 const isUpdatingStatus = computed(() => isEnabling.value || isDisabling.value);
+const {
+  public: { apiBaseUrl },
+} = useRuntimeConfig();
+const imageBaseUrl = computed(() => apiBaseUrl.replace(/\/$/, ''));
 
 function toggleProductStatus(product: Product, enabled: boolean) {
   if (enabled) {
@@ -54,6 +59,20 @@ function toggleProductStatus(product: Product, enabled: boolean) {
   } else {
     disableProduct(product.id);
   }
+}
+
+function getCoverUrl(cover: Product['cover']) {
+  if (!cover) {
+    return undefined;
+  }
+
+  if (/^https?:\/\//.test(cover)) {
+    return cover;
+  }
+
+  const imagePath = cover.startsWith('/images/') ? cover : `/images/${cover.replace(/^\/+/, '')}`;
+
+  return `${imageBaseUrl.value}${imagePath}`;
 }
 </script>
 
@@ -87,6 +106,20 @@ function toggleProductStatus(product: Product, enabled: boolean) {
           <Plus />
           添加商品
         </Button>
+      </div>
+    </template>
+
+    <template #cover="{ value }">
+      <div
+        class="bg-muted flex h-12 w-12 items-center justify-center overflow-hidden rounded border"
+      >
+        <img
+          v-if="getCoverUrl(value)"
+          class="h-full w-full object-cover"
+          :src="getCoverUrl(value)"
+          alt=""
+        />
+        <span v-else class="text-muted-foreground text-xs">无</span>
       </div>
     </template>
 

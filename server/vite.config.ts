@@ -49,12 +49,15 @@ export default defineConfig({
         command: 'bun --env-file=.env.test drizzle-kit push',
       },
       'db:seed': {
+        cache: false,
         command: 'bun --env-file=.env ./src/db/seed.ts',
       },
       'db:studio': {
+        cache: false,
         command: 'bun --env-file=.env drizzle-kit studio',
       },
       'db:studio:test': {
+        cache: false,
         command: 'bun --env-file=.env.test drizzle-kit studio',
       },
     },

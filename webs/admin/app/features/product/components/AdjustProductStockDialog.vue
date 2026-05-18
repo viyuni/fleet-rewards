@@ -62,36 +62,38 @@ watch(open, isOpen => {
 
       <form class="space-y-4" @submit.prevent="form.handleSubmit">
         <form.Field name="delta" #default="{ field }">
-          <FieldControl :field="field" label="调整数量">
-            <template #default="{ id, invalid }">
-              <Input
-                :id="id"
-                :model-value="field.state.value"
-                :aria-invalid="invalid"
-                type="number"
-                step="1"
-                placeholder="正数入库，负数扣减"
-                @blur="field.handleBlur"
-                @input="field.handleChange(Number($event.target.value))"
-              />
-            </template>
-            <template #description>
-              调整后库存：{{ product.stock + Number(field.state.value) }}
-            </template>
-          </FieldControl>
+          <Field :data-invalid="field.state.meta.errors.length > 0">
+            <FieldLabel :for="field.name">调整数量</FieldLabel>
+            <Input
+              :id="field.name"
+              :model-value="field.state.value"
+              :aria-invalid="field.state.meta.errors.length > 0"
+              type="number"
+              step="1"
+              placeholder="正数入库，负数扣减"
+              @blur="field.handleBlur"
+              @input="field.handleChange(Number($event.target.value))"
+            />
+            <FieldDescription
+              >调整后库存：{{ product.stock + Number(field.state.value) }}</FieldDescription
+            >
+            <FieldError :errors="field.state.meta.errors" />
+          </Field>
         </form.Field>
 
         <form.Field name="remark" #default="{ field }">
-          <FieldControl :field="field" label="备注" v-slot="{ id, invalid }">
+          <Field :data-invalid="field.state.meta.errors.length > 0">
+            <FieldLabel :for="field.name">备注</FieldLabel>
             <Textarea
-              :id="id"
+              :id="field.name"
               :model-value="field.state.value ?? ''"
-              :aria-invalid="invalid"
+              :aria-invalid="field.state.meta.errors.length > 0"
               placeholder="例如：盘点入库 / 损耗扣减"
               @blur="field.handleBlur"
               @input="field.handleChange(optionalText($event.target.value))"
             />
-          </FieldControl>
+            <FieldError :errors="field.state.meta.errors" />
+          </Field>
         </form.Field>
 
         <DialogFooter>

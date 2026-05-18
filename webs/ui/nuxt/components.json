@@ -87,7 +87,6 @@
   "DropdownMenuTrigger": "@web/ui/components/ui/dropdown-menu",
   "Field": "@web/ui/components/ui/field",
   "FieldContent": "@web/ui/components/ui/field",
-  "FieldControl": "@web/ui/components/ui/field",
   "FieldDescription": "@web/ui/components/ui/field",
   "FieldError": "@web/ui/components/ui/field",
   "FieldGroup": "@web/ui/components/ui/field",

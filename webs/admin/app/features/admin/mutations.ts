@@ -1,6 +1,12 @@
-import type { AdminCreateBody, SuperAdminUpdateBody } from '@internal/shared/admin';
+import type {
+  AdminCreateBody,
+  AdminUpdateBody,
+  AdminUpdatePasswordBody,
+  SuperAdminUpdateBody,
+} from '@internal/shared/admin';
 import { defineMutation, useMutation, useQueryCache } from '@pinia/colada';
 
+import { useAuthStore } from '../auth/store';
 import { ADMIN_QUERY_KEYS } from './queries';
 
 function useInvalidateAdmins() {
@@ -38,6 +44,43 @@ export const useUpdateAdmin = defineMutation(() => {
       return $api.admin({ adminId: input.adminId }).patch(input.body);
     },
     onSettled: invalidateAdmins,
+  });
+});
+
+export const useUpdateCurrentAdmin = defineMutation(() => {
+  const { $api } = useNuxtApp();
+  const authStore = useAuthStore();
+
+  return useMutation({
+    meta: {
+      showToast: true,
+      successMessage: '账户信息已更新',
+    },
+    mutation(body: AdminUpdateBody) {
+      return $api.admin.me.patch(body);
+    },
+    onSuccess({ data }) {
+      if (data && authStore.user) {
+        authStore.updateUser({
+          ...authStore.user,
+          ...data,
+        });
+      }
+    },
+  });
+});
+
+export const useUpdateCurrentAdminPassword = defineMutation(() => {
+  const { $api } = useNuxtApp();
+
+  return useMutation({
+    meta: {
+      showToast: true,
+      successMessage: '账户密码已修改',
+    },
+    mutation(body: AdminUpdatePasswordBody) {
+      return $api.admin.updatePassword.patch(body);
+    },
   });
 });
 

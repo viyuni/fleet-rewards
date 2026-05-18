@@ -17,8 +17,8 @@ export const relations = defineRelations(schema, r => ({
   },
   biliEvents: {
     user: r.one.users({
-      from: r.biliEvents.userId,
-      to: r.users.id,
+      from: r.biliEvents.biliUid,
+      to: r.users.biliUid,
     }),
   },
   products: {

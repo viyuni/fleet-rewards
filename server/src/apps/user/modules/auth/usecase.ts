@@ -1,13 +1,18 @@
 import type { UserLoginBody, UserRegisterBody } from '@internal/shared/user';
 
 import type { AuthUseCase as SharedAuthUseCase } from '#modules/auth';
+import type { RewardUseCase } from '#modules/reward';
 import type { UserUseCase } from '#modules/user';
 import { InvalidCredentialsError } from '#utils';
 import { PasswordUtil } from '#utils';
 
 export class AuthUseCase {
   constructor(
-    private readonly deps: { authUseCase: SharedAuthUseCase; userUseCase: UserUseCase },
+    private readonly deps: {
+      authUseCase: SharedAuthUseCase;
+      rewardUseCase: RewardUseCase;
+      userUseCase: UserUseCase;
+    },
   ) {}
 
   async login(input: UserLoginBody) {
@@ -35,7 +40,11 @@ export class AuthUseCase {
     };
   }
 
-  register(input: UserRegisterBody) {
-    return this.deps.userUseCase.create(input);
+  async register(input: UserRegisterBody) {
+    const user = await this.deps.userUseCase.create(input);
+
+    await this.deps.rewardUseCase.replayRewardBiliGuardByUserId(user.id);
+
+    return user;
   }
 }

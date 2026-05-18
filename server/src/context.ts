@@ -6,6 +6,7 @@ import { logger } from '#utils';
 import { createAuthGuard } from './modules/auth';
 import { AuthUseCase } from './modules/auth/usecase';
 import { BiliEventRepository } from './modules/bili-event';
+import { DashboardRepository, DashboardUseCase } from './modules/dashboard';
 import { ImageUseCase } from './modules/image';
 import { OrderRepository, OrderUseCase } from './modules/order';
 import {
@@ -55,6 +56,7 @@ export function createContainer({ db, env }: CreateSharedContextOptions) {
 
   const biliEventRepo = new BiliEventRepository(db);
   const rewardRuleRepo = new RewardRuleRepository(db);
+  const dashboardRepo = new DashboardRepository(db);
 
   const userUseCase = new UserUseCase({
     userBasicInfoCrypto,
@@ -134,6 +136,8 @@ export function createContainer({ db, env }: CreateSharedContextOptions) {
     rewardRuleRepo,
   });
 
+  const dashboardUseCase = new DashboardUseCase(dashboardRepo);
+
   return {
     repositories: {
       userRepo,
@@ -150,6 +154,7 @@ export function createContainer({ db, env }: CreateSharedContextOptions) {
 
       biliEventRepo,
       rewardRuleRepo,
+      dashboardRepo,
     },
 
     useCases: {
@@ -170,6 +175,7 @@ export function createContainer({ db, env }: CreateSharedContextOptions) {
 
       rewardUseCase,
       rewardRuleUseCase,
+      dashboardUseCase,
     },
   };
 }

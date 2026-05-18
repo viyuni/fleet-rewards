@@ -106,63 +106,72 @@ watch(
 
       <form class="space-y-4" @submit.prevent="form.handleSubmit">
         <form.Field name="pointTypeId" #default="{ field }">
-          <FieldControl :field="field" label="积分类型">
-            <template #default="{ id, invalid }">
-              <NativeSelect
-                :id="id"
-                :model-value="field.state.value"
-                :aria-invalid="invalid"
-                @blur="field.handleBlur"
-                @update:model-value="
-                  selectedPointTypeId = String($event);
-                  field.handleChange(selectedPointTypeId);
-                "
+          <Field :data-invalid="field.state.meta.errors.length > 0">
+            <FieldLabel :for="field.name">积分类型</FieldLabel>
+            <NativeSelect
+              :id="field.name"
+              :model-value="field.state.value"
+              :aria-invalid="field.state.meta.errors.length > 0"
+              @blur="field.handleBlur"
+              @update:model-value="
+                selectedPointTypeId = String($event);
+                field.handleChange(selectedPointTypeId);
+              "
+            >
+              <NativeSelectOption value="" disabled>选择积分类型</NativeSelectOption>
+              <NativeSelectOption
+                v-for="pointType in activePointTypes"
+                :key="pointType.id"
+                :value="pointType.id"
               >
-                <NativeSelectOption value="" disabled>选择积分类型</NativeSelectOption>
-                <NativeSelectOption
-                  v-for="pointType in activePointTypes"
-                  :key="pointType.id"
-                  :value="pointType.id"
-                >
-                  {{ pointType.name }}
-                </NativeSelectOption>
-              </NativeSelect>
-            </template>
-            <template #description>当前积分：{{ currentBalance }}</template>
-          </FieldControl>
+                {{ pointType.name }}
+              </NativeSelectOption>
+            </NativeSelect>
+
+            <FieldDescription>当前积分：{{ currentBalance }}</FieldDescription>
+
+            <FieldError :errors="field.state.meta.errors" />
+          </Field>
         </form.Field>
 
         <form.Field name="delta" #default="{ field }">
-          <FieldControl :field="field" label="变动数量">
-            <template #default="{ id, invalid }">
-              <Input
-                :id="id"
-                :model-value="field.state.value"
-                :aria-invalid="invalid"
-                type="number"
-                step="1"
-                placeholder="正数增加，负数扣减"
-                @blur="field.handleBlur"
-                @input="field.handleChange(Number($event.target.value))"
-              />
-            </template>
-            <template #description>
-              扣减请优先使用冲正流水。调整后：{{ currentBalance + Number(field.state.value) }}
-            </template>
-          </FieldControl>
+          <Field :data-invalid="field.state.meta.errors.length > 0">
+            <FieldLabel :for="field.name">变动数量</FieldLabel>
+            <Input
+              :id="field.name"
+              :model-value="field.state.value"
+              :aria-invalid="field.state.meta.errors.length > 0"
+              type="number"
+              step="1"
+              placeholder="正数增加，负数扣减"
+              @blur="field.handleBlur"
+              @input="field.handleChange(Number($event.target.value))"
+            />
+
+            <FieldDescription
+              >扣减请优先使用冲正流水。调整后：{{
+                currentBalance + Number(field.state.value)
+              }}</FieldDescription
+            >
+
+            <FieldError :errors="field.state.meta.errors" />
+          </Field>
         </form.Field>
 
         <form.Field name="remark" #default="{ field }">
-          <FieldControl :field="field" label="备注" v-slot="{ id, invalid }">
+          <Field :data-invalid="field.state.meta.errors.length > 0">
+            <FieldLabel :for="field.name">备注</FieldLabel>
             <Textarea
-              :id="id"
+              :id="field.name"
               :model-value="field.state.value"
-              :aria-invalid="invalid"
+              :aria-invalid="field.state.meta.errors.length > 0"
               placeholder="例如：活动补发 / 违规扣减"
               @blur="field.handleBlur"
               @input="field.handleChange($event.target.value)"
             />
-          </FieldControl>
+
+            <FieldError :errors="field.state.meta.errors" />
+          </Field>
         </form.Field>
 
         <DialogFooter>

@@ -14,8 +14,6 @@ export const useAuthStore = defineStore('auth', () => {
   });
 
   function updateUser(data: AuthUserData) {
-    console.log(data);
-
     user.value = data;
   }
 

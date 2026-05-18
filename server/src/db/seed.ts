@@ -2,13 +2,20 @@ import { fakerZH_CN as faker } from '@faker-js/faker';
 import { seed as drizzleSeed } from 'drizzle-seed';
 
 import { createDatabase, db } from '.';
+import { createContainer } from '../context';
+import type { BiliGuardRewardEvent } from '../modules/reward';
 import {
   admins,
   pointTypes,
+  pointConversionRules,
   products,
   productStockMovements,
+  rewardRules,
   users,
+  type InsertPointConversionRule,
   type InsertPointType,
+  type InsertRewardRule,
+  type PointType,
 } from './schema';
 
 const seedValue = 1270;
@@ -165,6 +172,238 @@ const stockRemarks = stockDeltas.map(delta =>
   delta > 0 ? '测试数据入库调整' : '测试数据兑换扣减',
 );
 
+const seedRewardRuleNames = {
+  jianzhang: '舰长月度奖励',
+  tidu: '提督月度奖励',
+  zongdu: '总督月度奖励',
+} as const;
+
+const seedPointConversionRuleNames = {
+  tiduToJianzhang: '提督积分兑换舰长积分',
+  zongduToJianzhang: '总督积分兑换舰长积分',
+  zongduToTidu: '总督积分兑换提督积分',
+  activityToJianzhang: '活动积分兑换舰长积分',
+} as const;
+
+const seedBiliGuardEvents = [
+  {
+    id: 'seed-bili-guard-registered-jianzhang-001',
+    uid: 100000000,
+    uname: '测试已注册舰长',
+    guardType: 3,
+    guardName: '舰长',
+    total: 198000,
+    totalNormalized: 1,
+    isYearGuard: false,
+    roomId: 1270,
+    timestamp: new Date('2026-05-01T12:00:00.000Z').getTime(),
+  },
+  {
+    id: 'seed-bili-guard-registered-tidu-001',
+    uid: 100000001,
+    uname: '测试已注册提督',
+    guardType: 2,
+    guardName: '提督',
+    total: 1998000,
+    totalNormalized: 10,
+    isYearGuard: false,
+    roomId: 1270,
+    timestamp: new Date('2026-05-02T12:00:00.000Z').getTime(),
+  },
+  {
+    id: 'seed-bili-guard-unregistered-jianzhang-001',
+    uid: 200000001,
+    uname: '测试未注册舰长',
+    guardType: 3,
+    guardName: '舰长',
+    total: 198000,
+    totalNormalized: 1,
+    isYearGuard: false,
+    roomId: 1270,
+    timestamp: new Date('2026-05-03T12:00:00.000Z').getTime(),
+  },
+  {
+    id: 'seed-bili-guard-unregistered-zongdu-001',
+    uid: 200000002,
+    uname: '测试未注册总督',
+    guardType: 1,
+    guardName: '总督',
+    total: 19998000,
+    totalNormalized: 100,
+    isYearGuard: false,
+    roomId: 1270,
+    timestamp: new Date('2026-05-04T12:00:00.000Z').getTime(),
+  },
+] satisfies BiliGuardRewardEvent[];
+
+async function findPointType(targetDb: typeof db, name: string) {
+  const pointType = await targetDb.query.pointTypes.findFirst({
+    where: {
+      name,
+    },
+  });
+
+  if (!pointType) {
+    throw new Error(`Seed point type not found: ${name}`);
+  }
+
+  return pointType;
+}
+
+async function ensureRewardRule(targetDb: typeof db, input: InsertRewardRule) {
+  const existing = await targetDb.query.rewardRules.findFirst({
+    where: {
+      name: input.name,
+    },
+  });
+
+  if (existing) {
+    return existing;
+  }
+
+  const [rule] = await targetDb.insert(rewardRules).values(input).returning();
+
+  if (!rule) {
+    throw new Error(`Seed reward rule failed: ${input.name}`);
+  }
+
+  return rule;
+}
+
+async function ensurePointConversionRule(targetDb: typeof db, input: InsertPointConversionRule) {
+  const existing = await targetDb.query.pointConversionRules.findFirst({
+    where: {
+      name: input.name,
+    },
+  });
+
+  if (existing) {
+    return existing;
+  }
+
+  const [rule] = await targetDb.insert(pointConversionRules).values(input).returning();
+
+  if (!rule) {
+    throw new Error(`Seed point conversion rule failed: ${input.name}`);
+  }
+
+  return rule;
+}
+
+interface SeedRewardPointTypeMap {
+  activity: PointType;
+  jianzhang: PointType;
+  tidu: PointType;
+  zongdu: PointType;
+}
+
+async function seedRewardRules(targetDb: typeof db, pointTypeMap: SeedRewardPointTypeMap) {
+  await ensureRewardRule(targetDb, {
+    name: seedRewardRuleNames.jianzhang,
+    description: '测试数据：舰长、提督、总督均可获得舰长积分。',
+    conditions: {
+      type: 'biliGuard',
+      guardTypes: [1, 2, 3],
+    },
+    pointTypeId: pointTypeMap.jianzhang.id,
+    points: 1,
+    enabled: true,
+    priority: 30,
+  });
+
+  await ensureRewardRule(targetDb, {
+    name: seedRewardRuleNames.tidu,
+    description: '测试数据：提督、总督均可获得提督积分。',
+    conditions: {
+      type: 'biliGuard',
+      guardTypes: [1, 2],
+    },
+    pointTypeId: pointTypeMap.tidu.id,
+    points: 1,
+    enabled: true,
+    priority: 20,
+  });
+
+  await ensureRewardRule(targetDb, {
+    name: seedRewardRuleNames.zongdu,
+    description: '测试数据：总督可获得总督积分。',
+    conditions: {
+      type: 'biliGuard',
+      guardTypes: [1],
+    },
+    pointTypeId: pointTypeMap.zongdu.id,
+    points: 1,
+    enabled: true,
+    priority: 10,
+  });
+}
+
+async function seedPointConversionRules(targetDb: typeof db, pointTypeMap: SeedRewardPointTypeMap) {
+  await ensurePointConversionRule(targetDb, {
+    name: seedPointConversionRuleNames.tiduToJianzhang,
+    description: '测试数据：提督积分可 1:1 转换为舰长积分。',
+    fromPointTypeId: pointTypeMap.tidu.id,
+    toPointTypeId: pointTypeMap.jianzhang.id,
+    toAmount: 1,
+    enabled: true,
+  });
+
+  await ensurePointConversionRule(targetDb, {
+    name: seedPointConversionRuleNames.zongduToJianzhang,
+    description: '测试数据：总督积分可 1:1 转换为舰长积分。',
+    fromPointTypeId: pointTypeMap.zongdu.id,
+    toPointTypeId: pointTypeMap.jianzhang.id,
+    toAmount: 1,
+    enabled: true,
+  });
+
+  await ensurePointConversionRule(targetDb, {
+    name: seedPointConversionRuleNames.zongduToTidu,
+    description: '测试数据：总督积分可 1:1 转换为提督积分。',
+    fromPointTypeId: pointTypeMap.zongdu.id,
+    toPointTypeId: pointTypeMap.tidu.id,
+    toAmount: 1,
+    enabled: true,
+  });
+
+  await ensurePointConversionRule(targetDb, {
+    name: seedPointConversionRuleNames.activityToJianzhang,
+    description: '测试数据：活动积分可 1:1 转换为舰长积分。',
+    fromPointTypeId: pointTypeMap.activity.id,
+    toPointTypeId: pointTypeMap.jianzhang.id,
+    toAmount: 1,
+    enabled: true,
+  });
+}
+
+async function seedBiliGuardRewardEvents(targetDb: typeof db) {
+  const pointTypeMap = {
+    activity: await findPointType(targetDb, '活动积分'),
+    jianzhang: await findPointType(targetDb, '舰长积分'),
+    tidu: await findPointType(targetDb, '提督积分'),
+    zongdu: await findPointType(targetDb, '总督积分'),
+  };
+
+  await seedRewardRules(targetDb, pointTypeMap);
+  await seedPointConversionRules(targetDb, pointTypeMap);
+
+  const { useCases } = createContainer({
+    db: targetDb,
+    env: {
+      DATABASE_URL: Bun.env.DATABASE_URL ?? '',
+      NODE_ENV: 'development',
+      LOG_LEVEL: 'info',
+      IMAGE_SAVE_PATH: Bun.env.IMAGE_SAVE_PATH ?? './public/images',
+      JWT_SECRET: Bun.env.JWT_SECRET ?? 'seed-jwt-secret',
+      DATA_SECRET: Bun.env.DATA_SECRET ?? 'seed-data-secret-seed-data-secret',
+    },
+  });
+
+  for (const event of seedBiliGuardEvents) {
+    await useCases.rewardUseCase.rewardBiliGuard(event);
+  }
+}
+
 export async function seedV2(targetDb = db) {
   const passwordHash = await Bun.password.hash(seedDefaultPassword, {
     algorithm: 'bcrypt',
@@ -295,10 +534,15 @@ export async function seedV2(targetDb = db) {
     },
   }));
 
+  await seedBiliGuardRewardEvents(targetDb);
+
   return {
     admins: adminCount,
     users: userCount,
     pointTypes: pointTypeData.length,
+    rewardRules: Object.keys(seedRewardRuleNames).length,
+    pointConversionRules: Object.keys(seedPointConversionRuleNames).length,
+    biliEvents: seedBiliGuardEvents.length,
     products: productNames.length,
     productStockMovements: stockMovementCount,
   };
@@ -314,6 +558,6 @@ if (import.meta.main) {
   const result = await seedV2(createDatabase(databaseUrl));
 
   console.log(
-    `Seed completed: ${result.admins} admins, ${result.users} users, ${result.pointTypes} point types, ${result.products} products, ${result.productStockMovements} product stock movements.`,
+    `Seed completed: ${result.admins} admins, ${result.users} users, ${result.pointTypes} point types, ${result.rewardRules} reward rules, ${result.pointConversionRules} point conversion rules, ${result.biliEvents} bili guard events, ${result.products} products, ${result.productStockMovements} product stock movements.`,
   );
 }

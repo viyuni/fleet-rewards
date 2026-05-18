@@ -2,6 +2,7 @@ import { expect, it } from 'bun:test';
 
 import { count, eq } from 'drizzle-orm';
 
+import { AuthUseCase as UserAuthUseCase } from '#apps/user/modules/auth/usecase';
 import { pointTransactions } from '#db/schema';
 
 import {
@@ -380,5 +381,50 @@ describeWithDatabase('奖励发放真实数据库', () => {
     expect(replayed.failed).toBe(0);
     expect(replayedRuleItems.map(item => item.points).sort((a, b) => a - b)).toEqual([14, 21]);
     expect(account?.balance).toBe(35);
+  });
+
+  it('普通用户注册成功后会自动回放未注册时的大航海奖励', async () => {
+    const prefix = newBatch('reward_register');
+    const pointType = await seedPointType(`${prefix}_point`);
+    const biliUid = createBiliUid();
+    const { authUseCase, rewardUseCase, userUseCase } = createDeps();
+    const userAuthUseCase = new UserAuthUseCase({
+      authUseCase,
+      rewardUseCase,
+      userUseCase,
+    });
+    const rule = await createRewardRule(prefix, pointType.id, {
+      points: 8,
+    });
+    const event = createBiliGuardEvent(prefix, Number(biliUid), {
+      totalNormalized: 4,
+    });
+
+    await rewardUseCase.rewardBiliGuard(event);
+    const registered = await userAuthUseCase.register({
+      biliUid,
+      username: `${prefix}_user`,
+      password: 'test_password',
+    });
+
+    const account = await db.query.pointAccounts.findFirst({
+      where: {
+        userId: registered.id,
+        pointTypeId: pointType.id,
+      },
+    });
+    const biliEvent = await db.query.biliEvents.findFirst({
+      where: {
+        biliEventId: event.id,
+      },
+    });
+    const rewardResultSnapshot = biliEvent?.rewardResultSnapshots.find(
+      item => item.ruleId === rule.id,
+    );
+
+    expect(account?.balance).toBe(32);
+    expect(biliEvent?.status).toBe('succeeded');
+    expect(biliEvent?.userId).toBe(registered.id);
+    expect(rewardResultSnapshot?.duplicated).toBe(false);
   });
 });

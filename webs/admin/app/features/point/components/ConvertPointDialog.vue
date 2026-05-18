@@ -88,44 +88,53 @@ watch(open, isOpen => {
 
       <form class="space-y-4" @submit.prevent="form.handleSubmit">
         <form.Field name="userId" #default="{ field }">
-          <FieldControl :field="field" label="用户 ID" v-slot="{ id, invalid }">
+          <Field :data-invalid="field.state.meta.errors.length > 0">
+            <FieldLabel :for="field.name">用户 ID</FieldLabel>
             <UserSelect
-              :id="id"
+              :id="field.name"
               ref="userSelect"
               :model-value="field.state.value"
-              :aria-invalid="invalid"
+              :aria-invalid="field.state.meta.errors.length > 0"
               @update:model-value="field.handleChange($event)"
               @blur="field.handleBlur"
             />
-          </FieldControl>
+
+            <FieldError :errors="field.state.meta.errors" />
+          </Field>
         </form.Field>
 
         <form.Field name="fromAmount" #default="{ field }">
-          <FieldControl :field="field" :label="`${fromPointTypeName}数量`" v-slot="{ id, invalid }">
+          <Field :data-invalid="field.state.meta.errors.length > 0">
+            <FieldLabel :for="field.name">{{ `${fromPointTypeName}数量` }}</FieldLabel>
             <Input
-              :id="id"
+              :id="field.name"
               :model-value="field.state.value"
-              :aria-invalid="invalid"
+              :aria-invalid="field.state.meta.errors.length > 0"
               type="number"
               min="1"
               step="1"
               @blur="field.handleBlur"
               @input="field.handleChange(Number($event.target.value))"
             />
-          </FieldControl>
+
+            <FieldError :errors="field.state.meta.errors" />
+          </Field>
         </form.Field>
 
         <form.Field name="remark" #default="{ field }">
-          <FieldControl :field="field" label="备注" v-slot="{ id, invalid }">
+          <Field :data-invalid="field.state.meta.errors.length > 0">
+            <FieldLabel :for="field.name">备注</FieldLabel>
             <Textarea
-              :id="id"
+              :id="field.name"
               :model-value="field.state.value ?? ''"
-              :aria-invalid="invalid"
+              :aria-invalid="field.state.meta.errors.length > 0"
               placeholder="可选"
               @blur="field.handleBlur"
               @input="field.handleChange(optionalText($event.target.value))"
             />
-          </FieldControl>
+
+            <FieldError :errors="field.state.meta.errors" />
+          </Field>
         </form.Field>
 
         <DialogFooter>

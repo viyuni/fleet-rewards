@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
+import AccountDropdown from '~/features/admin/components/AccountDropdown.vue';
+
 const route = useRoute();
 
 const breadcrumbs = computed(() => {
@@ -42,7 +44,10 @@ const breadcrumbs = computed(() => {
           </BreadcrumbList>
         </Breadcrumb>
 
-        <ThemeToggle class="ml-auto" />
+        <div class="ml-auto flex items-center gap-1">
+          <ThemeToggle />
+          <AccountDropdown />
+        </div>
       </header>
 
       <div class="min-h-0 w-full flex-1 overflow-auto p-5">

@@ -325,12 +325,12 @@ defineExpose({
 </script>
 
 <template>
-  <div class="grid gap-3">
+  <div class="grid items-center gap-3" :style="{ gridTemplateColumns: `${previewSize}px auto` }">
     <div
       ref="viewRef"
       class="bg-muted relative touch-none overflow-hidden rounded-md border"
       :class="{ 'cursor-grabbing': isDragging, 'cursor-grab': !isDragging }"
-      :style="{ aspectRatio: '1 / 1', maxWidth: `${previewSize}px` }"
+      :style="{ aspectRatio: '1 / 1', width: `${previewSize}px` }"
       @pointerdown="handlePointerDown"
       @pointermove="handlePointerMove"
       @pointerup="handlePointerUp"
@@ -340,14 +340,15 @@ defineExpose({
       <div class="pointer-events-none absolute inset-0 ring-1 ring-white/70 ring-inset" />
     </div>
 
-    <div class="flex items-center gap-2" :style="{ maxWidth: `${previewSize}px` }">
+    <div class="flex h-full flex-col items-center gap-2">
       <Button variant="outline" size="icon-sm" type="button" @click="zoomBy(-0.12)">
         <Minus />
         <span class="sr-only">缩小</span>
       </Button>
       <input
         v-model.number="scale"
-        class="accent-primary h-2 min-w-0 flex-1"
+        class="accent-primary min-h-0 flex-1"
+        :style="{ writingMode: 'vertical-lr' }"
         type="range"
         min="1"
         :max="maxScale"

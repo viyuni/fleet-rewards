@@ -99,7 +99,6 @@ declare module 'vue' {
     DropdownMenuTrigger: typeof import('@web/ui/components/ui/dropdown-menu')['DropdownMenuTrigger']
     Field: typeof import('@web/ui/components/ui/field')['Field']
     FieldContent: typeof import('@web/ui/components/ui/field')['FieldContent']
-    FieldControl: typeof import('@web/ui/components/ui/field')['FieldControl']
     FieldDescription: typeof import('@web/ui/components/ui/field')['FieldDescription']
     FieldError: typeof import('@web/ui/components/ui/field')['FieldError']
     FieldGroup: typeof import('@web/ui/components/ui/field')['FieldGroup']

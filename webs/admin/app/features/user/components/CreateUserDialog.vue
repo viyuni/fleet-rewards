@@ -1,14 +1,21 @@
 <script setup lang="ts">
+import { BiliUidSchema, PasswordSchema, UsernameSchema } from '@internal/shared/common';
 import { UserRegisterSchema, type UserRegisterBody } from '@internal/shared/user';
 import { useForm } from '@tanstack/vue-form';
 import { Button } from '@web/ui/components/ui/button';
 import { Loader2 } from 'lucide-vue-next';
+import * as v from 'valibot';
 
 import { useCreateUser } from '../mutations';
 
 const open = defineModel<boolean>('open', { default: false });
 
 const { mutateAsync: createUser, isLoading } = useCreateUser();
+
+const OptionalEmailSchema = v.optional(
+  v.pipe(v.string('请输入邮箱'), v.email('请输入有效的邮箱地址')),
+);
+const OptionalTextSchema = v.optional(v.string());
 
 function createDefaultValues(): UserRegisterBody {
   return {
@@ -56,85 +63,121 @@ watch(open, isOpen => {
       </DialogHeader>
 
       <form class="space-y-4" @submit.prevent="form.handleSubmit">
-        <form.Field name="biliUid" #default="{ field }">
-          <FieldControl :field="field" label="UID" v-slot="{ id, invalid }">
+        <form.Field
+          name="biliUid"
+          :validators="{ onSubmit: BiliUidSchema, onChange: BiliUidSchema }"
+          #default="{ field }"
+        >
+          <Field :data-invalid="field.state.meta.errors.length > 0">
+            <FieldLabel :for="field.name">UID</FieldLabel>
             <Input
-              :id="id"
+              :id="field.name"
               :model-value="field.state.value"
-              :aria-invalid="invalid"
+              :aria-invalid="field.state.meta.errors.length > 0"
               inputmode="numeric"
               placeholder="例如 123456"
               @blur="field.handleBlur"
               @input="field.handleChange($event.target.value)"
             />
-          </FieldControl>
+            <FieldError :errors="field.state.meta.errors" />
+          </Field>
         </form.Field>
 
-        <form.Field name="username" #default="{ field }">
-          <FieldControl :field="field" label="用户名" v-slot="{ id, invalid }">
+        <form.Field
+          name="username"
+          :validators="{ onSubmit: UsernameSchema, onChange: UsernameSchema }"
+          #default="{ field }"
+        >
+          <Field :data-invalid="field.state.meta.errors.length > 0">
+            <FieldLabel :for="field.name">用户名</FieldLabel>
             <Input
-              :id="id"
+              :id="field.name"
               :model-value="field.state.value"
-              :aria-invalid="invalid"
+              :aria-invalid="field.state.meta.errors.length > 0"
               placeholder="3-32 位用户名"
               @blur="field.handleBlur"
               @input="field.handleChange($event.target.value)"
             />
-          </FieldControl>
+            <FieldError :errors="field.state.meta.errors" />
+          </Field>
         </form.Field>
 
-        <form.Field name="password" #default="{ field }">
-          <FieldControl :field="field" label="初始密码" v-slot="{ id, invalid }">
+        <form.Field
+          name="password"
+          :validators="{ onSubmit: PasswordSchema, onChange: PasswordSchema }"
+          #default="{ field }"
+        >
+          <Field :data-invalid="field.state.meta.errors.length > 0">
+            <FieldLabel :for="field.name">初始密码</FieldLabel>
             <Input
-              :id="id"
+              :id="field.name"
               :model-value="field.state.value"
-              :aria-invalid="invalid"
+              :aria-invalid="field.state.meta.errors.length > 0"
               type="password"
               placeholder="12-32 位，包含字母和数字"
               @blur="field.handleBlur"
               @input="field.handleChange($event.target.value)"
             />
-          </FieldControl>
+            <FieldError :errors="field.state.meta.errors" />
+          </Field>
         </form.Field>
 
-        <form.Field name="email" #default="{ field }">
-          <FieldControl :field="field" label="邮箱" v-slot="{ id, invalid }">
+        <form.Field
+          name="email"
+          :validators="{ onSubmit: OptionalEmailSchema, onChange: OptionalEmailSchema }"
+          #default="{ field }"
+        >
+          <Field :data-invalid="field.state.meta.errors.length > 0">
+            <FieldLabel :for="field.name">邮箱</FieldLabel>
             <Input
-              :id="id"
+              :id="field.name"
               :model-value="field.state.value ?? ''"
-              :aria-invalid="invalid"
+              :aria-invalid="field.state.meta.errors.length > 0"
               type="email"
               placeholder="可选"
               @blur="field.handleBlur"
               @input="field.handleChange(optionalText($event.target.value))"
             />
-          </FieldControl>
+            <FieldError :errors="field.state.meta.errors" />
+          </Field>
         </form.Field>
 
-        <form.Field name="phone" #default="{ field }">
-          <FieldControl :field="field" label="手机号" v-slot="{ id, invalid }">
+        <form.Field
+          name="phone"
+          :validators="{ onSubmit: OptionalTextSchema, onChange: OptionalTextSchema }"
+          #default="{ field }"
+        >
+          <Field :data-invalid="field.state.meta.errors.length > 0">
+            <FieldLabel :for="field.name">手机号</FieldLabel>
             <Input
-              :id="id"
+              :id="field.name"
               :model-value="field.state.value ?? ''"
-              :aria-invalid="invalid"
+              :aria-invalid="field.state.meta.errors.length > 0"
               placeholder="可选"
               @blur="field.handleBlur"
               @input="field.handleChange(optionalText($event.target.value))"
             />
-          </FieldControl>
+            <FieldError :errors="field.state.meta.errors" />
+          </Field>
         </form.Field>
 
-        <form.Field name="address" #default="{ field }">
-          <FieldControl :field="field" label="收货地址" v-slot="{ id, invalid }">
+        <form.Field
+          name="address"
+          :validators="{ onSubmit: OptionalTextSchema, onChange: OptionalTextSchema }"
+          #default="{ field }"
+        >
+          <Field :data-invalid="field.state.meta.errors.length > 0">
+            <FieldLabel :for="field.name">收货地址</FieldLabel>
             <Input
-              :id="id"
+              :id="field.name"
               :model-value="field.state.value ?? ''"
-              :aria-invalid="invalid"
+              :aria-invalid="field.state.meta.errors.length > 0"
               placeholder="可选"
               @blur="field.handleBlur"
               @input="field.handleChange(optionalText($event.target.value))"
             />
-          </FieldControl>
+            <FieldError :errors="field.state.meta.errors" />
+          </Field>
         </form.Field>
 
         <DialogFooter>

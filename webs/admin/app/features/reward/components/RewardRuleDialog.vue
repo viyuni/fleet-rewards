@@ -135,24 +135,28 @@ watch(open, isOpen => {
 
       <form class="grid gap-4 sm:grid-cols-2" @submit.prevent="form.handleSubmit">
         <form.Field name="name" #default="{ field }">
-          <FieldControl :field="field" label="规则名称" v-slot="{ id, invalid }">
+          <Field :data-invalid="field.state.meta.errors.length > 0">
+            <FieldLabel :for="field.name">规则名称</FieldLabel>
             <Input
-              :id="id"
+              :id="field.name"
               :model-value="field.state.value"
-              :aria-invalid="invalid"
+              :aria-invalid="field.state.meta.errors.length > 0"
               placeholder="例如：舰长月度奖励"
               @blur="field.handleBlur"
               @input="field.handleChange($event.target.value)"
             />
-          </FieldControl>
+
+            <FieldError :errors="field.state.meta.errors" />
+          </Field>
         </form.Field>
 
         <form.Field name="pointTypeId" #default="{ field }">
-          <FieldControl :field="field" label="积分类型" v-slot="{ id, invalid }">
+          <Field :data-invalid="field.state.meta.errors.length > 0">
+            <FieldLabel :for="field.name">积分类型</FieldLabel>
             <NativeSelect
-              :id="id"
+              :id="field.name"
               :model-value="field.state.value"
-              :aria-invalid="invalid"
+              :aria-invalid="field.state.meta.errors.length > 0"
               @blur="field.handleBlur"
               @update:model-value="field.handleChange(String($event))"
             >
@@ -165,99 +169,111 @@ watch(open, isOpen => {
                 {{ pointType.name }}
               </NativeSelectOption>
             </NativeSelect>
-          </FieldControl>
+
+            <FieldError :errors="field.state.meta.errors" />
+          </Field>
         </form.Field>
 
         <form.Field name="points" #default="{ field }">
-          <FieldControl :field="field" label="奖励积分" v-slot="{ id, invalid }">
+          <Field :data-invalid="field.state.meta.errors.length > 0">
+            <FieldLabel :for="field.name">奖励积分</FieldLabel>
             <Input
-              :id="id"
+              :id="field.name"
               :model-value="field.state.value"
-              :aria-invalid="invalid"
+              :aria-invalid="field.state.meta.errors.length > 0"
               type="number"
               min="1"
               step="1"
               @blur="field.handleBlur"
               @input="field.handleChange(Number($event.target.value))"
             />
-          </FieldControl>
+
+            <FieldError :errors="field.state.meta.errors" />
+          </Field>
         </form.Field>
 
         <form.Field name="priority" #default="{ field }">
-          <FieldControl :field="field" label="优先级" v-slot="{ id, invalid }">
+          <Field :data-invalid="field.state.meta.errors.length > 0">
+            <FieldLabel :for="field.name">优先级</FieldLabel>
             <Input
-              :id="id"
+              :id="field.name"
               :model-value="field.state.value ?? 0"
-              :aria-invalid="invalid"
+              :aria-invalid="field.state.meta.errors.length > 0"
               type="number"
               step="1"
               @blur="field.handleBlur"
               @input="field.handleChange(Number($event.target.value))"
             />
-          </FieldControl>
+
+            <FieldError :errors="field.state.meta.errors" />
+          </Field>
         </form.Field>
 
         <form.Field name="group" #default="{ field }">
-          <FieldControl
-            :field="field"
-            label="互斥分组"
-            description="同一分组内只取优先级最高的一条。"
-            v-slot="{ id, invalid }"
-          >
+          <Field :data-invalid="field.state.meta.errors.length > 0">
+            <FieldLabel :for="field.name">互斥分组</FieldLabel>
             <Input
-              :id="id"
+              :id="field.name"
               :model-value="field.state.value ?? ''"
-              :aria-invalid="invalid"
+              :aria-invalid="field.state.meta.errors.length > 0"
               placeholder="可选"
               @blur="field.handleBlur"
               @input="field.handleChange(optionalText($event.target.value))"
             />
-          </FieldControl>
+
+            <FieldDescription>同一分组内只取优先级最高的一条。</FieldDescription>
+            <FieldError :errors="field.state.meta.errors" />
+          </Field>
         </form.Field>
 
         <form.Field name="enabled" #default="{ field }">
-          <FieldControl :field="field" label="启用状态" v-slot="{ invalid }">
+          <Field :data-invalid="field.state.meta.errors.length > 0">
+            <FieldLabel :for="field.name">启用状态</FieldLabel>
             <Switch
               :model-value="field.state.value ?? false"
-              :aria-invalid="invalid"
+              :aria-invalid="field.state.meta.errors.length > 0"
               @update:model-value="field.handleChange(Boolean($event))"
             />
-          </FieldControl>
+
+            <FieldError :errors="field.state.meta.errors" />
+          </Field>
         </form.Field>
 
         <form.Field name="startsAt" #default="{ field }">
-          <FieldControl :field="field" label="开始时间" v-slot="{ id, invalid }">
+          <Field :data-invalid="field.state.meta.errors.length > 0">
+            <FieldLabel :for="field.name">开始时间</FieldLabel>
             <Input
-              :id="id"
+              :id="field.name"
               :model-value="toDatetimeLocalValue(field.state.value)"
-              :aria-invalid="invalid"
+              :aria-invalid="field.state.meta.errors.length > 0"
               type="datetime-local"
               @blur="field.handleBlur"
               @input="field.handleChange(fromDatetimeLocalValue($event.target.value))"
             />
-          </FieldControl>
+
+            <FieldError :errors="field.state.meta.errors" />
+          </Field>
         </form.Field>
 
         <form.Field name="endsAt" #default="{ field }">
-          <FieldControl :field="field" label="结束时间" v-slot="{ id, invalid }">
+          <Field :data-invalid="field.state.meta.errors.length > 0">
+            <FieldLabel :for="field.name">结束时间</FieldLabel>
             <Input
-              :id="id"
+              :id="field.name"
               :model-value="toDatetimeLocalValue(field.state.value)"
-              :aria-invalid="invalid"
+              :aria-invalid="field.state.meta.errors.length > 0"
               type="datetime-local"
               @blur="field.handleBlur"
               @input="field.handleChange(fromDatetimeLocalValue($event.target.value))"
             />
-          </FieldControl>
+
+            <FieldError :errors="field.state.meta.errors" />
+          </Field>
         </form.Field>
 
         <form.Field name="conditions" #default="{ field }">
-          <FieldControl
-            class="sm:col-span-2"
-            :field="field"
-            label="大航海类型"
-            description="不选择时匹配全部大航海类型。"
-          >
+          <Field class="sm:col-span-2" :data-invalid="field.state.meta.errors.length > 0">
+            <FieldLabel :for="field.name">大航海类型</FieldLabel>
             <div class="flex flex-wrap gap-4">
               <label
                 v-for="option in guardTypeOptions"
@@ -271,20 +287,26 @@ watch(open, isOpen => {
                 {{ option.label }}
               </label>
             </div>
-          </FieldControl>
+
+            <FieldDescription>不选择时匹配全部大航海类型。</FieldDescription>
+            <FieldError :errors="field.state.meta.errors" />
+          </Field>
         </form.Field>
 
         <form.Field name="description" #default="{ field }">
-          <FieldControl class="sm:col-span-2" :field="field" label="备注" v-slot="{ id, invalid }">
+          <Field class="sm:col-span-2" :data-invalid="field.state.meta.errors.length > 0">
+            <FieldLabel :for="field.name">备注</FieldLabel>
             <Textarea
-              :id="id"
+              :id="field.name"
               :model-value="field.state.value ?? ''"
-              :aria-invalid="invalid"
+              :aria-invalid="field.state.meta.errors.length > 0"
               placeholder="可选"
               @blur="field.handleBlur"
               @input="field.handleChange(optionalText($event.target.value))"
             />
-          </FieldControl>
+
+            <FieldError :errors="field.state.meta.errors" />
+          </Field>
         </form.Field>
 
         <DialogFooter class="sm:col-span-2">

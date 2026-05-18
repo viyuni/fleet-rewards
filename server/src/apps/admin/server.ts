@@ -3,12 +3,14 @@ import { Elysia } from 'elysia';
 
 import { errorHandler } from '#modules/error-handler';
 import { health } from '#modules/health';
+import { image } from '#modules/image';
 import { openapi } from '#modules/openapi';
 
 import { version } from '../../../package.json' with { type: 'json' };
 import { appRuntimeContext } from './context';
 import { admin } from './modules/admin';
 import { auth } from './modules/auth';
+import { dashboard } from './modules/dashboard';
 import { email } from './modules/email/index';
 import { order } from './modules/order';
 import { point } from './modules/point';
@@ -34,6 +36,7 @@ export const app = new Elysia({
   .use(appRuntimeContext)
   .use(errorHandler)
   .use(auth)
+  .use(dashboard)
   .use(admin)
   .use(point)
   .use(reward)
@@ -42,6 +45,7 @@ export const app = new Elysia({
   .use(user)
   .use(email)
   .use(health)
+  .use(image)
   .get('/', () => 'Viyuni guard rewards server running... :)', { tags: ['Index'] });
 
 if (adminEnv.NODE_ENV === 'development') {

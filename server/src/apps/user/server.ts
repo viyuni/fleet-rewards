@@ -29,7 +29,7 @@ export const app = new Elysia({
   )
   .use(appRuntimeContext)
   .use(errorHandler)
-  .use(image(userEnv))
+  .use(image)
   .use(auth)
   .use(user)
   .use(product)

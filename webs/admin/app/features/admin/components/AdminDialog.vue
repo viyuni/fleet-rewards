@@ -80,55 +80,67 @@ watch(open, isOpen => {
 
       <form class="space-y-4" @submit.prevent="form.handleSubmit">
         <form.Field name="uid" #default="{ field }">
-          <FieldControl :field="field" label="UID" v-slot="{ id, invalid }">
+          <Field :data-invalid="field.state.meta.errors.length > 0">
+            <FieldLabel :for="field.name">UID</FieldLabel>
             <Input
-              :id="id"
+              :id="field.name"
               :model-value="field.state.value"
-              :aria-invalid="invalid"
+              :aria-invalid="field.state.meta.errors.length > 0"
               :disabled="isEditing"
               inputmode="numeric"
               @blur="field.handleBlur"
               @input="field.handleChange($event.target.value)"
             />
-          </FieldControl>
+
+            <FieldError :errors="field.state.meta.errors" />
+          </Field>
         </form.Field>
 
         <form.Field name="username" #default="{ field }">
-          <FieldControl :field="field" label="用户名" v-slot="{ id, invalid }">
+          <Field :data-invalid="field.state.meta.errors.length > 0">
+            <FieldLabel :for="field.name">用户名</FieldLabel>
             <Input
-              :id="id"
+              :id="field.name"
               :model-value="field.state.value"
-              :aria-invalid="invalid"
+              :aria-invalid="field.state.meta.errors.length > 0"
               @blur="field.handleBlur"
               @input="field.handleChange($event.target.value)"
             />
-          </FieldControl>
+
+            <FieldError :errors="field.state.meta.errors" />
+          </Field>
         </form.Field>
 
         <form.Field v-if="!isEditing" name="password" #default="{ field }">
-          <FieldControl :field="field" label="初始密码" v-slot="{ id, invalid }">
+          <Field :data-invalid="field.state.meta.errors.length > 0">
+            <FieldLabel :for="field.name">初始密码</FieldLabel>
             <Input
-              :id="id"
+              :id="field.name"
               :model-value="field.state.value"
-              :aria-invalid="invalid"
+              :aria-invalid="field.state.meta.errors.length > 0"
               type="password"
               @blur="field.handleBlur"
               @input="field.handleChange($event.target.value)"
             />
-          </FieldControl>
+
+            <FieldError :errors="field.state.meta.errors" />
+          </Field>
         </form.Field>
 
         <form.Field name="remark" #default="{ field }">
-          <FieldControl :field="field" label="备注" v-slot="{ id, invalid }">
+          <Field :data-invalid="field.state.meta.errors.length > 0">
+            <FieldLabel :for="field.name">备注</FieldLabel>
             <Textarea
-              :id="id"
+              :id="field.name"
               :model-value="field.state.value ?? ''"
-              :aria-invalid="invalid"
+              :aria-invalid="field.state.meta.errors.length > 0"
               placeholder="可选"
               @blur="field.handleBlur"
               @input="field.handleChange(optionalText($event.target.value))"
             />
-          </FieldControl>
+
+            <FieldError :errors="field.state.meta.errors" />
+          </Field>
         </form.Field>
 
         <DialogFooter>

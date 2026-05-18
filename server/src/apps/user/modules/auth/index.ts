@@ -15,9 +15,10 @@ export const auth = new Elysia({
   },
 })
   .use(appContext)
-  .derive(({ authUseCase, userUseCase }) => ({
+  .derive(({ authUseCase, rewardUseCase, userUseCase }) => ({
     userAuthUseCase: new AuthUseCase({
       authUseCase,
+      rewardUseCase,
       userUseCase,
     }),
   }))

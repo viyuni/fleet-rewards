@@ -9,6 +9,7 @@
     "./common": "./src/common.ts",
     "./admin": "./src/admin.ts",
     "./user": "./src/user.ts",
+    "./dashboard": "./src/dashboard.ts",
     "./reward": "./src/reward.ts",
     "./product": "./src/product.ts",
     "./stock": "./src/stock.ts",
