@@ -1,17 +1,8 @@
-import type { BiliEventRewardItemSnapshot, GuardType } from '#db/schema';
+import { type Guard } from '@viyuni/bevent-relay/events';
 
-export interface BiliGuardRewardEvent {
-  id: string;
-  uid: number;
-  uname: string;
-  guardType: GuardType;
-  guardName: string;
-  total: number;
-  totalNormalized: number;
-  isYearGuard: boolean;
-  roomId: number;
-  timestamp: number;
-}
+import type { BiliEventRewardItemSnapshot } from '#db/schema';
+
+export interface BiliGuardRewardEvent extends Guard {}
 
 export interface RewardGrantPlanItem {
   ruleSnapshot: BiliEventRewardItemSnapshot['ruleSnapshot'];

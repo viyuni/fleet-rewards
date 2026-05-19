@@ -38,6 +38,13 @@ export interface CreateSharedContextOptions {
   };
 }
 
+export interface CreateEventContainerOptions {
+  db: DbClient;
+  env: SharedEnv & {
+    DATA_SECRET: string;
+  };
+}
+
 export function createContainer({ db, env }: CreateSharedContextOptions) {
   const authUseCase = new AuthUseCase(env.JWT_SECRET);
   const userBasicInfoCrypto = new UserBasicInfoCrypto(env.DATA_SECRET);
@@ -176,6 +183,63 @@ export function createContainer({ db, env }: CreateSharedContextOptions) {
       rewardUseCase,
       rewardRuleUseCase,
       dashboardUseCase,
+    },
+  };
+}
+
+export function createEventContainer({ db, env }: CreateEventContainerOptions) {
+  const userBasicInfoCrypto = new UserBasicInfoCrypto(env.DATA_SECRET);
+
+  const userRepo = new UserRepository(db);
+  const pointAccountRepo = new PointAccountRepository();
+  const pointTransactionRepo = new PointTransactionRepository(db);
+  const pointTypeRepo = new PointTypeRepository(db);
+  const biliEventRepo = new BiliEventRepository(db);
+  const rewardRuleRepo = new RewardRuleRepository(db);
+
+  const userUseCase = new UserUseCase({
+    userBasicInfoCrypto,
+    userRepo,
+  });
+
+  const pointTypeUseCase = new PointTypeUseCase({
+    pointTypeRepo,
+  });
+
+  const pointBalanceUseCase = new PointBalanceUseCase({
+    pointAccountRepo,
+    pointTransactionRepo,
+    pointTypeUseCase,
+    userUseCase,
+  });
+
+  const rewardUseCase = new RewardUseCase({
+    db,
+    pointAccountRepo,
+    pointBalanceUseCase,
+    pointTransactionRepo,
+    pointTypeUseCase,
+    biliEventRepo,
+    logger: logger.scope('EventRewardUseCase'),
+    rewardRuleRepo,
+    userUseCase,
+  });
+
+  return {
+    repositories: {
+      userRepo,
+      pointAccountRepo,
+      pointTransactionRepo,
+      pointTypeRepo,
+      biliEventRepo,
+      rewardRuleRepo,
+    },
+
+    useCases: {
+      userUseCase,
+      pointTypeUseCase,
+      pointBalanceUseCase,
+      rewardUseCase,
     },
   };
 }

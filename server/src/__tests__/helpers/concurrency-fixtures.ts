@@ -212,18 +212,32 @@ export function createBiliGuardEvent(
   overrides: Partial<BiliGuardRewardEvent> = {},
 ): BiliGuardRewardEvent {
   return {
+    cmd: 'USER_TOAST_MSG_V2',
+    type: 'guard',
     id: `${prefix}_guard_event`,
     uid,
     uname: `${prefix}_user`,
+    face: '',
+    message: `${prefix}_user 开通了舰长`,
     guardType: 3,
     guardName: '舰长',
+    price: 198000,
+    priceNormalized: 198,
+    duration: 1,
     total: 198000,
     totalNormalized: 198,
     isYearGuard: false,
+    unit: '月',
+    color: '#00aeec',
+    guardTotalCount: 1,
+    effectId: 0,
     roomId: 1,
     timestamp: Date.now(),
+    timestampNormalized: Date.now(),
+    eventListenerUid: 1,
+    read: false,
     ...overrides,
-  };
+  } as BiliGuardRewardEvent;
 }
 
 export function createBiliUid(): `${number}` {

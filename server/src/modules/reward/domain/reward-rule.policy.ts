@@ -27,7 +27,10 @@ export class RewardRulePolicy {
       return false;
     }
 
-    if (conditions.guardTypes?.length && !conditions.guardTypes.includes(event.guardType)) {
+    if (
+      conditions.guardTypes?.length &&
+      !conditions.guardTypes.includes(event.guardType as (typeof conditions.guardTypes)[number])
+    ) {
       return false;
     }
 

@@ -12,10 +12,13 @@ export default defineConfig({
   run: {
     tasks: {
       'dev:admin': {
-        command: 'bun --env-file=.env --hot ./src/apps/admin/index.ts',
+        command: 'bun --env-file=.env --watch ./src/apps/admin/index.ts',
       },
       'dev:user': {
-        command: 'bun --env-file=.env --hot ./src/apps/user/index.ts',
+        command: 'bun --env-file=.env --watch ./src/apps/user/index.ts',
+      },
+      'dev:event': {
+        command: 'bun --env-file=.env ./src/apps/event/index.ts',
       },
       dts: {
         command: 'vp pack',

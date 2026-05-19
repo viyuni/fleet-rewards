@@ -1,3 +1,4 @@
+import type { GuardType } from '@viyuni/bevent-relay/events';
 import { isNull, type InferInsertModel, type InferSelectModel } from 'drizzle-orm';
 import {
   boolean,
@@ -13,17 +14,6 @@ import {
 
 import { deletedAt, timestamps } from './column-helpers';
 import { pointTypes } from './point-type';
-
-export const GuardType = {
-  /** 总督 */
-  Zongdu: 1,
-  /** 提督 */
-  Tidu: 2,
-  /** 舰长 */
-  Jianzhang: 3,
-} as const;
-
-export type GuardType = (typeof GuardType)[keyof typeof GuardType];
 
 export type BiliGuardRewardRuleCondition = {
   type: 'biliGuard';

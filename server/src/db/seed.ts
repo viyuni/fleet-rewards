@@ -185,8 +185,42 @@ const seedPointConversionRuleNames = {
   activityToJianzhang: '活动积分兑换舰长积分',
 } as const;
 
+function createSeedBiliGuardEvent(
+  input: Pick<
+    BiliGuardRewardEvent,
+    | 'id'
+    | 'uid'
+    | 'uname'
+    | 'guardType'
+    | 'guardName'
+    | 'total'
+    | 'totalNormalized'
+    | 'roomId'
+    | 'timestamp'
+  >,
+): BiliGuardRewardEvent {
+  return {
+    cmd: 'USER_TOAST_MSG_V2',
+    type: 'guard',
+    face: '',
+    message: `${input.uname} 开通了${input.guardName}`,
+    price: input.total,
+    priceNormalized: input.totalNormalized * 198,
+    duration: input.totalNormalized,
+    isYearGuard: false,
+    unit: '月',
+    color: '#00aeec',
+    guardTotalCount: 1,
+    effectId: 0,
+    timestampNormalized: input.timestamp,
+    eventListenerUid: input.roomId,
+    read: false,
+    ...input,
+  };
+}
+
 const seedBiliGuardEvents = [
-  {
+  createSeedBiliGuardEvent({
     id: 'seed-bili-guard-registered-jianzhang-001',
     uid: 100000000,
     uname: '测试已注册舰长',
@@ -194,11 +228,10 @@ const seedBiliGuardEvents = [
     guardName: '舰长',
     total: 198000,
     totalNormalized: 1,
-    isYearGuard: false,
     roomId: 1270,
     timestamp: new Date('2026-05-01T12:00:00.000Z').getTime(),
-  },
-  {
+  }),
+  createSeedBiliGuardEvent({
     id: 'seed-bili-guard-registered-tidu-001',
     uid: 100000001,
     uname: '测试已注册提督',
@@ -206,11 +239,10 @@ const seedBiliGuardEvents = [
     guardName: '提督',
     total: 1998000,
     totalNormalized: 10,
-    isYearGuard: false,
     roomId: 1270,
     timestamp: new Date('2026-05-02T12:00:00.000Z').getTime(),
-  },
-  {
+  }),
+  createSeedBiliGuardEvent({
     id: 'seed-bili-guard-unregistered-jianzhang-001',
     uid: 200000001,
     uname: '测试未注册舰长',
@@ -218,11 +250,10 @@ const seedBiliGuardEvents = [
     guardName: '舰长',
     total: 198000,
     totalNormalized: 1,
-    isYearGuard: false,
     roomId: 1270,
     timestamp: new Date('2026-05-03T12:00:00.000Z').getTime(),
-  },
-  {
+  }),
+  createSeedBiliGuardEvent({
     id: 'seed-bili-guard-unregistered-zongdu-001',
     uid: 200000002,
     uname: '测试未注册总督',
@@ -230,10 +261,9 @@ const seedBiliGuardEvents = [
     guardName: '总督',
     total: 19998000,
     totalNormalized: 100,
-    isYearGuard: false,
     roomId: 1270,
     timestamp: new Date('2026-05-04T12:00:00.000Z').getTime(),
-  },
+  }),
 ] satisfies BiliGuardRewardEvent[];
 
 async function findPointType(targetDb: typeof db, name: string) {
