@@ -1,12 +1,24 @@
-export function optionalText(value: string) {
-  const trimmed = value.trim();
-
-  return trimmed || undefined;
+/**
+ * Update payload convention:
+ * - `undefined` / missing means "do not change this field".
+ * - `null` means "clear this nullable field".
+ * - `''` from form controls is normalized to `null` at the submit boundary.
+ */
+export function nullifyEmptyFields<T extends Record<string, unknown>>(obj: T) {
+  return Object.fromEntries(
+    Object.entries(obj).map(([key, value]) => [key, value === '' ? null : value]),
+  ) as T;
 }
 
-export function normalizeNullableBody<T extends Record<string, unknown>>(obj: T) {
+/**
+ * Create payload convention:
+ * Empty optional fields are omitted so backend defaults can apply.
+ */
+export function dropEmptyFields<T extends Record<string, unknown>>(obj: T) {
   return Object.fromEntries(
-    Object.entries(obj).map(([key, value]) => [key, value === undefined ? null : value]),
+    Object.entries(obj).filter(
+      ([, value]) => value !== undefined && value !== null && value !== '',
+    ),
   ) as T;
 }
 

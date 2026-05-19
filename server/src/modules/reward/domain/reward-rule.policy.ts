@@ -64,7 +64,10 @@ export class RewardRulePolicy {
     );
   }
 
-  static assertValidTimeRange(input: { startsAt?: Date | null; endsAt?: Date | null }) {
+  static assertValidTimeRange(input: {
+    startsAt?: Date | number | null;
+    endsAt?: Date | number | null;
+  }) {
     if (input.startsAt && input.endsAt && input.startsAt >= input.endsAt) {
       throw new RewardRuleTimeRangeInvalidError();
     }

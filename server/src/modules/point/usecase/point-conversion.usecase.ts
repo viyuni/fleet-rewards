@@ -5,6 +5,8 @@ import type {
 } from '@internal/shared/point-conversion';
 
 import type { DbClient } from '#db';
+import type { InsertPointConversionRule, UpdatePointConversionRule } from '#db/schema';
+import { toDate } from '#utils';
 
 import {
   POINT_CHANGE_SOURCE_TYPE,
@@ -56,7 +58,14 @@ export class PointConversionUseCase {
     await this.assertPointTypesAvailable(ruleData.fromPointTypeId, ruleData.toPointTypeId);
     await this.assertRulePairAvailable(ruleData.fromPointTypeId, ruleData.toPointTypeId);
 
-    return this.deps.pointConversionRuleRepo.create(ruleData);
+    const { endsAt, startsAt, ...data } = ruleData;
+    const createData: InsertPointConversionRule = {
+      ...data,
+      endsAt: toDate(endsAt),
+      startsAt: toDate(startsAt),
+    };
+
+    return this.deps.pointConversionRuleRepo.create(createData);
   }
 
   async update(pointConversionRuleId: string, ruleData: UpdatePointConversionRuleBody) {
@@ -69,7 +78,14 @@ export class PointConversionUseCase {
       await this.assertPointTypesAvailable(next.fromPointTypeId, next.toPointTypeId);
     }
 
-    return this.deps.pointConversionRuleRepo.update(pointConversionRuleId, ruleData);
+    const { endsAt, startsAt, ...data } = ruleData;
+    const updateData: UpdatePointConversionRule = {
+      ...data,
+      endsAt: toDate(endsAt),
+      startsAt: toDate(startsAt),
+    };
+
+    return this.deps.pointConversionRuleRepo.update(pointConversionRuleId, updateData);
   }
 
   async enable(pointConversionRuleId: string) {

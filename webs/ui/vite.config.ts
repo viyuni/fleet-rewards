@@ -7,7 +7,7 @@ export default defineConfig({
         command: 'vp check',
       },
       typecheck: {
-        command: 'vue-tsgo --build',
+        command: 'vp exec vue-tsc --build',
         input: [{ auto: true }, '!**/*.tsbuildinfo'],
       },
       'generate:manifest': {

@@ -6,6 +6,7 @@ import {
   pgEnum,
   pgTable,
   text,
+  timestamp,
   uniqueIndex,
   uuid,
 } from 'drizzle-orm/pg-core';
@@ -113,6 +114,16 @@ export const products = pgTable(
     deliveryType: productDeliveryTypeEnum('delivery_type').notNull().default('manual'),
 
     /**
+     * 可兑换开始时间为空表示不限制开始时间
+     */
+    startTime: timestamp('start_time', { withTimezone: true }),
+
+    /**
+     * 可兑换结束时间为空表示不限制结束时间
+     */
+    endTime: timestamp('end_time', { withTimezone: true }),
+
+    /**
      * 排序
      * 值越大越靠前
      */
@@ -128,6 +139,7 @@ export const products = pgTable(
     uniqueIndex('products_name_active_unique').on(t.name).where(isNull(t.deletedAt)),
     index('products_point_type_id_idx').on(t.pointTypeId),
     index('products_status_idx').on(t.status),
+    index('products_time_range_idx').on(t.startTime, t.endTime),
     index('products_sort_idx').on(t.sort),
     index('products_deleted_at_idx').on(t.deletedAt),
     index('products_active_list_idx').on(t.status, t.sort, t.createdAt).where(isNull(t.deletedAt)),

@@ -83,6 +83,6 @@
     "@vue/tsconfig": "^0.9.1",
     "bun-types": "^1.3.14",
     "typescript": "^6.0.2",
-    "vue-tsgo": "^0.2.0"
+    "vue-tsc": "^3.3.0"
   }
 }

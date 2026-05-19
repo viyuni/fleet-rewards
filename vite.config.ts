@@ -37,7 +37,12 @@ export default defineConfig({
     sortPackageJson: true,
     arrowParens: 'avoid',
     embeddedLanguageFormatting: 'auto',
-    ignorePatterns: ['**/node_modules/**', '**/dist/**', 'webs/ui/components/ui/**'],
+    ignorePatterns: [
+      '**/node_modules/**',
+      '**/dist/**',
+      'webs/ui/components/ui/**',
+      '**/drizzle/**',
+    ],
   },
   lint: {
     plugins: ['unicorn', 'typescript', 'oxc', 'vue', 'import', 'vitest', 'node'],
@@ -166,6 +171,11 @@ export default defineConfig({
       builtin: true,
     },
     globals: {},
-    ignorePatterns: ['**/node_modules/**', '**/dist/**', 'webs/ui/components/ui/**'],
+    ignorePatterns: [
+      '**/node_modules/**',
+      '**/dist/**',
+      'webs/ui/components/ui/**',
+      '**/drizzle/**',
+    ],
   },
 });

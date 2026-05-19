@@ -9,8 +9,8 @@ export class PointConversionRulePolicy {
     toAmount?: number;
     minConvertAmount?: number | null;
     maxConvertAmount?: number | null;
-    startsAt?: Date | null;
-    endsAt?: Date | null;
+    startsAt?: Date | number | null;
+    endsAt?: Date | number | null;
   }) {
     if (
       input.fromPointTypeId !== undefined &&

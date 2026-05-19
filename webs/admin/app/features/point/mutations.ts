@@ -7,7 +7,7 @@ import type {
 import type { CreatePointTypeBody, UpdatePointTypeBody } from '@internal/shared/point-type';
 import { defineMutation, useMutation, useQueryCache } from '@pinia/colada';
 
-import { normalizeNullableBody } from '~/utils/form';
+import { nullifyEmptyFields } from '~/utils/form';
 
 import { POINT_QUERY_KEYS } from './queries';
 
@@ -67,7 +67,7 @@ export const useUpdatePointType = defineMutation(() => {
     mutation(input: { pointTypeId: string; body: UpdatePointTypeBody }) {
       return $api.points
         .types({ pointTypeId: input.pointTypeId })
-        .put(normalizeNullableBody(input.body));
+        .put(nullifyEmptyFields(input.body));
     },
     onSettled: invalidatePoints,
   });
@@ -133,7 +133,7 @@ export const useUpdatePointConversionRule = defineMutation(() => {
     mutation(input: { pointConversionRuleId: string; body: UpdatePointConversionRuleBody }) {
       return $api.points
         .conversions({ pointConversionRuleId: input.pointConversionRuleId })
-        .put(normalizeNullableBody(input.body));
+        .put(nullifyEmptyFields(input.body));
     },
     onSettled: invalidatePoints,
   });

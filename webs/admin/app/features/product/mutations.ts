@@ -2,7 +2,7 @@ import type { CreateProductBody, UpdateProductBody } from '@internal/shared/prod
 import type { StockAdjustmentBody } from '@internal/shared/stock';
 import { defineMutation, useMutation, useQueryCache } from '@pinia/colada';
 
-import { normalizeNullableBody } from '~/utils/form';
+import { dropEmptyFields, nullifyEmptyFields } from '~/utils/form';
 
 import { PRODUCT_QUERY_KEYS } from './queries';
 
@@ -38,7 +38,7 @@ export const useCreateProduct = defineMutation(() => {
       successMessage: '商品已创建',
     },
     mutation(body: CreateProductBody) {
-      return $api.products.post(body);
+      return $api.products.post(dropEmptyFields(body));
     },
     onSettled: invalidateProducts,
   });
@@ -54,7 +54,7 @@ export const useUpdateProduct = defineMutation(() => {
       successMessage: '商品已更新',
     },
     mutation(input: { productId: string; body: UpdateProductBody }) {
-      return $api.products({ productId: input.productId }).put(normalizeNullableBody(input.body));
+      return $api.products({ productId: input.productId }).put(nullifyEmptyFields(input.body));
     },
     onSettled: invalidateProducts,
   });

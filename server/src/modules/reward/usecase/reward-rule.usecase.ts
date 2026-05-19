@@ -1,6 +1,8 @@
 import type { CreateRewardRuleBody, UpdateRewardRuleBody } from '@internal/shared/reward';
 
+import type { InsertRewardRule, UpdateRewardRule } from '#db/schema';
 import { PointTypeUseCase } from '#modules/point';
+import { toDate } from '#utils';
 
 import { RewardRuleNameExistsError, RewardRuleNotFoundError, RewardRulePolicy } from '../domain';
 import { RewardRuleRepository } from '../repository';
@@ -32,7 +34,14 @@ export class RewardRuleUseCase {
       throw new RewardRuleNameExistsError();
     }
 
-    const rule = await this.deps.rewardRuleRepo.create(ruleData);
+    const { endsAt, startsAt, ...data } = ruleData;
+    const createData: InsertRewardRule = {
+      ...data,
+      endsAt: toDate(endsAt),
+      startsAt: toDate(startsAt),
+    };
+
+    const rule = await this.deps.rewardRuleRepo.create(createData);
 
     if (!rule) {
       throw new RewardRuleNotFoundError();
@@ -53,7 +62,14 @@ export class RewardRuleUseCase {
       endsAt: ruleData.endsAt ?? current.endsAt,
     });
 
-    const rule = await this.deps.rewardRuleRepo.update(rewardRuleId, ruleData);
+    const { endsAt, startsAt, ...data } = ruleData;
+    const updateData: UpdateRewardRule = {
+      ...data,
+      endsAt: toDate(endsAt),
+      startsAt: toDate(startsAt),
+    };
+
+    const rule = await this.deps.rewardRuleRepo.update(rewardRuleId, updateData);
 
     if (!rule) {
       throw new RewardRuleNotFoundError();

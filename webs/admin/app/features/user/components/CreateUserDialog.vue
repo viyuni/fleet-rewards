@@ -5,8 +5,6 @@ import { useForm } from '@tanstack/vue-form';
 import { Button } from '@web/ui/components/ui/button';
 import { Loader2 } from 'lucide-vue-next';
 
-import { optionalText } from '~/utils/form';
-
 import { useCreateUser } from '../mutations';
 
 const open = defineModel<boolean>('open', { default: false });
@@ -122,7 +120,7 @@ watch(open, isOpen => {
               type="email"
               placeholder="可选"
               @blur="field.handleBlur"
-              @input="field.handleChange(optionalText($event.target.value))"
+              @input="field.handleChange($event.target.value)"
             />
             <FieldError :errors="field.state.meta.errors" />
           </Field>
@@ -137,7 +135,7 @@ watch(open, isOpen => {
               :aria-invalid="field.state.meta.errors.length > 0"
               placeholder="可选"
               @blur="field.handleBlur"
-              @input="field.handleChange(optionalText($event.target.value))"
+              @input="field.handleChange($event.target.value)"
             />
             <FieldError :errors="field.state.meta.errors" />
           </Field>
@@ -152,7 +150,7 @@ watch(open, isOpen => {
               :aria-invalid="field.state.meta.errors.length > 0"
               placeholder="可选"
               @blur="field.handleBlur"
-              @input="field.handleChange(optionalText($event.target.value))"
+              @input="field.handleChange($event.target.value)"
             />
             <FieldError :errors="field.state.meta.errors" />
           </Field>

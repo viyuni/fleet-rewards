@@ -1,38 +1,31 @@
 <script setup lang="ts">
-import type { StockAdjustmentBody } from '@internal/shared/stock';
+import { AdminCreateSchema, type AdminCreateBody } from '@internal/shared/admin';
 import { useForm } from '@tanstack/vue-form';
 import { Button } from '@web/ui/components/ui/button';
 import { Loader2 } from 'lucide-vue-next';
 
-import { useAdjustProductStock } from '../mutations';
-import type { Product } from './ProductListView.vue';
-
-const props = defineProps<{
-  product: Product;
-}>();
+import { useCreateAdmin } from '../mutations';
 
 const open = defineModel<boolean>('open', { default: false });
 
-const { mutateAsync: adjustProductStock, isLoading } = useAdjustProductStock();
+const { mutateAsync: createAdmin, isLoading } = useCreateAdmin();
 
-function createDefaultValues(): StockAdjustmentBody {
+function createDefaultValues(): AdminCreateBody {
   return {
-    delta: 1,
+    uid: '',
+    username: '',
+    password: '',
     remark: undefined,
-    nonce: crypto.randomUUID(),
   };
 }
 
 const form = useForm({
+  validators: {
+    onSubmit: AdminCreateSchema,
+  },
   defaultValues: createDefaultValues(),
-  async onSubmit({ value }: { value: StockAdjustmentBody }) {
-    await adjustProductStock({
-      productId: props.product.id,
-      body: {
-        ...value,
-        nonce: crypto.randomUUID(),
-      },
-    });
+  async onSubmit({ value }: { value: AdminCreateBody }) {
+    await createAdmin(value);
 
     form.reset(createDefaultValues());
     open.value = false;
@@ -50,27 +43,54 @@ watch(open, isOpen => {
   <Dialog v-model:open="open">
     <DialogContent class="sm:max-w-md">
       <DialogHeader>
-        <DialogTitle>调整库存</DialogTitle>
-        <DialogDescription> {{ product.name }} 当前库存为 {{ product.stock }}。 </DialogDescription>
+        <DialogTitle>添加管理员</DialogTitle>
+        <DialogDescription>创建普通管理员账号。</DialogDescription>
       </DialogHeader>
 
       <form class="space-y-4" @submit.prevent="form.handleSubmit">
-        <form.Field name="delta" #default="{ field }">
+        <form.Field name="uid" #default="{ field }">
           <Field :data-invalid="field.state.meta.errors.length > 0">
-            <FieldLabel :for="field.name">调整数量</FieldLabel>
+            <FieldLabel :for="field.name">UID</FieldLabel>
             <Input
               :id="field.name"
               :model-value="field.state.value"
               :aria-invalid="field.state.meta.errors.length > 0"
-              type="number"
-              step="1"
-              placeholder="正数入库，负数扣减"
+              inputmode="numeric"
               @blur="field.handleBlur"
-              @input="field.handleChange(Number($event.target.value))"
+              @input="field.handleChange($event.target.value)"
             />
-            <FieldDescription
-              >调整后库存：{{ product.stock + Number(field.state.value) }}</FieldDescription
-            >
+
+            <FieldError :errors="field.state.meta.errors" />
+          </Field>
+        </form.Field>
+
+        <form.Field name="username" #default="{ field }">
+          <Field :data-invalid="field.state.meta.errors.length > 0">
+            <FieldLabel :for="field.name">用户名</FieldLabel>
+            <Input
+              :id="field.name"
+              :model-value="field.state.value"
+              :aria-invalid="field.state.meta.errors.length > 0"
+              @blur="field.handleBlur"
+              @input="field.handleChange($event.target.value)"
+            />
+
+            <FieldError :errors="field.state.meta.errors" />
+          </Field>
+        </form.Field>
+
+        <form.Field name="password" #default="{ field }">
+          <Field :data-invalid="field.state.meta.errors.length > 0">
+            <FieldLabel :for="field.name">初始密码</FieldLabel>
+            <Input
+              :id="field.name"
+              :model-value="field.state.value"
+              :aria-invalid="field.state.meta.errors.length > 0"
+              type="password"
+              @blur="field.handleBlur"
+              @input="field.handleChange($event.target.value)"
+            />
+
             <FieldError :errors="field.state.meta.errors" />
           </Field>
         </form.Field>
@@ -82,10 +102,11 @@ watch(open, isOpen => {
               :id="field.name"
               :model-value="field.state.value ?? ''"
               :aria-invalid="field.state.meta.errors.length > 0"
-              placeholder="例如：盘点入库 / 损耗扣减"
+              placeholder="可选"
               @blur="field.handleBlur"
               @input="field.handleChange($event.target.value)"
             />
+
             <FieldError :errors="field.state.meta.errors" />
           </Field>
         </form.Field>
@@ -96,7 +117,7 @@ watch(open, isOpen => {
           </DialogClose>
           <Button type="submit" :disabled="isLoading">
             <Loader2 v-if="isLoading" class="animate-spin" />
-            确认调整
+            创建
           </Button>
         </DialogFooter>
       </form>

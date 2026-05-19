@@ -194,12 +194,22 @@ export class ProductRepository {
    * 兑换商城分页
    */
   async pageRedeem(query: PageQuery) {
+    const now = new Date();
+
     return new QueryPageBuilder(this.db, products, this.db.query.products)
       .where({
         deletedAt: {
           isNull: true,
         },
         status: 'active',
+        AND: [
+          {
+            OR: [{ startTime: { isNull: true } }, { startTime: { lte: now } }],
+          },
+          {
+            OR: [{ endTime: { isNull: true } }, { endTime: { gt: now } }],
+          },
+        ],
       })
       .query((findMany, { where, limit, offset }) =>
         findMany({
@@ -215,6 +225,8 @@ export class ProductRepository {
             price: true,
             stock: true,
             deliveryType: true,
+            startTime: true,
+            endTime: true,
           },
           with: {
             pointType: {

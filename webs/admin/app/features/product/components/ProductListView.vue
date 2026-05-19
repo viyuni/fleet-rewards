@@ -28,6 +28,8 @@ const columns = [
   { accessorKey: 'price', header: '价格' },
   { accessorKey: 'stock', header: '库存' },
   { accessorKey: 'deliveryType', header: '发货方式' },
+  { accessorKey: 'startTime', header: '开始时间' },
+  { accessorKey: 'endTime', header: '结束时间' },
   { accessorKey: 'status', header: '状态' },
   { id: 'actions', enableHiding: false },
 ] satisfies ColumnDef<Product>[];
@@ -125,6 +127,14 @@ function getCoverUrl(cover: Product['cover']) {
 
     <template #deliveryType="{ value }">
       {{ value === 'automatic' ? '自动发货' : '人工发货' }}
+    </template>
+
+    <template #startTime="{ value }">
+      {{ value ? new Date(value).toLocaleString() : '-' }}
+    </template>
+
+    <template #endTime="{ value }">
+      {{ value ? new Date(value).toLocaleString() : '-' }}
     </template>
 
     <template #status="{ value, rowData }">

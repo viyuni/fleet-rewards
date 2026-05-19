@@ -2,7 +2,7 @@ import type { AdjustBalanceBody } from '@internal/shared/point-account';
 import type { UpdateUserBody, UserRegisterBody } from '@internal/shared/user';
 import { defineMutation, useMutation, useQueryCache } from '@pinia/colada';
 
-import { normalizeNullableBody } from '~/utils/form';
+import { dropEmptyFields, nullifyEmptyFields } from '~/utils/form';
 
 import { USER_QUERY_KEYS } from './queries';
 
@@ -22,7 +22,7 @@ export const useCreateUser = defineMutation(() => {
       successMessage: '用户创建成功',
     },
     mutation(body: UserRegisterBody) {
-      return $api.users.post(body);
+      return $api.users.post(dropEmptyFields(body));
     },
     onSettled: invalidateUsers,
   });
@@ -54,7 +54,7 @@ export const useUpdateUser = defineMutation(() => {
       successMessage: '用户信息已更新',
     },
     mutation(input: { userId: string; body: UpdateUserBody }) {
-      return $api.users({ userId: input.userId }).patch(normalizeNullableBody(input.body));
+      return $api.users({ userId: input.userId }).patch(nullifyEmptyFields(input.body));
     },
     onSettled: invalidateUsers,
   });

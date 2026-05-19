@@ -1,47 +1,53 @@
 <script setup lang="ts">
-import type { StockAdjustmentBody } from '@internal/shared/stock';
+import { UpdatePointTypeSchema, type UpdatePointTypeBody } from '@internal/shared/point-type';
 import { useForm } from '@tanstack/vue-form';
 import { Button } from '@web/ui/components/ui/button';
 import { Loader2 } from 'lucide-vue-next';
 
-import { useAdjustProductStock } from '../mutations';
-import type { Product } from './ProductListView.vue';
+import { useUpdatePointType } from '../mutations';
+import type { PointType } from './PointTypeListView.vue';
 
 const props = defineProps<{
-  product: Product;
+  pointType: PointType;
 }>();
 
 const open = defineModel<boolean>('open', { default: false });
 
-const { mutateAsync: adjustProductStock, isLoading } = useAdjustProductStock();
+const { mutateAsync: updatePointType, isLoading } = useUpdatePointType();
 
-function createDefaultValues(): StockAdjustmentBody {
+function createDefaultValues(pointType: PointType): UpdatePointTypeBody {
   return {
-    delta: 1,
-    remark: undefined,
-    nonce: crypto.randomUUID(),
+    name: pointType?.name ?? '',
+    description: pointType?.description ?? undefined,
   };
 }
 
 const form = useForm({
-  defaultValues: createDefaultValues(),
-  async onSubmit({ value }: { value: StockAdjustmentBody }) {
-    await adjustProductStock({
-      productId: props.product.id,
-      body: {
-        ...value,
-        nonce: crypto.randomUUID(),
-      },
+  validators: {
+    onSubmit: UpdatePointTypeSchema,
+  },
+  defaultValues: createDefaultValues(props.pointType),
+  async onSubmit({ value }: { value: UpdatePointTypeBody }) {
+    await updatePointType({
+      pointTypeId: props.pointType.id,
+      body: value,
     });
 
-    form.reset(createDefaultValues());
+    form.reset(createDefaultValues(props.pointType));
     open.value = false;
   },
 });
 
+watch(
+  () => props.pointType,
+  pointType => {
+    form.reset(createDefaultValues(pointType));
+  },
+);
+
 watch(open, isOpen => {
   if (!isOpen) {
-    form.reset(createDefaultValues());
+    form.reset(createDefaultValues(props.pointType));
   }
 });
 </script>
@@ -50,42 +56,39 @@ watch(open, isOpen => {
   <Dialog v-model:open="open">
     <DialogContent class="sm:max-w-md">
       <DialogHeader>
-        <DialogTitle>调整库存</DialogTitle>
-        <DialogDescription> {{ product.name }} 当前库存为 {{ product.stock }}。 </DialogDescription>
+        <DialogTitle>编辑积分类型</DialogTitle>
+        <DialogDescription>更新积分类型的展示信息。</DialogDescription>
       </DialogHeader>
 
       <form class="space-y-4" @submit.prevent="form.handleSubmit">
-        <form.Field name="delta" #default="{ field }">
+        <form.Field name="name" #default="{ field }">
           <Field :data-invalid="field.state.meta.errors.length > 0">
-            <FieldLabel :for="field.name">调整数量</FieldLabel>
+            <FieldLabel :for="field.name">名称</FieldLabel>
             <Input
               :id="field.name"
               :model-value="field.state.value"
               :aria-invalid="field.state.meta.errors.length > 0"
-              type="number"
-              step="1"
-              placeholder="正数入库，负数扣减"
+              placeholder="例如：舰队积分"
               @blur="field.handleBlur"
-              @input="field.handleChange(Number($event.target.value))"
+              @input="field.handleChange($event.target.value)"
             />
-            <FieldDescription
-              >调整后库存：{{ product.stock + Number(field.state.value) }}</FieldDescription
-            >
+
             <FieldError :errors="field.state.meta.errors" />
           </Field>
         </form.Field>
 
-        <form.Field name="remark" #default="{ field }">
+        <form.Field name="description" #default="{ field }">
           <Field :data-invalid="field.state.meta.errors.length > 0">
-            <FieldLabel :for="field.name">备注</FieldLabel>
+            <FieldLabel :for="field.name">描述</FieldLabel>
             <Textarea
               :id="field.name"
               :model-value="field.state.value ?? ''"
               :aria-invalid="field.state.meta.errors.length > 0"
-              placeholder="例如：盘点入库 / 损耗扣减"
+              placeholder="可选"
               @blur="field.handleBlur"
               @input="field.handleChange($event.target.value)"
             />
+
             <FieldError :errors="field.state.meta.errors" />
           </Field>
         </form.Field>
@@ -96,7 +99,7 @@ watch(open, isOpen => {
           </DialogClose>
           <Button type="submit" :disabled="isLoading">
             <Loader2 v-if="isLoading" class="animate-spin" />
-            确认调整
+            保存
           </Button>
         </DialogFooter>
       </form>

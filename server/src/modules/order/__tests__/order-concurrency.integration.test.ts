@@ -5,7 +5,7 @@ import { and, count, eq } from 'drizzle-orm';
 import { orders, pointTransactions, productStockMovements } from '#db/schema';
 import { OrderIdempotencyKey } from '#modules/order';
 import { PointIdempotencyKey } from '#modules/point';
-import { StockIdempotencyKey } from '#modules/product';
+import { ProductUnavailableError, StockIdempotencyKey } from '#modules/product';
 
 import {
   countFulfilled,
@@ -16,6 +16,7 @@ import {
   createDeps,
   db,
   describeWithDatabase,
+  expectRejectsInstanceOf,
   expectSeeded,
   grantPoints,
   installConcurrencyTestHooks,
@@ -145,5 +146,57 @@ describeWithDatabase('订单真实数据库并发保护', () => {
     expect(orderRows?.total).toBe(1);
     expect(consumeRows?.total).toBe(1);
     expect(stockRows?.total).toBe(1);
+  });
+
+  it('商品不在可兑换时间范围内时不允许创建订单', async () => {
+    const prefix = newBatch('order_product_time_range');
+    const pointType = await seedPointType(`${prefix}_point`);
+    const user = await seedUser(`${prefix}_user`);
+    const { orderUseCase } = createDeps();
+
+    await grantPoints({
+      adminId: `${prefix}_admin`,
+      userId: user.id,
+      pointTypeId: pointType.id,
+      delta: 2,
+      nonce: `${prefix}_grant_points`,
+    });
+
+    const futureProduct = await seedProduct({
+      name: `${prefix}_future_product`,
+      pointTypeId: pointType.id,
+      price: 1,
+      stock: 1,
+      startTime: Date.now() + 60_000,
+    });
+    const expiredProduct = await seedProduct({
+      name: `${prefix}_expired_product`,
+      pointTypeId: pointType.id,
+      price: 1,
+      stock: 1,
+      endTime: Date.now() - 60_000,
+    });
+
+    await expectRejectsInstanceOf(
+      orderUseCase.create(user.id, {
+        productId: futureProduct.id,
+        nonce: `${prefix}_future_nonce`,
+      }),
+      ProductUnavailableError,
+    );
+    await expectRejectsInstanceOf(
+      orderUseCase.create(user.id, {
+        productId: expiredProduct.id,
+        nonce: `${prefix}_expired_nonce`,
+      }),
+      ProductUnavailableError,
+    );
+
+    const [orderRows] = await db
+      .select({ total: count() })
+      .from(orders)
+      .where(eq(orders.userId, user.id));
+
+    expect(orderRows?.total).toBe(0);
   });
 });

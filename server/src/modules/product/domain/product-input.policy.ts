@@ -1,15 +1,21 @@
-import type { CreateProductBody, UpdateProductBody } from '@internal/shared/product';
-
 import { ProductInvalidInputError } from './errors';
 
 export class ProductInputPolicy {
-  static assertValid(input: CreateProductBody | UpdateProductBody) {
-    if (input.price !== undefined) {
-      ProductInputPolicy.assertPositiveInteger(input.price, '商品价格必须是正整数');
+  static assertPrice(value: number | undefined) {
+    if (value !== undefined) {
+      ProductInputPolicy.assertPositiveInteger(value, '商品价格必须是正整数');
     }
+  }
 
-    if (input.stock !== undefined && input.stock !== null) {
-      ProductInputPolicy.assertNonNegativeInteger(input.stock, '商品库存必须是非负整数或不限库存');
+  static assertStock(value: number | null | undefined) {
+    if (value !== undefined && value !== null) {
+      ProductInputPolicy.assertNonNegativeInteger(value, '商品库存必须是非负整数或不限库存');
+    }
+  }
+
+  static assertTimeRange(startTime: number | null | undefined, endTime: number | null | undefined) {
+    if (startTime && endTime && startTime >= endTime) {
+      throw new ProductInvalidInputError('商品开始时间必须早于结束时间');
     }
   }
 

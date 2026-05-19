@@ -17,6 +17,8 @@ function product(input: Partial<Product> = {}): Product {
     status: 'active',
     stock: 1,
     deliveryType: 'manual',
+    startTime: null,
+    endTime: null,
     sort: 0,
     metadata: null,
     deletedAt: null,
@@ -37,6 +39,27 @@ describe('商品策略', () => {
     expect(() => ProductPolicy.assertAvailable(product({ status: 'disabled' }))).toThrow(
       ProductUnavailableError,
     );
+  });
+
+  it('按可兑换时间窗口判断商品是否可兑换', () => {
+    const now = new Date('2026-05-19T12:00:00.000Z');
+
+    expect(
+      ProductPolicy.isAvailable(
+        product({
+          startTime: new Date('2026-05-19T11:00:00.000Z'),
+          endTime: new Date('2026-05-19T13:00:00.000Z'),
+        }),
+        now,
+      ),
+    ).toBe(true);
+
+    expect(
+      ProductPolicy.isAvailable(product({ startTime: new Date('2026-05-19T13:00:00.000Z') }), now),
+    ).toBe(false);
+    expect(
+      ProductPolicy.isAvailable(product({ endTime: new Date('2026-05-19T12:00:00.000Z') }), now),
+    ).toBe(false);
   });
 
   it('判断上下架操作是否需要写库', () => {

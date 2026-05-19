@@ -177,13 +177,13 @@ describeWithDatabase('奖励发放真实数据库', () => {
 
     await createRewardRule(`${prefix}_expired`, expiredPointType.id, {
       points: 50,
-      startsAt: new Date('2026-05-12T11:00:00.000Z'),
-      endsAt: now,
+      startsAt: new Date('2026-05-12T11:00:00.000Z').getTime(),
+      endsAt: now.getTime(),
     });
     await createRewardRule(`${prefix}_active`, activePointType.id, {
       points: 15,
-      startsAt: new Date('2026-05-12T11:00:00.000Z'),
-      endsAt: new Date('2026-05-12T13:00:00.000Z'),
+      startsAt: new Date('2026-05-12T11:00:00.000Z').getTime(),
+      endsAt: new Date('2026-05-12T13:00:00.000Z').getTime(),
     });
 
     const result = await rewardUseCase.rewardBiliGuard(
@@ -307,8 +307,8 @@ describeWithDatabase('奖励发放真实数据库', () => {
     await rewardUseCase.rewardBiliGuard(event);
     await rewardRuleUseCase.update(rule.id, {
       points: 99,
-      startsAt: new Date('2026-05-12T10:00:00.000Z'),
-      endsAt: new Date('2026-05-12T11:00:00.000Z'),
+      startsAt: new Date('2026-05-12T10:00:00.000Z').getTime(),
+      endsAt: new Date('2026-05-12T11:00:00.000Z').getTime(),
     });
     await createRewardRule(`${prefix}_new_rule`, pointType.id, {
       points: 99,

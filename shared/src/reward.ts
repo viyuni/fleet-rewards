@@ -133,7 +133,6 @@ export const CreateRewardRuleSchema = v.object({
     v.pipe(
       v.number('请输入生效开始时间戳'),
       v.integer('生效开始时间戳必须是整数'),
-      v.toDate(),
       v.description('生效开始时间戳'),
     ),
   ),
@@ -141,7 +140,6 @@ export const CreateRewardRuleSchema = v.object({
     v.pipe(
       v.number('请输入生效结束时间戳'),
       v.integer('生效结束时间戳必须是整数'),
-      v.toDate(),
       v.description('生效结束时间戳'),
     ),
   ),
@@ -155,6 +153,7 @@ export const CreateRewardRuleSchema = v.object({
   ),
 });
 
+export type CreateRewardRuleInput = v.InferInput<typeof CreateRewardRuleSchema>;
 export type CreateRewardRuleBody = v.InferOutput<typeof CreateRewardRuleSchema>;
 
 /**
@@ -183,7 +182,6 @@ export const UpdateRewardRuleSchema = v.object({
     v.pipe(
       v.number('请输入生效开始时间戳'),
       v.integer('生效开始时间戳必须是整数'),
-      v.toDate(),
       v.description('生效开始时间戳'),
     ),
   ),
@@ -191,7 +189,6 @@ export const UpdateRewardRuleSchema = v.object({
     v.pipe(
       v.number('请输入生效结束时间戳'),
       v.integer('生效结束时间戳必须是整数'),
-      v.toDate(),
       v.description('生效结束时间戳'),
     ),
   ),
@@ -205,4 +202,5 @@ export const UpdateRewardRuleSchema = v.object({
   ),
 });
 
+export type UpdateRewardRuleInput = v.InferInput<typeof UpdateRewardRuleSchema>;
 export type UpdateRewardRuleBody = v.InferOutput<typeof UpdateRewardRuleSchema>;

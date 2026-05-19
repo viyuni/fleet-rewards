@@ -10,6 +10,7 @@ import type { DbClient, DbTransaction } from '#db';
 import type { InsertProduct, Product, UpdateProduct } from '#db/schema';
 import { ImageUseCase } from '#modules/image';
 import { PointTypeUseCase } from '#modules/point';
+import { toDate } from '#utils';
 
 import {
   ProductInputPolicy,
@@ -65,7 +66,9 @@ export class ProductUseCase {
    */
   async create(productData: CreateProductBody) {
     await this.deps.pointTypeUseCase.getAvailableById(productData.pointTypeId);
-    ProductInputPolicy.assertValid(productData);
+    ProductInputPolicy.assertPrice(productData.price);
+    ProductInputPolicy.assertStock(productData.stock);
+    ProductInputPolicy.assertTimeRange(productData.startTime, productData.endTime);
 
     const exists = await this.deps.productRepo.findByName(productData.name);
 
@@ -73,8 +76,13 @@ export class ProductUseCase {
       throw new ProductNameExistsError();
     }
 
-    const { cover, ...data } = productData;
-    const updateData: InsertProduct = data;
+    const { cover, endTime, startTime, ...data } = productData;
+
+    const updateData: InsertProduct = {
+      ...data,
+      endTime: toDate(endTime),
+      startTime: toDate(startTime),
+    };
 
     if (cover) {
       const { filename, placeholder } = await this.deps.imageUseCase.save(cover);
@@ -90,10 +98,17 @@ export class ProductUseCase {
    * 更新商品
    */
   async update(productId: string, productData: UpdateProductBody) {
-    ProductInputPolicy.assertValid(productData);
+    ProductInputPolicy.assertPrice(productData.price);
+    ProductInputPolicy.assertStock(productData.stock);
+    ProductInputPolicy.assertTimeRange(productData.startTime, productData.endTime);
 
-    const { cover, ...data } = productData;
-    const updateData: UpdateProduct = data;
+    const { cover, endTime, startTime, ...data } = productData;
+
+    const updateData: UpdateProduct = {
+      ...data,
+      endTime: toDate(endTime),
+      startTime: toDate(startTime),
+    };
 
     if (cover) {
       const { filename, placeholder } = await this.deps.imageUseCase.save(cover);

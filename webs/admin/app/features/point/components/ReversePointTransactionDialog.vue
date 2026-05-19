@@ -6,8 +6,6 @@ import {
 import { useForm } from '@tanstack/vue-form';
 import { Button } from '@web/ui/components/ui/button';
 
-import { optionalText } from '~/utils/form';
-
 import type { PointTransaction } from './PointTransactionListView.vue';
 
 const props = defineProps<{
@@ -142,7 +140,7 @@ watch(open, isOpen => {
               :aria-invalid="field.state.meta.errors.length > 0"
               placeholder="默认：积分流水冲正"
               @blur="field.handleBlur"
-              @input="field.handleChange(optionalText($event.target.value))"
+              @input="field.handleChange($event.target.value)"
             />
 
             <FieldError :errors="field.state.meta.errors" />

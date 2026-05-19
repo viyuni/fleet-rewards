@@ -38,4 +38,17 @@ export default defineNuxtConfig({
       // swr: 60,
     },
   },
+
+  typescript: {
+    tsConfig: {
+      compilerOptions: {
+        paths: {
+          '@web/ui/*': ['../../ui/src/*'],
+        },
+      },
+    },
+    sharedTsConfig: {
+      include: ['../colada.options.ts'],
+    },
+  },
 });

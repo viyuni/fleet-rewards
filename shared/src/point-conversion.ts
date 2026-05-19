@@ -83,7 +83,6 @@ export const CreatePointConversionRuleSchema = v.object({
     v.pipe(
       v.number('请输入生效时间戳'),
       v.integer('生效时间戳必须是整数'),
-      v.toDate(),
       v.description('生效时间戳'),
     ),
   ),
@@ -91,12 +90,12 @@ export const CreatePointConversionRuleSchema = v.object({
     v.pipe(
       v.number('请输入失效时间戳'),
       v.integer('失效时间戳必须是整数'),
-      v.toDate(),
       v.description('失效时间戳'),
     ),
   ),
 });
 
+export type CreatePointConversionRuleInput = v.InferInput<typeof CreatePointConversionRuleSchema>;
 export type CreatePointConversionRuleBody = v.InferOutput<typeof CreatePointConversionRuleSchema>;
 
 /**
@@ -146,7 +145,6 @@ export const UpdatePointConversionRuleSchema = v.object({
     v.pipe(
       v.number('请输入生效时间戳'),
       v.integer('生效时间戳必须是整数'),
-      v.toDate(),
       v.description('生效时间戳'),
     ),
   ),
@@ -154,12 +152,12 @@ export const UpdatePointConversionRuleSchema = v.object({
     v.pipe(
       v.number('请输入失效时间戳'),
       v.integer('失效时间戳必须是整数'),
-      v.toDate(),
       v.description('失效时间戳'),
     ),
   ),
 });
 
+export type UpdatePointConversionRuleInput = v.InferInput<typeof UpdatePointConversionRuleSchema>;
 export type UpdatePointConversionRuleBody = v.InferOutput<typeof UpdatePointConversionRuleSchema>;
 
 /**

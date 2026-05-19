@@ -59,8 +59,14 @@ export const IdParamSchema = v.object({
 export const PageQuerySchema = v.object({
   page: v.optional(
     v.pipe(
-      v.string('请输入页码'),
-      v.toNumber('页码必须是数字'),
+      v.union([
+        v.number('请输入页码'),
+        v.pipe(
+          v.string('请输入页码'),
+          v.regex(/^-?\d+(\.\d+)?$/, '页码必须是数字'),
+          v.toNumber('页码必须是数字'),
+        ),
+      ]),
       v.integer('页码必须是整数'),
       v.minValue(1, '页码不能小于 1'),
       v.description('页码'),
@@ -68,8 +74,14 @@ export const PageQuerySchema = v.object({
   ),
   pageSize: v.optional(
     v.pipe(
-      v.string('请输入每页数量'),
-      v.toNumber('每页数量必须是数字'),
+      v.union([
+        v.number('请输入每页数量'),
+        v.pipe(
+          v.string('请输入每页数量'),
+          v.regex(/^-?\d+(\.\d+)?$/, '每页数量必须是数字'),
+          v.toNumber('每页数量必须是数字'),
+        ),
+      ]),
       v.integer('每页数量必须是整数'),
       v.minValue(1, '每页数量不能小于 1'),
       v.maxValue(50, '每页数量不能超过 50'),
@@ -88,16 +100,28 @@ export type PageQuery = v.InferOutput<typeof PageQuerySchema>;
 export const DateRangeQuerySchema = v.object({
   startTime: v.optional(
     v.pipe(
-      v.string('请输入开始时间戳'),
-      v.toNumber('开始时间戳必须是数字'),
+      v.union([
+        v.number('请输入开始时间戳'),
+        v.pipe(
+          v.string('请输入开始时间戳'),
+          v.regex(/^-?\d+(\.\d+)?$/, '开始时间戳必须是数字'),
+          v.toNumber('开始时间戳必须是数字'),
+        ),
+      ]),
       v.integer('开始时间戳必须是整数'),
       v.description('开始时间戳'),
     ),
   ),
   endTime: v.optional(
     v.pipe(
-      v.string('请输入结束时间戳'),
-      v.toNumber('结束时间戳必须是数字'),
+      v.union([
+        v.number('请输入结束时间戳'),
+        v.pipe(
+          v.string('请输入结束时间戳'),
+          v.regex(/^-?\d+(\.\d+)?$/, '结束时间戳必须是数字'),
+          v.toNumber('结束时间戳必须是数字'),
+        ),
+      ]),
       v.integer('结束时间戳必须是整数'),
       v.description('结束时间戳'),
     ),

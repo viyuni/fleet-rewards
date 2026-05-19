@@ -7,8 +7,23 @@ export type AvailableProduct = Product & {
 };
 
 export class ProductPolicy {
-  static isAvailable(product: Product | null | undefined): product is AvailableProduct {
-    return product?.status === 'active';
+  static isAvailable(
+    product: Product | null | undefined,
+    now = new Date(),
+  ): product is AvailableProduct {
+    if (product?.status !== 'active') {
+      return false;
+    }
+
+    if (product.startTime && product.startTime > now) {
+      return false;
+    }
+
+    if (product.endTime && product.endTime <= now) {
+      return false;
+    }
+
+    return true;
   }
 
   static assertAvailable(product: Product | null | undefined): asserts product is AvailableProduct {

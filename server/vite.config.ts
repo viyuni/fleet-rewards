@@ -46,9 +46,11 @@ export default defineConfig({
         command: 'bun --env-file=.env drizzle-kit generate',
       },
       'db:push': {
+        cache: false,
         command: 'bun --env-file=.env drizzle-kit push',
       },
       'db:push:test': {
+        cache: false,
         command: 'bun --env-file=.env.test drizzle-kit push',
       },
       'db:seed': {
