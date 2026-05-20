@@ -11,7 +11,7 @@ const open = defineModel<boolean>('open', { default: false });
 
 const { mutateAsync: createUser, isLoading } = useCreateUser();
 
-function createDefaultValues(): UserRegisterBody {
+function createDefaultValues() {
   return {
     biliUid: '',
     username: '',
@@ -19,15 +19,21 @@ function createDefaultValues(): UserRegisterBody {
     email: undefined,
     phone: undefined,
     address: undefined,
-  };
+  } satisfies UserRegisterBody;
 }
 
-const form = useForm({
-  validators: {
-    onSubmit: UserRegisterSchema,
+const form = useSchemaForm(UserRegisterSchema, {
+  defaultValuesFn() {
+    return {
+      biliUid: '',
+      username: '',
+      password: '',
+      email: undefined,
+      phone: undefined,
+      address: undefined,
+    } satisfies UserRegisterBody;
   },
-  defaultValues: createDefaultValues(),
-  async onSubmit({ value }: { value: UserRegisterBody }) {
+  async onSubmit({ value }) {
     await createUser(value);
 
     form.reset(createDefaultValues());

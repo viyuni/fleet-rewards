@@ -1,7 +1,6 @@
 import * as v from 'valibot';
 
-import { KeywordQuerySchema, PageQuerySchema } from './common';
-
+import { emptyable, KeywordQuerySchema, PageQuerySchema } from './common';
 /**
  * 商品 ID Params Schema。
  */
@@ -165,9 +164,9 @@ export type ProductPageQuery = v.InferOutput<typeof ProductPageQuerySchema>;
 export const CreateProductSchema = v.object({
   name: ProductNameSchema,
 
-  description: v.optional(ProductDescriptionSchema),
+  description: v.optional(emptyable(ProductDescriptionSchema)),
   cover: v.optional(ProductCoverSchema),
-  detail: v.optional(ProductDetailSchema),
+  detail: v.optional(emptyable(ProductDetailSchema)),
 
   pointTypeId: ProductPointTypeIdSchema,
   price: ProductPriceSchema,
@@ -179,7 +178,7 @@ export const CreateProductSchema = v.object({
   endTime: v.optional(ProductTimeSchema),
   allowCancel: v.optional(ProductAllowCancelSchema),
   sort: v.optional(ProductSortSchema),
-  metadata: v.optional(ProductMetadataSchema),
+  metadata: v.optional(emptyable(ProductMetadataSchema)),
 });
 
 export type CreateProductBody = v.InferOutput<typeof CreateProductSchema>;

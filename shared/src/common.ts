@@ -197,3 +197,12 @@ export const ParamErrorResponseSchema = v.object({
 });
 
 export type ParamErrorResponse = v.InferOutput<typeof ParamErrorResponseSchema>;
+
+export const emptyStringToNull = v.pipe(
+  v.literal(''),
+  v.transform(() => null),
+);
+
+export function emptyable<TSchema extends v.BaseSchema<any, any, any>>(schema: TSchema) {
+  return v.union([schema, emptyStringToNull]);
+}

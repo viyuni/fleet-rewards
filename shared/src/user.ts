@@ -1,6 +1,13 @@
 import * as v from 'valibot';
 
-import { BiliUidSchema, PageQuerySchema, PasswordSchema, UsernameSchema } from './common';
+import {
+  BiliUidSchema,
+  emptyable,
+  emptyStringToNull,
+  PageQuerySchema,
+  PasswordSchema,
+  UsernameSchema,
+} from './common';
 
 /**
  * User ID Params Schema。
@@ -19,13 +26,13 @@ export const UserRegisterSchema = v.object({
   username: UsernameSchema,
   password: PasswordSchema,
   email: v.optional(
-    v.pipe(v.string('请输入邮箱'), v.email('请输入有效的邮箱地址'), v.description('邮箱')),
+    emptyable(v.pipe(v.string(), v.email('请输入有效的邮箱地址'), v.description('邮箱地址'))),
   ),
-  address: v.optional(v.pipe(v.string('请输入收获地址'), v.description('收获地址'))),
-  phone: v.optional(v.pipe(v.string('请输入手机号码'), v.description('手机号码'))),
+  address: v.optional(emptyable(v.pipe(v.string('请输入收获地址'), v.description('收获地址')))),
+  phone: v.optional(emptyable(v.pipe(v.string('请输入手机号码'), v.description('手机号码')))),
 });
 
-export type UserRegisterBody = v.InferOutput<typeof UserRegisterSchema>;
+export type UserRegisterBody = v.InferInput<typeof UserRegisterSchema>;
 
 /**
  * 用户更新 Schema
@@ -33,10 +40,15 @@ export type UserRegisterBody = v.InferOutput<typeof UserRegisterSchema>;
 export const UserUpdateSchema = v.object({
   username: v.optional(UsernameSchema),
   email: v.nullish(
-    v.pipe(v.string('请输入邮箱'), v.email('请输入有效的邮箱地址'), v.description('邮箱')),
+    v.pipe(
+      v.string('请输入邮箱'),
+      v.empty(),
+      v.email('请输入有效的邮箱地址'),
+      v.description('邮箱'),
+    ),
   ),
-  address: v.nullish(v.pipe(v.string('请输入收获地址'), v.description('收获地址'))),
-  phone: v.nullish(v.pipe(v.string('请输入手机号码'), v.description('手机号码'))),
+  address: v.nullish(emptyable(v.pipe(v.string('请输入收获地址'), v.description('收获地址')))),
+  phone: v.nullish(emptyable(v.pipe(v.string('请输入手机号码'), v.description('手机号码')))),
 });
 
 export type UpdateUserBody = v.InferOutput<typeof UserUpdateSchema>;

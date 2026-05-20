@@ -11,6 +11,9 @@ export default defineConfig({
   },
   run: {
     tasks: {
+      queue: {
+        command: 'bun bunqueue start',
+      },
       'dev:admin': {
         command: 'bun --env-file=.env --watch ./src/apps/admin/index.ts',
       },
