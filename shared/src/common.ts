@@ -139,11 +139,13 @@ export type DateRangeQuery = v.InferOutput<typeof DateRangeQuerySchema>;
  */
 export const KeywordQuerySchema = v.object({
   keyword: v.optional(
-    v.pipe(
-      v.string('请输入搜索关键词'),
-      v.minLength(1, '搜索关键词不能为空'),
-      v.maxLength(50, '搜索关键词不能超过 50 个字符'),
-      v.description('搜索关键词'),
+    emptyable(
+      v.pipe(
+        v.string('请输入搜索关键词'),
+        v.minLength(1, '搜索关键词不能为空'),
+        v.maxLength(50, '搜索关键词不能超过 50 个字符'),
+        v.description('搜索关键词'),
+      ),
     ),
   ),
 });
@@ -161,13 +163,11 @@ export type KeywordQuery = v.InferOutput<typeof KeywordQuerySchema>;
  * - 必须是合法 UUID 字符串
  * - 同一业务场景下，相同 `nonce` 应被视为同一次请求
  */
-export const NonceBodySchema = v.object({
-  nonce: v.pipe(
-    v.string('请输入请求唯一随机值'),
-    v.uuid('请求唯一随机值必须是合法 UUID'),
-    v.description('请求唯一随机值'),
-  ),
-});
+export const NonceBodySchema = v.pipe(
+  v.string('请输入请求唯一随机值'),
+  v.uuid('请求唯一随机值必须是合法 UUID'),
+  v.description('请求唯一随机值'),
+);
 
 /**
  * 通用备注 Schema。
@@ -177,15 +177,6 @@ export const RemarkSchema = v.pipe(
   v.maxLength(100, '备注不能超过 100 个字符'),
   v.description('备注'),
 );
-
-/**
- * 可选备注 Body 参数 Schema。
- */
-export const RemarkBodySchema = v.object({
-  remark: v.optional(RemarkSchema),
-});
-
-export type RemarkBody = v.InferOutput<typeof RemarkBodySchema>;
 
 /**
  * 参数错误信息 Schema
@@ -198,11 +189,37 @@ export const ParamErrorResponseSchema = v.object({
 
 export type ParamErrorResponse = v.InferOutput<typeof ParamErrorResponseSchema>;
 
-export const emptyStringToNull = v.pipe(
-  v.literal(''),
-  v.transform(() => null),
-);
+/**
+ * 数字输入 Schema。
+ *
+ * 兼容 JSON 请求中的 number 和 multipart/form-data 中的数字字符串。
+ */
+export const NumberInputSchema = (message: string) =>
+  v.union([
+    v.number(message),
+    v.pipe(v.string(message), v.regex(/^-?\d+(\.\d+)?$/, message), v.toNumber(message)),
+  ]);
+
+/**
+ * 布尔输入 Schema。
+ *
+ * 兼容 JSON 请求中的 boolean 和 multipart/form-data 中的布尔字符串。
+ */
+export const BooleanInputSchema = (message: string) =>
+  v.union([
+    v.boolean(message),
+    v.pipe(
+      v.picklist(['true', 'false'], message),
+      v.transform(value => value === 'true'),
+    ),
+  ]);
 
 export function emptyable<TSchema extends v.BaseSchema<any, any, any>>(schema: TSchema) {
-  return v.union([schema, emptyStringToNull]);
+  return v.union([
+    schema,
+    v.pipe(
+      v.literal(''),
+      v.transform(() => null),
+    ),
+  ]);
 }

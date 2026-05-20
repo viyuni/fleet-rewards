@@ -1,8 +1,6 @@
 import type { CreateRewardRuleBody, UpdateRewardRuleBody } from '@internal/shared/reward';
 import { defineMutation, useMutation, useQueryCache } from '@pinia/colada';
 
-import { nullifyEmptyFields } from '~/utils/form';
-
 import { REWARD_QUERY_KEYS } from './queries';
 
 function useInvalidateRewards() {
@@ -39,7 +37,7 @@ export const useUpdateRewardRule = defineMutation(() => {
     mutation(input: { rewardRuleId: string; body: UpdateRewardRuleBody }) {
       return $api.rewards
         .rules({ rewardRuleId: input.rewardRuleId })
-        .put(nullifyEmptyFields(input.body));
+        .put(normalizePatchBody(input.body));
     },
     onSettled: invalidateRewards,
   });

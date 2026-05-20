@@ -1,6 +1,6 @@
 import * as v from 'valibot';
 
-import { NonceBodySchema } from './common';
+import { emptyable, NonceBodySchema } from './common';
 
 /**
  * 积分转换规则 ID Params Schema。
@@ -47,8 +47,8 @@ const ConversionRuleRemarkSchema = v.pipe(
  */
 export const CreatePointConversionRuleSchema = v.object({
   name: ConversionRuleNameSchema,
-  description: v.optional(ConversionRuleDescriptionSchema),
-  remark: v.optional(ConversionRuleRemarkSchema),
+  description: v.optional(emptyable(ConversionRuleDescriptionSchema)),
+  remark: v.optional(emptyable(ConversionRuleRemarkSchema)),
 
   fromPointTypeId: v.pipe(v.string('请输入来源积分类型 ID'), v.description('来源积分类型 ID')),
   toPointTypeId: v.pipe(v.string('请输入目标积分类型 ID'), v.description('目标积分类型 ID')),
@@ -95,7 +95,6 @@ export const CreatePointConversionRuleSchema = v.object({
   ),
 });
 
-export type CreatePointConversionRuleInput = v.InferInput<typeof CreatePointConversionRuleSchema>;
 export type CreatePointConversionRuleBody = v.InferOutput<typeof CreatePointConversionRuleSchema>;
 
 /**
@@ -103,8 +102,8 @@ export type CreatePointConversionRuleBody = v.InferOutput<typeof CreatePointConv
  */
 export const UpdatePointConversionRuleSchema = v.object({
   name: v.optional(ConversionRuleNameSchema),
-  description: v.nullish(ConversionRuleDescriptionSchema),
-  remark: v.nullish(ConversionRuleRemarkSchema),
+  description: v.nullish(emptyable(ConversionRuleDescriptionSchema)),
+  remark: v.nullish(emptyable(ConversionRuleRemarkSchema)),
 
   fromPointTypeId: v.optional(
     v.pipe(v.string('请输入来源积分类型 ID'), v.description('来源积分类型 ID')),
@@ -157,7 +156,6 @@ export const UpdatePointConversionRuleSchema = v.object({
   ),
 });
 
-export type UpdatePointConversionRuleInput = v.InferInput<typeof UpdatePointConversionRuleSchema>;
 export type UpdatePointConversionRuleBody = v.InferOutput<typeof UpdatePointConversionRuleSchema>;
 
 /**
@@ -165,19 +163,17 @@ export type UpdatePointConversionRuleBody = v.InferOutput<typeof UpdatePointConv
  *
  * 用于用户按转换规则兑换积分。
  */
-export const ConvertPointSchema = v.intersect([
-  NonceBodySchema,
-  v.object({
-    ruleId: v.pipe(v.string('请输入积分转换规则 ID'), v.description('积分转换规则 ID')),
-    userId: v.pipe(v.string('请输入用户 ID'), v.description('用户 ID')),
-    fromAmount: v.pipe(
-      v.number('请输入来源积分数量'),
-      v.integer('来源积分数量必须是整数'),
-      v.minValue(1, '来源积分数量必须大于 0'),
-      v.description('来源积分数量'),
-    ),
-    remark: v.optional(ConversionRuleRemarkSchema),
-  }),
-]);
+export const ConvertPointSchema = v.object({
+  nonce: NonceBodySchema,
+  ruleId: v.pipe(v.string('请输入积分转换规则 ID'), v.description('积分转换规则 ID')),
+  userId: v.pipe(v.string('请输入用户 ID'), v.description('用户 ID')),
+  fromAmount: v.pipe(
+    v.number('请输入来源积分数量'),
+    v.integer('来源积分数量必须是整数'),
+    v.minValue(1, '来源积分数量必须大于 0'),
+    v.description('来源积分数量'),
+  ),
+  remark: v.optional(emptyable(ConversionRuleRemarkSchema)),
+});
 
 export type ConvertPointBody = v.InferOutput<typeof ConvertPointSchema>;

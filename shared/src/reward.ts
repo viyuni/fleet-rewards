@@ -1,6 +1,6 @@
 import * as v from 'valibot';
 
-import { DateRangeQuerySchema, KeywordQuerySchema, PageQuerySchema } from './common';
+import { DateRangeQuerySchema, emptyable, KeywordQuerySchema, PageQuerySchema } from './common';
 
 /**
  * 积分奖励规则 ID Params Schema。
@@ -114,7 +114,7 @@ export type RewardRuleCondition = v.InferOutput<typeof RewardRuleConditionSchema
  */
 export const CreateRewardRuleSchema = v.object({
   name: RewardRuleNameSchema,
-  description: v.optional(RewardRuleDescriptionSchema),
+  description: v.optional(emptyable(RewardRuleDescriptionSchema)),
 
   conditions: RewardRuleConditionSchema,
 
@@ -127,7 +127,7 @@ export const CreateRewardRuleSchema = v.object({
   ),
 
   enabled: v.optional(v.pipe(v.boolean('请选择是否启用'), v.description('是否启用'))),
-  group: v.optional(RewardRuleGroupSchema),
+  group: v.optional(emptyable(RewardRuleGroupSchema)),
 
   startsAt: v.optional(
     v.pipe(
@@ -161,7 +161,7 @@ export type CreateRewardRuleBody = v.InferOutput<typeof CreateRewardRuleSchema>;
  */
 export const UpdateRewardRuleSchema = v.object({
   name: v.optional(RewardRuleNameSchema),
-  description: v.nullish(RewardRuleDescriptionSchema),
+  description: v.nullish(emptyable(RewardRuleDescriptionSchema)),
 
   conditions: v.optional(RewardRuleConditionSchema),
 
@@ -176,7 +176,7 @@ export const UpdateRewardRuleSchema = v.object({
   ),
 
   enabled: v.optional(v.pipe(v.boolean('请选择是否启用'), v.description('是否启用'))),
-  group: v.nullish(RewardRuleGroupSchema),
+  group: v.nullish(emptyable(RewardRuleGroupSchema)),
 
   startsAt: v.nullish(
     v.pipe(

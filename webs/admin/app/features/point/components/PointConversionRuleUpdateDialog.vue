@@ -3,9 +3,11 @@ import {
   UpdatePointConversionRuleSchema,
   type UpdatePointConversionRuleBody,
 } from '@internal/shared/point-conversion';
-import { useForm } from '@tanstack/vue-form';
+import { toTypedSchema } from '@vee-validate/valibot';
 import { Button } from '@web/ui/components/ui/button';
+import { FormField } from '@web/ui/components/ui/form';
 import { Loader2 } from 'lucide-vue-next';
+import { useForm } from 'vee-validate';
 
 import { fromDatetimeLocalValue, toDatetimeLocalValue } from '~/utils/form';
 
@@ -43,32 +45,33 @@ function createDefaultValues(conversion?: PointConversion): PointConversionRuleF
   };
 }
 
-const form = useForm({
-  validators: {
-    onSubmit: UpdatePointConversionRuleSchema,
-  },
-  defaultValues: createDefaultValues(props.conversion),
-  async onSubmit({ value }: { value: PointConversionRuleFormValues }) {
-    await updateConversionRule({
-      pointConversionRuleId: props.conversion.id,
-      body: value,
-    });
+const formSchema = toTypedSchema(UpdatePointConversionRuleSchema);
 
-    form.reset(createDefaultValues(props.conversion));
-    open.value = false;
-  },
+const { handleSubmit, meta, resetForm } = useForm<PointConversionRuleFormValues>({
+  validationSchema: formSchema,
+  initialValues: createDefaultValues(props.conversion),
+});
+
+const onSubmit = handleSubmit(async values => {
+  await updateConversionRule({
+    pointConversionRuleId: props.conversion.id,
+    body: values,
+  });
+
+  resetForm({ values: createDefaultValues(props.conversion) });
+  open.value = false;
 });
 
 watch(
   () => props.conversion,
   conversion => {
-    form.reset(createDefaultValues(conversion));
+    resetForm({ values: createDefaultValues(conversion) });
   },
 );
 
 watch(open, isOpen => {
   if (!isOpen) {
-    form.reset(createDefaultValues(props.conversion));
+    resetForm({ values: createDefaultValues(props.conversion) });
   }
 });
 </script>
@@ -81,51 +84,47 @@ watch(open, isOpen => {
         <DialogDescription>更新积分类型之间的转换规则。</DialogDescription>
       </DialogHeader>
 
-      <form class="grid gap-4 sm:grid-cols-2" @submit.prevent="form.handleSubmit">
-        <form.Field name="name" #default="{ field }">
-          <Field :data-invalid="field.state.meta.errors.length > 0">
-            <FieldLabel :for="field.name">规则名称</FieldLabel>
+      <form class="grid gap-4 sm:grid-cols-2" @submit="onSubmit">
+        <FormField v-slot="{ field, errors, meta: fieldMeta }" name="name">
+          <Field :data-invalid="fieldMeta.touched && errors.length > 0">
+            <FieldLabel>规则名称</FieldLabel>
             <Input
-              :id="field.name"
-              :model-value="field.state.value"
-              :aria-invalid="field.state.meta.errors.length > 0"
+              v-bind="field"
+              :model-value="field.value ?? ''"
+              :aria-invalid="fieldMeta.touched && errors.length > 0"
               placeholder="例如：督级积分兑换舰级积分"
-              @blur="field.handleBlur"
-              @input="field.handleChange($event.target.value)"
             />
 
-            <FieldError :errors="field.state.meta.errors" />
+            <FieldError :errors="errors" />
           </Field>
-        </form.Field>
+        </FormField>
 
-        <form.Field name="toAmount" #default="{ field }">
-          <Field :data-invalid="field.state.meta.errors.length > 0">
-            <FieldLabel :for="field.name">目标数量</FieldLabel>
+        <FormField v-slot="{ field, errors, meta: fieldMeta }" name="toAmount">
+          <Field :data-invalid="fieldMeta.touched && errors.length > 0">
+            <FieldLabel>目标数量</FieldLabel>
             <Input
-              :id="field.name"
-              :model-value="field.state.value"
-              :aria-invalid="field.state.meta.errors.length > 0"
+              :model-value="field.value"
+              :aria-invalid="fieldMeta.touched && errors.length > 0"
               type="number"
               min="1"
               step="1"
-              @blur="field.handleBlur"
-              @input="field.handleChange(Number($event.target.value))"
+              @blur="field.onBlur"
+              @input="field.onChange(Number($event.target.value))"
             />
 
             <FieldDescription>每 1 个来源积分可兑换的目标积分数量。</FieldDescription>
-            <FieldError :errors="field.state.meta.errors" />
+            <FieldError :errors="errors" />
           </Field>
-        </form.Field>
+        </FormField>
 
-        <form.Field name="fromPointTypeId" #default="{ field }">
-          <Field :data-invalid="field.state.meta.errors.length > 0">
-            <FieldLabel :for="field.name">来源积分</FieldLabel>
+        <FormField v-slot="{ field, errors, meta: fieldMeta }" name="fromPointTypeId">
+          <Field :data-invalid="fieldMeta.touched && errors.length > 0">
+            <FieldLabel>来源积分</FieldLabel>
             <NativeSelect
-              :id="field.name"
-              :model-value="field.state.value"
-              :aria-invalid="field.state.meta.errors.length > 0"
-              @blur="field.handleBlur"
-              @update:model-value="field.handleChange(String($event))"
+              :model-value="field.value"
+              :aria-invalid="fieldMeta.touched && errors.length > 0"
+              @blur="field.onBlur"
+              @update:model-value="field.onChange(String($event))"
             >
               <NativeSelectOption value="" disabled>选择来源积分</NativeSelectOption>
               <NativeSelectOption
@@ -137,19 +136,18 @@ watch(open, isOpen => {
               </NativeSelectOption>
             </NativeSelect>
 
-            <FieldError :errors="field.state.meta.errors" />
+            <FieldError :errors="errors" />
           </Field>
-        </form.Field>
+        </FormField>
 
-        <form.Field name="toPointTypeId" #default="{ field }">
-          <Field :data-invalid="field.state.meta.errors.length > 0">
-            <FieldLabel :for="field.name">目标积分</FieldLabel>
+        <FormField v-slot="{ field, errors, meta: fieldMeta }" name="toPointTypeId">
+          <Field :data-invalid="fieldMeta.touched && errors.length > 0">
+            <FieldLabel>目标积分</FieldLabel>
             <NativeSelect
-              :id="field.name"
-              :model-value="field.state.value"
-              :aria-invalid="field.state.meta.errors.length > 0"
-              @blur="field.handleBlur"
-              @update:model-value="field.handleChange(String($event))"
+              :model-value="field.value"
+              :aria-invalid="fieldMeta.touched && errors.length > 0"
+              @blur="field.onBlur"
+              @update:model-value="field.onChange(String($event))"
             >
               <NativeSelectOption value="" disabled>选择目标积分</NativeSelectOption>
               <NativeSelectOption
@@ -161,132 +159,124 @@ watch(open, isOpen => {
               </NativeSelectOption>
             </NativeSelect>
 
-            <FieldError :errors="field.state.meta.errors" />
+            <FieldError :errors="errors" />
           </Field>
-        </form.Field>
+        </FormField>
 
-        <form.Field name="minConvertAmount" #default="{ field }">
-          <Field :data-invalid="field.state.meta.errors.length > 0">
-            <FieldLabel :for="field.name">单次最小转换</FieldLabel>
+        <FormField v-slot="{ field, errors, meta: fieldMeta }" name="minConvertAmount">
+          <Field :data-invalid="fieldMeta.touched && errors.length > 0">
+            <FieldLabel>单次最小转换</FieldLabel>
             <Input
-              :id="field.name"
-              :model-value="field.state.value ?? ''"
-              :aria-invalid="field.state.meta.errors.length > 0"
+              :model-value="field.value ?? ''"
+              :aria-invalid="fieldMeta.touched && errors.length > 0"
               type="number"
               min="1"
               step="1"
               placeholder="不限制"
-              @blur="field.handleBlur"
-              @input="field.handleChange($event.target.value)"
+              @blur="field.onBlur"
+              @input="field.onChange($event.target.value ? Number($event.target.value) : undefined)"
             />
 
-            <FieldError :errors="field.state.meta.errors" />
+            <FieldError :errors="errors" />
           </Field>
-        </form.Field>
+        </FormField>
 
-        <form.Field name="maxConvertAmount" #default="{ field }">
-          <Field :data-invalid="field.state.meta.errors.length > 0">
-            <FieldLabel :for="field.name">单次最大转换</FieldLabel>
+        <FormField v-slot="{ field, errors, meta: fieldMeta }" name="maxConvertAmount">
+          <Field :data-invalid="fieldMeta.touched && errors.length > 0">
+            <FieldLabel>单次最大转换</FieldLabel>
             <Input
-              :id="field.name"
-              :model-value="field.state.value ?? ''"
-              :aria-invalid="field.state.meta.errors.length > 0"
+              :model-value="field.value ?? ''"
+              :aria-invalid="fieldMeta.touched && errors.length > 0"
               type="number"
               min="1"
               step="1"
               placeholder="不限制"
-              @blur="field.handleBlur"
-              @input="field.handleChange($event.target.value)"
+              @blur="field.onBlur"
+              @input="field.onChange($event.target.value ? Number($event.target.value) : undefined)"
             />
 
-            <FieldError :errors="field.state.meta.errors" />
+            <FieldError :errors="errors" />
           </Field>
-        </form.Field>
+        </FormField>
 
-        <form.Field name="startsAt" #default="{ field }">
-          <Field :data-invalid="field.state.meta.errors.length > 0">
-            <FieldLabel :for="field.name">开始时间</FieldLabel>
+        <FormField v-slot="{ field, errors, meta: fieldMeta }" name="startsAt">
+          <Field :data-invalid="fieldMeta.touched && errors.length > 0">
+            <FieldLabel>开始时间</FieldLabel>
             <Input
-              :id="field.name"
-              :model-value="toDatetimeLocalValue(field.state.value)"
-              :aria-invalid="field.state.meta.errors.length > 0"
+              :model-value="toDatetimeLocalValue(field.value)"
+              :aria-invalid="fieldMeta.touched && errors.length > 0"
               type="datetime-local"
               step="1"
-              @blur="field.handleBlur"
-              @input="field.handleChange(fromDatetimeLocalValue($event.target.value))"
+              @blur="field.onBlur"
+              @input="field.onChange(fromDatetimeLocalValue($event.target.value))"
             />
 
-            <FieldError :errors="field.state.meta.errors" />
+            <FieldError :errors="errors" />
           </Field>
-        </form.Field>
+        </FormField>
 
-        <form.Field name="endsAt" #default="{ field }">
-          <Field :data-invalid="field.state.meta.errors.length > 0">
-            <FieldLabel :for="field.name">结束时间</FieldLabel>
+        <FormField v-slot="{ field, errors, meta: fieldMeta }" name="endsAt">
+          <Field :data-invalid="fieldMeta.touched && errors.length > 0">
+            <FieldLabel>结束时间</FieldLabel>
             <Input
-              :id="field.name"
-              :model-value="toDatetimeLocalValue(field.state.value)"
-              :aria-invalid="field.state.meta.errors.length > 0"
+              :model-value="toDatetimeLocalValue(field.value)"
+              :aria-invalid="fieldMeta.touched && errors.length > 0"
               type="datetime-local"
               step="1"
-              @blur="field.handleBlur"
-              @input="field.handleChange(fromDatetimeLocalValue($event.target.value))"
+              @blur="field.onBlur"
+              @input="field.onChange(fromDatetimeLocalValue($event.target.value))"
             />
 
-            <FieldError :errors="field.state.meta.errors" />
+            <FieldError :errors="errors" />
           </Field>
-        </form.Field>
+        </FormField>
 
-        <form.Field name="enabled" #default="{ field }">
-          <Field :data-invalid="field.state.meta.errors.length > 0">
-            <FieldLabel :for="field.name">启用状态</FieldLabel>
+        <FormField v-slot="{ field, errors, meta: fieldMeta }" name="enabled">
+          <Field :data-invalid="fieldMeta.touched && errors.length > 0">
+            <FieldLabel>启用状态</FieldLabel>
             <Switch
-              :model-value="field.state.value ?? false"
-              :aria-invalid="field.state.meta.errors.length > 0"
-              @update:model-value="field.handleChange(Boolean($event))"
+              :model-value="field.value ?? false"
+              :aria-invalid="fieldMeta.touched && errors.length > 0"
+              @update:model-value="field.onChange(Boolean($event))"
             />
 
-            <FieldError :errors="field.state.meta.errors" />
+            <FieldError :errors="errors" />
           </Field>
-        </form.Field>
+        </FormField>
 
-        <form.Field name="description" #default="{ field }">
-          <Field class="sm:col-span-2" :data-invalid="field.state.meta.errors.length > 0">
-            <FieldLabel :for="field.name">描述</FieldLabel>
+        <FormField v-slot="{ field, errors, meta: fieldMeta }" name="description">
+          <Field class="sm:col-span-2" :data-invalid="fieldMeta.touched && errors.length > 0">
+            <FieldLabel>描述</FieldLabel>
             <Textarea
-              :id="field.name"
-              :model-value="field.state.value ?? ''"
-              :aria-invalid="field.state.meta.errors.length > 0"
+              v-bind="field"
+              :model-value="field.value ?? ''"
+              :aria-invalid="fieldMeta.touched && errors.length > 0"
               placeholder="可选"
-              @blur="field.handleBlur"
-              @input="field.handleChange($event.target.value)"
             />
 
-            <FieldError :errors="field.state.meta.errors" />
+            <FieldError :errors="errors" />
           </Field>
-        </form.Field>
+        </FormField>
 
-        <form.Field name="remark" #default="{ field }">
-          <Field class="sm:col-span-2" :data-invalid="field.state.meta.errors.length > 0">
-            <FieldLabel :for="field.name">备注</FieldLabel>
+        <FormField v-slot="{ field, errors, meta: fieldMeta }" name="remark">
+          <Field class="sm:col-span-2" :data-invalid="fieldMeta.touched && errors.length > 0">
+            <FieldLabel>备注</FieldLabel>
             <Textarea
-              :id="field.name"
-              :model-value="field.state.value ?? ''"
-              :aria-invalid="field.state.meta.errors.length > 0"
+              v-bind="field"
+              :model-value="field.value ?? ''"
+              :aria-invalid="fieldMeta.touched && errors.length > 0"
               placeholder="可选"
-              @blur="field.handleBlur"
-              @input="field.handleChange($event.target.value)"
             />
 
-            <FieldError :errors="field.state.meta.errors" />
+            <FieldError :errors="errors" />
           </Field>
-        </form.Field>
+        </FormField>
 
         <DialogFooter class="sm:col-span-2">
           <DialogClose as-child>
             <Button variant="outline" type="button">取消</Button>
           </DialogClose>
-          <Button type="submit" :disabled="isLoading || activePointTypes.length < 2">
+          <Button type="submit" :disabled="isLoading || activePointTypes.length < 2 || !meta.valid">
             <Loader2 v-if="isLoading" class="animate-spin" />
             保存
           </Button>

@@ -3,8 +3,10 @@ import {
   ReversalTransactionSchema,
   type ReversalPointTransactionBody,
 } from '@internal/shared/point-account';
-import { useForm } from '@tanstack/vue-form';
+import { toTypedSchema } from '@vee-validate/valibot';
 import { Button } from '@web/ui/components/ui/button';
+import { FormField } from '@web/ui/components/ui/form';
+import { useForm } from 'vee-validate';
 
 import type { PointTransaction } from './PointTransactionListView.vue';
 
@@ -33,33 +35,34 @@ function createDefaultValues(transactionId: string): ReversalPointTransactionBod
   };
 }
 
-const form = useForm({
-  validators: {
-    onSubmit: ReversalTransactionSchema,
-  },
-  defaultValues: createDefaultValues(props.transaction.id),
-  onSubmit({ value }: { value: ReversalPointTransactionBody }) {
-    emit('resolve', {
-      transaction: props.transaction,
-      remark: value.remark,
-    });
-  },
+const formSchema = toTypedSchema(ReversalTransactionSchema);
+
+const { handleSubmit, resetForm, setFieldValue } = useForm<ReversalPointTransactionBody>({
+  validationSchema: formSchema,
+  initialValues: createDefaultValues(props.transaction.id),
+});
+
+const onSubmit = handleSubmit(values => {
+  emit('resolve', {
+    transaction: props.transaction,
+    remark: values.remark,
+  });
 });
 
 watch(
   () => props.transaction.id,
   transactionId => {
-    form.setFieldValue('transactionId', transactionId);
+    setFieldValue('transactionId', transactionId);
   },
 );
 
-function resetForm() {
-  form.reset(createDefaultValues(props.transaction.id));
+function resetValues() {
+  resetForm({ values: createDefaultValues(props.transaction.id) });
 }
 
 watch(open, isOpen => {
   if (!isOpen) {
-    resetForm();
+    resetValues();
   }
 });
 </script>
@@ -130,22 +133,20 @@ watch(open, isOpen => {
         </DialogDescription>
       </DialogHeader>
 
-      <form class="space-y-4" @submit.prevent="form.handleSubmit">
-        <form.Field name="remark" #default="{ field }">
-          <Field :data-invalid="field.state.meta.errors.length > 0">
-            <FieldLabel :for="field.name">备注</FieldLabel>
+      <form class="space-y-4" @submit="onSubmit">
+        <FormField v-slot="{ field, errors, meta: fieldMeta }" name="remark">
+          <Field :data-invalid="fieldMeta.touched && errors.length > 0">
+            <FieldLabel>备注</FieldLabel>
             <Textarea
-              :id="field.name"
-              :model-value="field.state.value ?? ''"
-              :aria-invalid="field.state.meta.errors.length > 0"
+              v-bind="field"
+              :model-value="field.value ?? ''"
+              :aria-invalid="fieldMeta.touched && errors.length > 0"
               placeholder="默认：积分流水冲正"
-              @blur="field.handleBlur"
-              @input="field.handleChange($event.target.value)"
             />
 
-            <FieldError :errors="field.state.meta.errors" />
+            <FieldError :errors="errors" />
           </Field>
-        </form.Field>
+        </FormField>
 
         <DialogFooter>
           <DialogClose as-child>

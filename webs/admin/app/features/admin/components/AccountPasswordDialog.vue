@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import type { AdminUpdatePasswordBody } from '@internal/shared/admin';
-import { useForm } from '@tanstack/vue-form';
+import { AdminUpdatePasswordSchema, type AdminUpdatePasswordBody } from '@internal/shared/admin';
+import { toTypedSchema } from '@vee-validate/valibot';
 import { Button } from '@web/ui/components/ui/button';
+import { FormField } from '@web/ui/components/ui/form';
 import { Loader2 } from 'lucide-vue-next';
+import { useForm } from 'vee-validate';
 
 import { useUpdateCurrentAdminPassword } from '../mutations';
 
@@ -15,18 +17,22 @@ const defaultValues: AdminUpdatePasswordBody = {
   newPassword: '',
 };
 
-const form = useForm({
-  defaultValues,
-  async onSubmit({ value }: { value: AdminUpdatePasswordBody }) {
-    await updateCurrentAdminPassword(value);
-    form.reset();
-    open.value = false;
-  },
+const formSchema = toTypedSchema(AdminUpdatePasswordSchema);
+
+const { handleSubmit, meta, resetForm } = useForm<AdminUpdatePasswordBody>({
+  validationSchema: formSchema,
+  initialValues: defaultValues,
+});
+
+const onSubmit = handleSubmit(async values => {
+  await updateCurrentAdminPassword(values);
+  resetForm();
+  open.value = false;
 });
 
 watch(open, isOpen => {
   if (!isOpen) {
-    form.reset();
+    resetForm();
   }
 });
 </script>
@@ -39,46 +45,42 @@ watch(open, isOpen => {
         <DialogDescription>修改后请使用新密码登录。</DialogDescription>
       </DialogHeader>
 
-      <form class="space-y-4" @submit.prevent="form.handleSubmit">
-        <form.Field name="oldPassword" #default="{ field }">
-          <Field :data-invalid="field.state.meta.errors.length > 0">
-            <FieldLabel :for="field.name">当前密码</FieldLabel>
+      <form class="space-y-4" @submit="onSubmit">
+        <FormField v-slot="{ field, errors, meta: fieldMeta }" name="oldPassword">
+          <Field :data-invalid="fieldMeta.touched && errors.length > 0">
+            <FieldLabel>当前密码</FieldLabel>
             <Input
-              :id="field.name"
-              :model-value="field.state.value"
-              :aria-invalid="field.state.meta.errors.length > 0"
+              v-bind="field"
+              :model-value="field.value ?? ''"
+              :aria-invalid="fieldMeta.touched && errors.length > 0"
               type="password"
               autocomplete="current-password"
-              @blur="field.handleBlur"
-              @input="field.handleChange($event.target.value)"
             />
 
-            <FieldError :errors="field.state.meta.errors" />
+            <FieldError :errors="errors" />
           </Field>
-        </form.Field>
+        </FormField>
 
-        <form.Field name="newPassword" #default="{ field }">
-          <Field :data-invalid="field.state.meta.errors.length > 0">
-            <FieldLabel :for="field.name">新密码</FieldLabel>
+        <FormField v-slot="{ field, errors, meta: fieldMeta }" name="newPassword">
+          <Field :data-invalid="fieldMeta.touched && errors.length > 0">
+            <FieldLabel>新密码</FieldLabel>
             <Input
-              :id="field.name"
-              :model-value="field.state.value"
-              :aria-invalid="field.state.meta.errors.length > 0"
+              v-bind="field"
+              :model-value="field.value ?? ''"
+              :aria-invalid="fieldMeta.touched && errors.length > 0"
               type="password"
               autocomplete="new-password"
-              @blur="field.handleBlur"
-              @input="field.handleChange($event.target.value)"
             />
 
-            <FieldError :errors="field.state.meta.errors" />
+            <FieldError :errors="errors" />
           </Field>
-        </form.Field>
+        </FormField>
 
         <DialogFooter>
           <DialogClose as-child>
             <Button variant="outline" type="button">取消</Button>
           </DialogClose>
-          <Button type="submit" :disabled="isLoading">
+          <Button type="submit" :disabled="isLoading || !meta.valid">
             <Loader2 v-if="isLoading" class="animate-spin" />
             保存
           </Button>

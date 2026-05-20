@@ -2,6 +2,7 @@ import * as v from 'valibot';
 
 import {
   DateRangeQuerySchema,
+  emptyable,
   KeywordQuerySchema,
   NonceBodySchema,
   PageQuerySchema,
@@ -49,19 +50,19 @@ export type OrderPageQuery = v.InferOutput<typeof OrderPageQuerySchema>;
 /**
  * 创建订单 Schema
  */
-export const CreateOrderSchema = v.intersect([
-  NonceBodySchema,
-  v.object({
-    productId: v.pipe(v.string('请输入用户ID'), v.description('用户ID')),
-    remark: v.optional(
+export const CreateOrderSchema = v.object({
+  nonce: NonceBodySchema,
+  productId: v.pipe(v.string('请输入用户ID'), v.description('用户ID')),
+  remark: v.optional(
+    emptyable(
       v.pipe(
         v.string('请输入备注'),
         v.maxLength(500, '备注不能超过 500 个字符'),
         v.description('备注'),
       ),
     ),
-  }),
-]);
+  ),
+});
 
 export type CreateOrderBody = v.InferOutput<typeof CreateOrderSchema>;
 
@@ -70,10 +71,12 @@ export type CreateOrderBody = v.InferOutput<typeof CreateOrderSchema>;
  */
 export const RefundOrderSchema = v.object({
   reason: v.optional(
-    v.pipe(
-      v.string('请输入备注'),
-      v.maxLength(100, '备注不能超过 100 个字符'),
-      v.description('备注'),
+    emptyable(
+      v.pipe(
+        v.string('请输入备注'),
+        v.maxLength(100, '备注不能超过 100 个字符'),
+        v.description('备注'),
+      ),
     ),
   ),
 });
@@ -85,19 +88,23 @@ export type RefundOrderBody = v.InferOutput<typeof RefundOrderSchema>;
  */
 export const UpdateOrderExpressSchema = v.object({
   expressCompany: v.optional(
-    v.pipe(
-      v.string('请输入快递公司'),
-      v.trim(),
-      v.maxLength(100, '快递公司不能超过 100 个字符'),
-      v.description('快递公司'),
+    emptyable(
+      v.pipe(
+        v.string('请输入快递公司'),
+        v.trim(),
+        v.maxLength(100, '快递公司不能超过 100 个字符'),
+        v.description('快递公司'),
+      ),
     ),
   ),
   expressNo: v.optional(
-    v.pipe(
-      v.string('请输入快递单号'),
-      v.trim(),
-      v.maxLength(100, '快递单号不能超过 100 个字符'),
-      v.description('快递单号'),
+    emptyable(
+      v.pipe(
+        v.string('请输入快递单号'),
+        v.trim(),
+        v.maxLength(100, '快递单号不能超过 100 个字符'),
+        v.description('快递单号'),
+      ),
     ),
   ),
 });

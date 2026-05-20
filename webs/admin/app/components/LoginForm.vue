@@ -5,22 +5,23 @@ const emit = defineEmits<{
   submit: [data: { uid: string; password: string }];
 }>();
 
-import { AdminLoginSchema } from '@internal/shared/admin';
-import { useForm } from '@tanstack/vue-form';
+import { AdminLoginSchema, type AdminLoginBody } from '@internal/shared/admin';
+import { toTypedSchema } from '@vee-validate/valibot';
+import { FormField } from '@web/ui/components/ui/form';
+import { useForm } from 'vee-validate';
 
-const form = useForm({
-  validators: {
-    onSubmit: AdminLoginSchema,
-    onChange: AdminLoginSchema,
-    onBlur: AdminLoginSchema,
-  },
-  defaultValues: {
+const formSchema = toTypedSchema(AdminLoginSchema);
+
+const { handleSubmit } = useForm<AdminLoginBody>({
+  validationSchema: formSchema,
+  initialValues: {
     uid: '',
     password: '',
   },
-  onSubmit({ value }) {
-    emit('submit', value);
-  },
+});
+
+const onSubmit = handleSubmit(values => {
+  emit('submit', values);
 });
 
 function handleNotImplemented(e: Event) {
@@ -36,7 +37,7 @@ function handleNotImplemented(e: Event) {
         <CardDescription> Login with your Bilibili account </CardDescription>
       </CardHeader>
       <CardContent>
-        <form @submit.prevent="form.handleSubmit">
+        <form @submit="onSubmit">
           <FieldGroup>
             <Field>
               <Button variant="outline" type="button" @click="handleNotImplemented">
@@ -49,42 +50,36 @@ function handleNotImplemented(e: Event) {
               OR
             </FieldSeparator>
 
-            <form.Field name="uid" #default="{ field }">
-              <Field :data-invalid="field.state.meta.errors.length > 0">
-                <FieldLabel :for="field.name">UID</FieldLabel>
+            <FormField v-slot="{ field, errors, meta: fieldMeta }" name="uid">
+              <Field :data-invalid="fieldMeta.touched && errors.length > 0">
+                <FieldLabel>UID</FieldLabel>
                 <Input
-                  :id="field.name"
-                  :name="field.name"
-                  :model-value="field.state.value"
-                  :aria-invalid="field.state.meta.errors.length > 0"
+                  v-bind="field"
+                  :model-value="field.value ?? ''"
+                  :aria-invalid="fieldMeta.touched && errors.length > 0"
                   placeholder="90424564xxx"
                   autocomplete="off"
-                  @blur="field.handleBlur"
-                  @input="field.handleChange($event.target.value)"
                 />
 
-                <FieldError :errors="field.state.meta.errors" />
+                <FieldError :errors="errors" />
               </Field>
-            </form.Field>
+            </FormField>
 
-            <form.Field name="password" #default="{ field }">
-              <Field :data-invalid="field.state.meta.errors.length > 0">
-                <FieldLabel :for="field.name">Password</FieldLabel>
+            <FormField v-slot="{ field, errors, meta: fieldMeta }" name="password">
+              <Field :data-invalid="fieldMeta.touched && errors.length > 0">
+                <FieldLabel>Password</FieldLabel>
                 <Input
-                  :id="field.name"
-                  :name="field.name"
-                  :model-value="field.state.value"
-                  :aria-invalid="field.state.meta.errors.length > 0"
+                  v-bind="field"
+                  :model-value="field.value ?? ''"
+                  :aria-invalid="fieldMeta.touched && errors.length > 0"
                   type="password"
                   autocomplete="off"
                   placeholder="?????"
-                  @blur="field.handleBlur"
-                  @input="field.handleChange($event.target.value)"
                 />
 
-                <FieldError :errors="field.state.meta.errors" />
+                <FieldError :errors="errors" />
               </Field>
-            </form.Field>
+            </FormField>
 
             <Field>
               <Button type="submit"> Login </Button>

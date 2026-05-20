@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { AdjustBalanceSchema, type AdjustBalanceBody } from '@internal/shared/point-account';
-import { useForm } from '@tanstack/vue-form';
+import { toTypedSchema } from '@vee-validate/valibot';
 import { Button } from '@web/ui/components/ui/button';
+import { FormField } from '@web/ui/components/ui/form';
 import { Loader2 } from 'lucide-vue-next';
+import { useField, useForm } from 'vee-validate';
 
 import { pointTypeListQuery } from '../../point/queries';
 import { useAdjustUserPoints } from '../mutations';
@@ -43,38 +45,39 @@ const selectedPointAccount = computed(() =>
 );
 const currentBalance = computed(() => selectedPointAccount.value?.balance ?? 0);
 
-const form = useForm({
-  validators: {
-    onSubmit: AdjustBalanceSchema,
-    onChange: AdjustBalanceSchema,
-    onBlur: AdjustBalanceSchema,
-  },
-  defaultValues: createDefaultValues(props.user.id),
-  async onSubmit({ value }: { value: AdjustBalanceBody }) {
-    await adjustUserPoints({
-      userId: value.userId,
-      pointTypeId: value.pointTypeId,
-      delta: value.delta,
-      remark: value.remark,
-      nonce: crypto.randomUUID(),
-    });
+const formSchema = toTypedSchema(AdjustBalanceSchema);
 
-    open.value = false;
+const { handleSubmit, meta, resetForm, setFieldValue } = useForm<AdjustBalanceBody>({
+  validationSchema: formSchema,
+  initialValues: createDefaultValues(props.user.id),
+});
 
-    form.reset({
-      userId: value.userId,
-      pointTypeId: value.pointTypeId,
+const onSubmit = handleSubmit(async values => {
+  await adjustUserPoints({
+    userId: values.userId,
+    pointTypeId: values.pointTypeId,
+    delta: values.delta,
+    remark: values.remark,
+    nonce: crypto.randomUUID(),
+  });
+
+  open.value = false;
+
+  resetForm({
+    values: {
+      userId: values.userId,
+      pointTypeId: values.pointTypeId,
       delta: 1,
       remark: '',
       nonce: crypto.randomUUID(),
-    });
-  },
+    },
+  });
 });
 
 watch(
   () => props.user.id,
   userId => {
-    form.setFieldValue('userId', userId);
+    setFieldValue('userId', userId);
   },
 );
 
@@ -89,7 +92,7 @@ watch(
       const pointTypeId = pointTypes[0]?.id ?? '';
 
       selectedPointTypeId.value = pointTypeId;
-      form.setFieldValue('pointTypeId', pointTypeId);
+      setFieldValue('pointTypeId', pointTypeId);
     }
   },
   { immediate: true },
@@ -104,18 +107,17 @@ watch(
         <DialogDescription>调整 {{ user.username }} 的积分余额。</DialogDescription>
       </DialogHeader>
 
-      <form class="space-y-4" @submit.prevent="form.handleSubmit">
-        <form.Field name="pointTypeId" #default="{ field }">
-          <Field :data-invalid="field.state.meta.errors.length > 0">
-            <FieldLabel :for="field.name">积分类型</FieldLabel>
+      <form class="space-y-4" @submit="onSubmit">
+        <FormField v-slot="{ field, errors, meta: fieldMeta }" name="pointTypeId">
+          <Field :data-invalid="fieldMeta.touched && errors.length > 0">
+            <FieldLabel>积分类型</FieldLabel>
             <NativeSelect
-              :id="field.name"
-              :model-value="field.state.value"
-              :aria-invalid="field.state.meta.errors.length > 0"
-              @blur="field.handleBlur"
+              :model-value="field.value"
+              :aria-invalid="fieldMeta.touched && errors.length > 0"
+              @blur="field.onBlur"
               @update:model-value="
                 selectedPointTypeId = String($event);
-                field.handleChange(selectedPointTypeId);
+                field.onChange(selectedPointTypeId);
               "
             >
               <NativeSelectOption value="" disabled>选择积分类型</NativeSelectOption>
@@ -130,55 +132,55 @@ watch(
 
             <FieldDescription>当前积分：{{ currentBalance }}</FieldDescription>
 
-            <FieldError :errors="field.state.meta.errors" />
+            <FieldError :errors="errors" />
           </Field>
-        </form.Field>
+        </FormField>
 
-        <form.Field name="delta" #default="{ field }">
-          <Field :data-invalid="field.state.meta.errors.length > 0">
-            <FieldLabel :for="field.name">变动数量</FieldLabel>
+        <FormField v-slot="{ field, errors, meta: fieldMeta }" name="delta">
+          <Field :data-invalid="fieldMeta.touched && errors.length > 0">
+            <FieldLabel>变动数量</FieldLabel>
             <Input
-              :id="field.name"
-              :model-value="field.state.value"
-              :aria-invalid="field.state.meta.errors.length > 0"
+              :model-value="field.value"
+              :aria-invalid="fieldMeta.touched && errors.length > 0"
               type="number"
               step="1"
               placeholder="正数增加，负数扣减"
-              @blur="field.handleBlur"
-              @input="field.handleChange(Number($event.target.value))"
+              @blur="field.onBlur"
+              @input="field.onChange(Number($event.target.value))"
             />
 
             <FieldDescription
               >扣减请优先使用冲正流水。调整后：{{
-                currentBalance + Number(field.state.value)
+                currentBalance + Number(field.value)
               }}</FieldDescription
             >
 
-            <FieldError :errors="field.state.meta.errors" />
+            <FieldError :errors="errors" />
           </Field>
-        </form.Field>
+        </FormField>
 
-        <form.Field name="remark" #default="{ field }">
-          <Field :data-invalid="field.state.meta.errors.length > 0">
-            <FieldLabel :for="field.name">备注</FieldLabel>
+        <FormField v-slot="{ field, errors, meta: fieldMeta }" name="remark">
+          <Field :data-invalid="fieldMeta.touched && errors.length > 0">
+            <FieldLabel>备注</FieldLabel>
             <Textarea
-              :id="field.name"
-              :model-value="field.state.value"
-              :aria-invalid="field.state.meta.errors.length > 0"
+              v-bind="field"
+              :model-value="field.value ?? ''"
+              :aria-invalid="fieldMeta.touched && errors.length > 0"
               placeholder="例如：活动补发 / 违规扣减"
-              @blur="field.handleBlur"
-              @input="field.handleChange($event.target.value)"
             />
 
-            <FieldError :errors="field.state.meta.errors" />
+            <FieldError :errors="errors" />
           </Field>
-        </form.Field>
+        </FormField>
 
         <DialogFooter>
           <DialogClose as-child>
             <Button variant="outline" type="button">取消</Button>
           </DialogClose>
-          <Button type="submit" :disabled="isLoading || activePointTypes.length === 0">
+          <Button
+            type="submit"
+            :disabled="isLoading || activePointTypes.length === 0 || !meta.valid"
+          >
             <Loader2 v-if="isLoading" class="animate-spin" />
             确认调整
           </Button>

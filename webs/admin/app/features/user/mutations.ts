@@ -20,7 +20,12 @@ export const useCreateUser = defineMutation(() => {
       successMessage: '用户创建成功',
     },
     mutation(body: UserRegisterBody) {
-      return $api.users.post(body);
+      return $api.users.post({
+        ...body,
+        email: body.email ?? undefined,
+        address: body.address ?? undefined,
+        phone: body.phone ?? undefined,
+      });
     },
     onSettled: invalidateUsers,
   });
@@ -52,7 +57,7 @@ export const useUpdateUser = defineMutation(() => {
       successMessage: '用户信息已更新',
     },
     mutation(input: { userId: string; body: UpdateUserBody }) {
-      return $api.users({ userId: input.userId }).patch(input.body);
+      return $api.users({ userId: input.userId }).patch(normalizePatchBody(input.body));
     },
     onSettled: invalidateUsers,
   });

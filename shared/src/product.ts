@@ -1,6 +1,12 @@
 import * as v from 'valibot';
 
-import { emptyable, KeywordQuerySchema, PageQuerySchema } from './common';
+import {
+  BooleanInputSchema,
+  emptyable,
+  KeywordQuerySchema,
+  NumberInputSchema,
+  PageQuerySchema,
+} from './common';
 /**
  * 商品 ID Params Schema。
  */
@@ -92,7 +98,7 @@ const ProductPointTypeIdSchema = v.pipe(
  * 商品兑换价格 Schema。
  */
 const ProductPriceSchema = v.pipe(
-  v.number('请输入兑换所需积分数量'),
+  NumberInputSchema('请输入兑换所需积分数量'),
   v.integer('兑换所需积分数量必须是整数'),
   v.minValue(1, '兑换所需积分数量必须大于 0'),
   v.description('兑换所需积分数量'),
@@ -102,7 +108,7 @@ const ProductPriceSchema = v.pipe(
  * 商品库存 Schema。
  */
 const ProductStockSchema = v.pipe(
-  v.number('请输入商品库存'),
+  NumberInputSchema('请输入商品库存'),
   v.integer('商品库存必须是整数'),
   v.minValue(0, '商品库存不能小于 0'),
   v.description('商品库存'),
@@ -112,7 +118,7 @@ const ProductStockSchema = v.pipe(
  * 商品排序值 Schema。
  */
 const ProductSortSchema = v.pipe(
-  v.number('请输入排序值'),
+  NumberInputSchema('请输入排序值'),
   v.integer('排序值必须是整数'),
   v.description('排序值'),
 );
@@ -121,7 +127,7 @@ const ProductSortSchema = v.pipe(
  * 商品是否允许用户取消订单 Schema。
  */
 const ProductAllowCancelSchema = v.pipe(
-  v.boolean('请选择是否允许用户取消订单'),
+  BooleanInputSchema('请选择是否允许用户取消订单'),
   v.description('是否允许用户取消订单'),
 );
 
@@ -129,7 +135,7 @@ const ProductAllowCancelSchema = v.pipe(
  * 商品可兑换时间 Schema。
  */
 const ProductTimeSchema = v.pipe(
-  v.number('请输入可兑换时间戳'),
+  NumberInputSchema('请输入可兑换时间戳'),
   v.integer('可兑换时间戳必须是整数'),
   v.description('可兑换时间戳'),
 );
@@ -189,9 +195,9 @@ export type CreateProductBody = v.InferOutput<typeof CreateProductSchema>;
 export const UpdateProductSchema = v.object({
   name: v.optional(ProductNameSchema),
 
-  description: v.nullish(ProductDescriptionSchema),
+  description: v.nullish(emptyable(ProductDescriptionSchema)),
   cover: v.optional(ProductCoverSchema),
-  detail: v.nullish(ProductDetailSchema),
+  detail: v.nullish(emptyable(ProductDetailSchema)),
 
   pointTypeId: v.optional(ProductPointTypeIdSchema),
   price: v.optional(ProductPriceSchema),
@@ -203,7 +209,7 @@ export const UpdateProductSchema = v.object({
   endTime: v.nullish(ProductTimeSchema),
   allowCancel: v.optional(ProductAllowCancelSchema),
   sort: v.optional(ProductSortSchema),
-  metadata: v.nullish(ProductMetadataSchema),
+  metadata: v.nullish(emptyable(ProductMetadataSchema)),
 });
 
 export type UpdateProductBody = v.InferOutput<typeof UpdateProductSchema>;

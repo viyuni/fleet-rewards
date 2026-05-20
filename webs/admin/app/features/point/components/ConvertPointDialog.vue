@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import type { ConvertPointBody } from '@internal/shared/point-conversion';
-import { useForm } from '@tanstack/vue-form';
+import { ConvertPointSchema, type ConvertPointBody } from '@internal/shared/point-conversion';
+import { toTypedSchema } from '@vee-validate/valibot';
 import { Button } from '@web/ui/components/ui/button';
+import { FormField } from '@web/ui/components/ui/form';
 import { Loader2 } from 'lucide-vue-next';
+import { useForm } from 'vee-validate';
 
 import UserSelect from '../../user/components/UserSelect.vue';
 import { useConvertPoint } from '../mutations';
@@ -40,30 +42,34 @@ function createDefaultValues(ruleId: string): ConvertPointBody {
   };
 }
 
-const form = useForm({
-  defaultValues: createDefaultValues(props.conversion.id),
-  async onSubmit({ value }: { value: ConvertPointBody }) {
-    await convertPoint({
-      ...value,
-      ruleId: props.conversion.id,
-      nonce: crypto.randomUUID(),
-    });
+const formSchema = toTypedSchema(ConvertPointSchema);
 
-    form.reset(createDefaultValues(props.conversion.id));
-    open.value = false;
-  },
+const { handleSubmit, meta, resetForm } = useForm<ConvertPointBody>({
+  validationSchema: formSchema,
+  initialValues: createDefaultValues(props.conversion.id),
+});
+
+const onSubmit = handleSubmit(async values => {
+  await convertPoint({
+    ...values,
+    ruleId: props.conversion.id,
+    nonce: crypto.randomUUID(),
+  });
+
+  resetForm({ values: createDefaultValues(props.conversion.id) });
+  open.value = false;
 });
 
 watch(
   () => props.conversion.id,
   ruleId => {
-    form.reset(createDefaultValues(ruleId));
+    resetForm({ values: createDefaultValues(ruleId) });
   },
 );
 
 watch(open, isOpen => {
   if (!isOpen) {
-    form.reset(createDefaultValues(props.conversion.id));
+    resetForm({ values: createDefaultValues(props.conversion.id) });
     userSelect.value?.reset();
   }
 });
@@ -80,62 +86,58 @@ watch(open, isOpen => {
         </DialogDescription>
       </DialogHeader>
 
-      <form class="space-y-4" @submit.prevent="form.handleSubmit">
-        <form.Field name="userId" #default="{ field }">
-          <Field :data-invalid="field.state.meta.errors.length > 0">
-            <FieldLabel :for="field.name">用户 ID</FieldLabel>
+      <form class="space-y-4" @submit="onSubmit">
+        <FormField v-slot="{ field, errors, meta: fieldMeta }" name="userId">
+          <Field :data-invalid="fieldMeta.touched && errors.length > 0">
+            <FieldLabel>用户 ID</FieldLabel>
             <UserSelect
-              :id="field.name"
               ref="userSelect"
-              :model-value="field.state.value"
-              :aria-invalid="field.state.meta.errors.length > 0"
-              @update:model-value="field.handleChange($event)"
-              @blur="field.handleBlur"
+              :model-value="field.value"
+              :aria-invalid="fieldMeta.touched && errors.length > 0"
+              @update:model-value="field.onChange($event)"
+              @blur="field.onBlur"
             />
 
-            <FieldError :errors="field.state.meta.errors" />
+            <FieldError :errors="errors" />
           </Field>
-        </form.Field>
+        </FormField>
 
-        <form.Field name="fromAmount" #default="{ field }">
-          <Field :data-invalid="field.state.meta.errors.length > 0">
-            <FieldLabel :for="field.name">{{ `${fromPointTypeName}数量` }}</FieldLabel>
+        <FormField v-slot="{ field, errors, meta: fieldMeta }" name="fromAmount">
+          <Field :data-invalid="fieldMeta.touched && errors.length > 0">
+            <FieldLabel>{{ `${fromPointTypeName}数量` }}</FieldLabel>
             <Input
-              :id="field.name"
-              :model-value="field.state.value"
-              :aria-invalid="field.state.meta.errors.length > 0"
+              :model-value="field.value"
+              :aria-invalid="fieldMeta.touched && errors.length > 0"
               type="number"
               min="1"
               step="1"
-              @blur="field.handleBlur"
-              @input="field.handleChange(Number($event.target.value))"
+              @blur="field.onBlur"
+              @input="field.onChange(Number($event.target.value))"
             />
 
-            <FieldError :errors="field.state.meta.errors" />
+            <FieldError :errors="errors" />
           </Field>
-        </form.Field>
+        </FormField>
 
-        <form.Field name="remark" #default="{ field }">
-          <Field :data-invalid="field.state.meta.errors.length > 0">
-            <FieldLabel :for="field.name">备注</FieldLabel>
+        <FormField v-slot="{ field, errors, meta: fieldMeta }" name="remark">
+          <Field :data-invalid="fieldMeta.touched && errors.length > 0">
+            <FieldLabel>备注</FieldLabel>
             <Textarea
-              :id="field.name"
-              :model-value="field.state.value ?? ''"
-              :aria-invalid="field.state.meta.errors.length > 0"
+              v-bind="field"
+              :model-value="field.value ?? ''"
+              :aria-invalid="fieldMeta.touched && errors.length > 0"
               placeholder="可选"
-              @blur="field.handleBlur"
-              @input="field.handleChange($event.target.value)"
             />
 
-            <FieldError :errors="field.state.meta.errors" />
+            <FieldError :errors="errors" />
           </Field>
-        </form.Field>
+        </FormField>
 
         <DialogFooter>
           <DialogClose as-child>
             <Button variant="outline" type="button">取消</Button>
           </DialogClose>
-          <Button type="submit" :disabled="isLoading">
+          <Button type="submit" :disabled="isLoading || !meta.valid">
             <Loader2 v-if="isLoading" class="animate-spin" />
             执行转换
           </Button>

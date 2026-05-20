@@ -6,8 +6,6 @@ import type {
 } from '@internal/shared/admin';
 import { defineMutation, useMutation, useQueryCache } from '@pinia/colada';
 
-import { nullifyEmptyFields } from '~/utils/form';
-
 import { useAuthStore } from '../auth/store';
 import { ADMIN_QUERY_KEYS } from './queries';
 
@@ -43,7 +41,7 @@ export const useUpdateAdmin = defineMutation(() => {
       successMessage: '管理员已更新',
     },
     mutation(input: { adminId: string; body: SuperAdminUpdateBody }) {
-      return $api.admin({ adminId: input.adminId }).patch(nullifyEmptyFields(input.body));
+      return $api.admin({ adminId: input.adminId }).patch(normalizePatchBody(input.body));
     },
     onSettled: invalidateAdmins,
   });
@@ -59,7 +57,7 @@ export const useUpdateCurrentAdmin = defineMutation(() => {
       successMessage: '账户信息已更新',
     },
     mutation(body: AdminUpdateBody) {
-      return $api.admin.me.patch(body);
+      return $api.admin.me.patch(normalizePatchBody(body));
     },
     onSuccess({ data }) {
       if (data && authStore.user) {

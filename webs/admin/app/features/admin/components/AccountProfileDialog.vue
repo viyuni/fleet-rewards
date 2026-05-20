@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import type { AdminUpdateBody } from '@internal/shared/admin';
-import { useForm } from '@tanstack/vue-form';
+import { AdminUpdateSchema, type AdminUpdateBody } from '@internal/shared/admin';
+import { toTypedSchema } from '@vee-validate/valibot';
 import { Button } from '@web/ui/components/ui/button';
+import { FormField } from '@web/ui/components/ui/form';
 import { Loader2 } from 'lucide-vue-next';
+import { useForm } from 'vee-validate';
 
 import { useAuthStore } from '../../auth/store';
 import { useUpdateCurrentAdmin } from '../mutations';
@@ -18,20 +20,24 @@ function createDefaultValues(): AdminUpdateBody {
   };
 }
 
-const form = useForm({
-  defaultValues: createDefaultValues(),
-  async onSubmit({ value }: { value: AdminUpdateBody }) {
-    await updateCurrentAdmin({
-      username: value.username?.trim() || undefined,
-    });
+const formSchema = toTypedSchema(AdminUpdateSchema);
 
-    open.value = false;
-  },
+const { handleSubmit, meta, resetForm } = useForm<AdminUpdateBody>({
+  validationSchema: formSchema,
+  initialValues: createDefaultValues(),
+});
+
+const onSubmit = handleSubmit(async values => {
+  await updateCurrentAdmin({
+    username: values.username?.trim() || undefined,
+  });
+
+  open.value = false;
 });
 
 watch(open, isOpen => {
   if (isOpen) {
-    form.reset(createDefaultValues());
+    resetForm({ values: createDefaultValues() });
   }
 });
 </script>
@@ -44,27 +50,25 @@ watch(open, isOpen => {
         <DialogDescription>更新当前登录管理员的展示信息。</DialogDescription>
       </DialogHeader>
 
-      <form class="space-y-4" @submit.prevent="form.handleSubmit">
-        <form.Field name="username" #default="{ field }">
-          <Field :data-invalid="field.state.meta.errors.length > 0">
-            <FieldLabel :for="field.name">用户名</FieldLabel>
+      <form class="space-y-4" @submit="onSubmit">
+        <FormField v-slot="{ field, errors, meta: fieldMeta }" name="username">
+          <Field :data-invalid="fieldMeta.touched && errors.length > 0">
+            <FieldLabel>用户名</FieldLabel>
             <Input
-              :id="field.name"
-              :model-value="field.state.value"
-              :aria-invalid="field.state.meta.errors.length > 0"
-              @blur="field.handleBlur"
-              @input="field.handleChange($event.target.value)"
+              v-bind="field"
+              :model-value="field.value ?? ''"
+              :aria-invalid="fieldMeta.touched && errors.length > 0"
             />
 
-            <FieldError :errors="field.state.meta.errors" />
+            <FieldError :errors="errors" />
           </Field>
-        </form.Field>
+        </FormField>
 
         <DialogFooter>
           <DialogClose as-child>
             <Button variant="outline" type="button">取消</Button>
           </DialogClose>
-          <Button type="submit" :disabled="isLoading">
+          <Button type="submit" :disabled="isLoading || !meta.valid">
             <Loader2 v-if="isLoading" class="animate-spin" />
             保存
           </Button>

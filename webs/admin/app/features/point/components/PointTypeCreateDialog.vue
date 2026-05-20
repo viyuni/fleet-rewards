@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { CreatePointTypeSchema, type CreatePointTypeBody } from '@internal/shared/point-type';
-import { useForm } from '@tanstack/vue-form';
+import { toTypedSchema } from '@vee-validate/valibot';
 import { Button } from '@web/ui/components/ui/button';
+import { FormField } from '@web/ui/components/ui/form';
 import { Loader2 } from 'lucide-vue-next';
+import { useForm } from 'vee-validate';
 
 import { useCreatePointType } from '../mutations';
 
@@ -17,22 +19,23 @@ function createDefaultValues(): CreatePointTypeBody {
   };
 }
 
-const form = useForm({
-  validators: {
-    onSubmit: CreatePointTypeSchema,
-  },
-  defaultValues: createDefaultValues(),
-  async onSubmit({ value }: { value: CreatePointTypeBody }) {
-    await createPointType(value);
+const formSchema = toTypedSchema(CreatePointTypeSchema);
 
-    form.reset(createDefaultValues());
-    open.value = false;
-  },
+const { handleSubmit, meta, resetForm } = useForm<CreatePointTypeBody>({
+  validationSchema: formSchema,
+  initialValues: createDefaultValues(),
+});
+
+const onSubmit = handleSubmit(async values => {
+  await createPointType(values);
+
+  resetForm({ values: createDefaultValues() });
+  open.value = false;
 });
 
 watch(open, isOpen => {
   if (!isOpen) {
-    form.reset(createDefaultValues());
+    resetForm({ values: createDefaultValues() });
   }
 });
 </script>
@@ -45,44 +48,40 @@ watch(open, isOpen => {
         <DialogDescription>创建可用于发放、兑换和调整的积分类型。</DialogDescription>
       </DialogHeader>
 
-      <form class="space-y-4" @submit.prevent="form.handleSubmit">
-        <form.Field name="name" #default="{ field }">
-          <Field :data-invalid="field.state.meta.errors.length > 0">
-            <FieldLabel :for="field.name">名称</FieldLabel>
+      <form class="space-y-4" @submit="onSubmit">
+        <FormField v-slot="{ field, errors, meta: fieldMeta }" name="name">
+          <Field :data-invalid="fieldMeta.touched && errors.length > 0">
+            <FieldLabel>名称</FieldLabel>
             <Input
-              :id="field.name"
-              :model-value="field.state.value"
-              :aria-invalid="field.state.meta.errors.length > 0"
+              v-bind="field"
+              :model-value="field.value ?? ''"
+              :aria-invalid="fieldMeta.touched && errors.length > 0"
               placeholder="例如：舰队积分"
-              @blur="field.handleBlur"
-              @input="field.handleChange($event.target.value)"
             />
 
-            <FieldError :errors="field.state.meta.errors" />
+            <FieldError :errors="errors" />
           </Field>
-        </form.Field>
+        </FormField>
 
-        <form.Field name="description" #default="{ field }">
-          <Field :data-invalid="field.state.meta.errors.length > 0">
-            <FieldLabel :for="field.name">描述</FieldLabel>
+        <FormField v-slot="{ field, errors, meta: fieldMeta }" name="description">
+          <Field :data-invalid="fieldMeta.touched && errors.length > 0">
+            <FieldLabel>描述</FieldLabel>
             <Textarea
-              :id="field.name"
-              :model-value="field.state.value ?? ''"
-              :aria-invalid="field.state.meta.errors.length > 0"
+              v-bind="field"
+              :model-value="field.value ?? ''"
+              :aria-invalid="fieldMeta.touched && errors.length > 0"
               placeholder="可选"
-              @blur="field.handleBlur"
-              @input="field.handleChange($event.target.value)"
             />
 
-            <FieldError :errors="field.state.meta.errors" />
+            <FieldError :errors="errors" />
           </Field>
-        </form.Field>
+        </FormField>
 
         <DialogFooter>
           <DialogClose as-child>
             <Button variant="outline" type="button">取消</Button>
           </DialogClose>
-          <Button type="submit" :disabled="isLoading">
+          <Button type="submit" :disabled="isLoading || !meta.valid">
             <Loader2 v-if="isLoading" class="animate-spin" />
             创建
           </Button>

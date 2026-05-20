@@ -1,6 +1,12 @@
 import * as v from 'valibot';
 
-import { BiliUidSchema, PageQuerySchema, PasswordSchema, UsernameSchema } from './common';
+import {
+  BiliUidSchema,
+  emptyable,
+  PageQuerySchema,
+  PasswordSchema,
+  UsernameSchema,
+} from './common';
 
 /**
  * 管理员角色 Schema
@@ -27,10 +33,12 @@ export const AdminCreateSchema = v.object({
   username: UsernameSchema,
   password: PasswordSchema,
   remark: v.optional(
-    v.pipe(
-      v.string('请输入备注'),
-      v.maxLength(500, '备注不能超过 500 个字符'),
-      v.description('备注'),
+    emptyable(
+      v.pipe(
+        v.string('请输入备注'),
+        v.maxLength(500, '备注不能超过 500 个字符'),
+        v.description('备注'),
+      ),
     ),
   ),
 });
@@ -43,10 +51,12 @@ export type AdminCreateBody = v.InferOutput<typeof AdminCreateSchema>;
 export const SuperAdminUpdateSchema = v.object({
   username: v.optional(UsernameSchema),
   remark: v.nullish(
-    v.pipe(
-      v.string('请输入备注'),
-      v.maxLength(500, '备注不能超过 500 个字符'),
-      v.description('备注'),
+    emptyable(
+      v.pipe(
+        v.string('请输入备注'),
+        v.maxLength(500, '备注不能超过 500 个字符'),
+        v.description('备注'),
+      ),
     ),
   ),
 });
