@@ -19,7 +19,7 @@ export const useLogin = defineMutation(() => {
     onSuccess({ data }) {
       if (data) {
         updateUser(data);
-        router.push('/app/dashboard');
+        router.push('/app/users');
       }
     },
   });

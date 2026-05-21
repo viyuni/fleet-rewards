@@ -1,20 +1,8 @@
-import {
-  ClipboardList,
-  Coins,
-  LayoutDashboard,
-  Radio,
-  ShoppingBag,
-  UserRound,
-} from 'lucide-vue-next';
+import { ClipboardList, Coins, Radio, ShoppingBag, UserRound } from 'lucide-vue-next';
 
 import type { MenuItem } from '~/types';
 
 export const menus = [
-  {
-    title: '控制台',
-    to: '/app/dashboard',
-    icon: LayoutDashboard,
-  },
   {
     title: '用户管理',
     icon: UserRound,

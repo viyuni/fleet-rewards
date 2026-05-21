@@ -10,7 +10,7 @@ const { user } = storeToRefs(useAuthStore());
 
 watchEffect(() => {
   if (user.value && user.value.role !== 'superAdmin') {
-    navigateTo('/app/dashboard', { replace: true });
+    navigateTo('/app/users', { replace: true });
   }
 });
 </script>
