@@ -4,7 +4,7 @@
   "type": "module",
   "module": "schema/index.ts",
   "exports": {
-    ".": "./index.ts",
+    ".": "./src/index.ts",
     "./tsconfig/common": "./tsconfig/common.json",
     "./common": "./src/common.ts",
     "./admin": "./src/admin.ts",

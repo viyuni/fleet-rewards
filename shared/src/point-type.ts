@@ -1,6 +1,4 @@
-import * as v from 'valibot';
-
-import { emptyable } from './common';
+import * as v from '.';
 
 /**
  * 积分类型 ID Params Schema。
@@ -53,7 +51,7 @@ const PointTypeDescriptionSchema = v.pipe(
  */
 export const CreatePointTypeSchema = v.object({
   name: PointTypeNameSchema,
-  description: v.optional(emptyable(PointTypeDescriptionSchema)),
+  description: v.optional(v.emptyable(PointTypeDescriptionSchema)),
 });
 
 export type CreatePointTypeBody = v.InferOutput<typeof CreatePointTypeSchema>;
@@ -63,7 +61,7 @@ export type CreatePointTypeBody = v.InferOutput<typeof CreatePointTypeSchema>;
  */
 export const UpdatePointTypeSchema = v.object({
   name: v.optional(PointTypeNameSchema),
-  description: v.nullish(emptyable(PointTypeDescriptionSchema)),
+  description: v.nullish(v.emptyable(PointTypeDescriptionSchema)),
 });
 
 export type UpdatePointTypeBody = v.InferOutput<typeof UpdatePointTypeSchema>;

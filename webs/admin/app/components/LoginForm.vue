@@ -5,22 +5,19 @@ const emit = defineEmits<{
   submit: [data: { uid: string; password: string }];
 }>();
 
-import { AdminLoginSchema, type AdminLoginBody } from '@internal/shared/admin';
-import { toTypedSchema } from '@vee-validate/valibot';
-import { FormField } from '@web/ui/components/ui/form';
-import { useForm } from 'vee-validate';
+import { AdminLoginSchema } from '@internal/shared/admin';
+import { FormFieldItem, useForm } from '@web/ui/components/ui/form';
 
-const formSchema = toTypedSchema(AdminLoginSchema);
-
-const { handleSubmit } = useForm<AdminLoginBody>({
-  validationSchema: formSchema,
-  initialValues: {
+const { handleSubmit, onSubmitSuccess } = useForm({
+  schema: AdminLoginSchema,
+  resetOnSuccess: false,
+  initialValues: () => ({
     uid: '',
     password: '',
-  },
+  }),
 });
 
-const onSubmit = handleSubmit(values => {
+onSubmitSuccess(values => {
   emit('submit', values);
 });
 
@@ -37,7 +34,7 @@ function handleNotImplemented(e: Event) {
         <CardDescription> Login with your Bilibili account </CardDescription>
       </CardHeader>
       <CardContent>
-        <form @submit="onSubmit">
+        <form @submit="handleSubmit">
           <FieldGroup>
             <Field>
               <Button variant="outline" type="button" @click="handleNotImplemented">
@@ -50,36 +47,18 @@ function handleNotImplemented(e: Event) {
               OR
             </FieldSeparator>
 
-            <FormField v-slot="{ field, errors, meta: fieldMeta }" name="uid">
-              <Field :data-invalid="fieldMeta.touched && errors.length > 0">
-                <FieldLabel>UID</FieldLabel>
-                <Input
-                  v-bind="field"
-                  :model-value="field.value ?? ''"
-                  :aria-invalid="fieldMeta.touched && errors.length > 0"
-                  placeholder="90424564xxx"
-                  autocomplete="off"
-                />
+            <FormFieldItem v-slot="{ componentField }" name="uid" label="UID" required>
+              <Input v-bind="componentField" placeholder="90424564xxx" autocomplete="off" />
+            </FormFieldItem>
 
-                <FieldError :errors="errors" />
-              </Field>
-            </FormField>
-
-            <FormField v-slot="{ field, errors, meta: fieldMeta }" name="password">
-              <Field :data-invalid="fieldMeta.touched && errors.length > 0">
-                <FieldLabel>Password</FieldLabel>
-                <Input
-                  v-bind="field"
-                  :model-value="field.value ?? ''"
-                  :aria-invalid="fieldMeta.touched && errors.length > 0"
-                  type="password"
-                  autocomplete="off"
-                  placeholder="?????"
-                />
-
-                <FieldError :errors="errors" />
-              </Field>
-            </FormField>
+            <FormFieldItem v-slot="{ componentField }" name="password" label="Password" required>
+              <Input
+                v-bind="componentField"
+                type="password"
+                autocomplete="off"
+                placeholder="?????"
+              />
+            </FormFieldItem>
 
             <Field>
               <Button type="submit"> Login </Button>

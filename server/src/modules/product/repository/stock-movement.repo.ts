@@ -15,8 +15,8 @@ export class StockMovementRepository {
         productId: query.productId,
         type: query.type,
         createdAt: {
-          gte: parseDate(query.startTime),
-          lte: parseDate(query.endTime),
+          gte: parseDate(query.startTime) ?? undefined,
+          lte: parseDate(query.endTime) ?? undefined,
         },
       })
       .query((findMany, { where, limit, offset }) =>

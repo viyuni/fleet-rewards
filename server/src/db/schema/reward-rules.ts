@@ -30,10 +30,10 @@ export type RewardRuleCondition = BiliGuardRewardRuleCondition;
  * 积分奖励发放规则
  *
  * 生效时间:
- * - startsAt/endsAt 都为空: 常驻生效
- * - startsAt 为空: 直到 endsAt 前生效
- * - endsAt 为空: 从 startsAt 起常驻生效
- * - startsAt/endsAt 都有值: 只在时间窗口内生效
+ * - startTime/endTime 都为空: 常驻生效
+ * - startTime 为空: 直到 endTime 前生效
+ * - endTime 为空: 从 startTime 起常驻生效
+ * - startTime/endTime 都有值: 只在时间窗口内生效
  *
  * 叠加规则:
  * - group 为空: 匹配后直接参与叠加
@@ -92,12 +92,12 @@ export const rewardRules = pgTable(
     /**
      * 生效开始时间为空表示不限制开始时间
      */
-    startsAt: timestamp('starts_at', { withTimezone: true }),
+    startTime: timestamp('start_time', { withTimezone: true }),
 
     /**
      * 生效结束时间为空表示不限制结束时间
      */
-    endsAt: timestamp('ends_at', { withTimezone: true }),
+    endTime: timestamp('end_time', { withTimezone: true }),
 
     /**
      * 优先级，数字越小优先级越高
@@ -113,7 +113,7 @@ export const rewardRules = pgTable(
     index('reward_rules_point_type_id_idx').on(t.pointTypeId),
     index('reward_rules_enabled_idx').on(t.enabled),
     index('reward_rules_group_idx').on(t.group),
-    index('reward_rules_time_range_idx').on(t.startsAt, t.endsAt),
+    index('reward_rules_time_range_idx').on(t.startTime, t.endTime),
     index('reward_rules_priority_idx').on(t.priority),
     index('reward_rules_enabled_priority_created_at_idx').on(t.enabled, t.priority, t.createdAt),
     index('reward_rules_priority_created_at_idx').on(t.priority, t.createdAt),

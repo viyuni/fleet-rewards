@@ -23,8 +23,8 @@ const columns = [
   { accessorKey: 'points', header: '奖励积分' },
   { accessorKey: 'group', header: '互斥分组' },
   { accessorKey: 'priority', header: '优先级' },
-  { accessorKey: 'startsAt', header: '开始时间' },
-  { accessorKey: 'endsAt', header: '结束时间' },
+  { accessorKey: 'startTime', header: '开始时间' },
+  { accessorKey: 'endTime', header: '结束时间' },
   { accessorKey: 'enabled', header: '状态' },
   { id: 'actions', enableHiding: false },
 ] satisfies ColumnDef<RewardRule>[];
@@ -61,11 +61,11 @@ function toggleRewardRuleEnabled(rule: RewardRule, enabled: boolean) {
       {{ value ?? '-' }}
     </template>
 
-    <template #startsAt="{ value }">
+    <template #startTime="{ value }">
       {{ value?.toLocaleString() ?? '-' }}
     </template>
 
-    <template #endsAt="{ value }">
+    <template #endTime="{ value }">
       {{ value?.toLocaleString() ?? '-' }}
     </template>
 

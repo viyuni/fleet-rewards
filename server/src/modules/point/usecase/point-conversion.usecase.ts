@@ -5,8 +5,8 @@ import type {
 } from '@internal/shared/point-conversion';
 
 import type { DbClient } from '#db';
+import { parseDate } from '#db/helper';
 import type { InsertPointConversionRule, UpdatePointConversionRule } from '#db/schema';
-import { toDate } from '#utils';
 
 import {
   POINT_CHANGE_SOURCE_TYPE,
@@ -47,7 +47,14 @@ export class PointConversionUseCase {
   }
 
   async create(ruleData: CreatePointConversionRuleBody) {
-    PointConversionRulePolicy.assertValidShape(ruleData);
+    const startTime = parseDate(ruleData.startTime);
+    const endTime = parseDate(ruleData.endTime);
+
+    PointConversionRulePolicy.assertValidShape({
+      ...ruleData,
+      endTime,
+      startTime,
+    });
 
     const exists = await this.deps.pointConversionRuleRepo.findByName(ruleData.name);
 
@@ -58,11 +65,11 @@ export class PointConversionUseCase {
     await this.assertPointTypesAvailable(ruleData.fromPointTypeId, ruleData.toPointTypeId);
     await this.assertRulePairAvailable(ruleData.fromPointTypeId, ruleData.toPointTypeId);
 
-    const { endsAt, startsAt, ...data } = ruleData;
+    const { endTime: _endTime, startTime: _startTime, ...data } = ruleData;
     const createData: InsertPointConversionRule = {
       ...data,
-      endsAt: toDate(endsAt),
-      startsAt: toDate(startsAt),
+      endTime,
+      startTime,
     };
 
     return this.deps.pointConversionRuleRepo.create(createData);
@@ -70,7 +77,14 @@ export class PointConversionUseCase {
 
   async update(pointConversionRuleId: string, ruleData: UpdatePointConversionRuleBody) {
     const current = await this.get(pointConversionRuleId);
-    const next = { ...current, ...ruleData };
+    const startTime = ruleData.startTime === undefined ? undefined : parseDate(ruleData.startTime);
+    const endTime = ruleData.endTime === undefined ? undefined : parseDate(ruleData.endTime);
+    const next = {
+      ...current,
+      ...ruleData,
+      endTime: endTime === undefined ? current.endTime : endTime,
+      startTime: startTime === undefined ? current.startTime : startTime,
+    };
 
     PointConversionRulePolicy.assertValidShape(next);
 
@@ -78,11 +92,11 @@ export class PointConversionUseCase {
       await this.assertPointTypesAvailable(next.fromPointTypeId, next.toPointTypeId);
     }
 
-    const { endsAt, startsAt, ...data } = ruleData;
+    const { endTime: _endTime, startTime: _startTime, ...data } = ruleData;
     const updateData: UpdatePointConversionRule = {
       ...data,
-      endsAt: toDate(endsAt),
-      startsAt: toDate(startsAt),
+      endTime,
+      startTime,
     };
 
     return this.deps.pointConversionRuleRepo.update(pointConversionRuleId, updateData);

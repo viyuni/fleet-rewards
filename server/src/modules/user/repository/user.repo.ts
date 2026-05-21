@@ -202,6 +202,7 @@ export class UserRepository {
               with: {
                 pointType: {
                   columns: {
+                    id: true,
                     name: true,
                   },
                 },

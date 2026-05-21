@@ -3,10 +3,8 @@ import {
   ReversalTransactionSchema,
   type ReversalPointTransactionBody,
 } from '@internal/shared/point-account';
-import { toTypedSchema } from '@vee-validate/valibot';
 import { Button } from '@web/ui/components/ui/button';
-import { FormField } from '@web/ui/components/ui/form';
-import { useForm } from 'vee-validate';
+import { FormFieldItem, usePopoverForm } from '@web/ui/components/ui/form';
 
 import type { PointTransaction } from './PointTransactionListView.vue';
 
@@ -35,14 +33,14 @@ function createDefaultValues(transactionId: string): ReversalPointTransactionBod
   };
 }
 
-const formSchema = toTypedSchema(ReversalTransactionSchema);
-
-const { handleSubmit, resetForm, setFieldValue } = useForm<ReversalPointTransactionBody>({
-  validationSchema: formSchema,
-  initialValues: createDefaultValues(props.transaction.id),
+const { handleSubmit, onSubmitSuccess, setFieldValue } = usePopoverForm({
+  schema: ReversalTransactionSchema,
+  open,
+  initialValues: () => createDefaultValues(props.transaction.id),
+  resetOnSuccess: false,
 });
 
-const onSubmit = handleSubmit(values => {
+onSubmitSuccess(values => {
   emit('resolve', {
     transaction: props.transaction,
     remark: values.remark,
@@ -55,16 +53,6 @@ watch(
     setFieldValue('transactionId', transactionId);
   },
 );
-
-function resetValues() {
-  resetForm({ values: createDefaultValues(props.transaction.id) });
-}
-
-watch(open, isOpen => {
-  if (!isOpen) {
-    resetValues();
-  }
-});
 </script>
 
 <template>
@@ -133,20 +121,10 @@ watch(open, isOpen => {
         </DialogDescription>
       </DialogHeader>
 
-      <form class="space-y-4" @submit="onSubmit">
-        <FormField v-slot="{ field, errors, meta: fieldMeta }" name="remark">
-          <Field :data-invalid="fieldMeta.touched && errors.length > 0">
-            <FieldLabel>备注</FieldLabel>
-            <Textarea
-              v-bind="field"
-              :model-value="field.value ?? ''"
-              :aria-invalid="fieldMeta.touched && errors.length > 0"
-              placeholder="默认：积分流水冲正"
-            />
-
-            <FieldError :errors="errors" />
-          </Field>
-        </FormField>
+      <form class="space-y-4" @submit="handleSubmit">
+        <FormFieldItem v-slot="{ componentField }" name="remark" label="备注">
+          <Textarea v-bind="componentField" placeholder="默认：积分流水冲正" />
+        </FormFieldItem>
 
         <DialogFooter>
           <DialogClose as-child>

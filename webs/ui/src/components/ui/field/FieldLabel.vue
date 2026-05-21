@@ -3,9 +3,15 @@ import { Label } from '@web/ui/components/ui/label';
 import { cn } from '@web/ui/lib/utils';
 import type { HTMLAttributes } from 'vue';
 
-const props = defineProps<{
-  class?: HTMLAttributes['class'];
-}>();
+const props = withDefaults(
+  defineProps<{
+    class?: HTMLAttributes['class'];
+    required?: boolean;
+  }>(),
+  {
+    required: false,
+  },
+);
 </script>
 
 <template>
@@ -20,5 +26,7 @@ const props = defineProps<{
     "
   >
     <slot />
+
+    <span v-if="required" class="text-red-500">*</span>
   </Label>
 </template>

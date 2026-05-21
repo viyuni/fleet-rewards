@@ -1,4 +1,4 @@
-import type { PageQuery } from '@internal/shared/common';
+import type { PageQuery } from '@internal/shared';
 import type {
   CreateProductBody,
   ProductPageQuery,
@@ -7,10 +7,10 @@ import type {
 import type { StockAdjustmentBody } from '@internal/shared/stock';
 
 import type { DbClient, DbTransaction } from '#db';
+import { parseDate } from '#db/helper';
 import type { InsertProduct, Product, UpdateProduct } from '#db/schema';
 import { ImageUseCase } from '#modules/image';
 import { PointTypeUseCase } from '#modules/point';
-import { toDate } from '#utils';
 
 import {
   ProductInputPolicy,
@@ -68,7 +68,9 @@ export class ProductUseCase {
     await this.deps.pointTypeUseCase.getAvailableById(productData.pointTypeId);
     ProductInputPolicy.assertPrice(productData.price);
     ProductInputPolicy.assertStock(productData.stock);
-    ProductInputPolicy.assertTimeRange(productData.startTime, productData.endTime);
+    const startTime = parseDate(productData.startTime);
+    const endTime = parseDate(productData.endTime);
+    ProductInputPolicy.assertTimeRange(startTime, endTime);
 
     const exists = await this.deps.productRepo.findByName(productData.name);
 
@@ -76,12 +78,12 @@ export class ProductUseCase {
       throw new ProductNameExistsError();
     }
 
-    const { cover, endTime, startTime, ...data } = productData;
+    const { cover, endTime: _endTime, startTime: _startTime, ...data } = productData;
 
     const updateData: InsertProduct = {
       ...data,
-      endTime: toDate(endTime),
-      startTime: toDate(startTime),
+      endTime,
+      startTime,
     };
 
     if (cover) {
@@ -100,14 +102,17 @@ export class ProductUseCase {
   async update(productId: string, productData: UpdateProductBody) {
     ProductInputPolicy.assertPrice(productData.price);
     ProductInputPolicy.assertStock(productData.stock);
-    ProductInputPolicy.assertTimeRange(productData.startTime, productData.endTime);
+    const startTime =
+      productData.startTime === undefined ? undefined : parseDate(productData.startTime);
+    const endTime = productData.endTime === undefined ? undefined : parseDate(productData.endTime);
+    ProductInputPolicy.assertTimeRange(startTime, endTime);
 
-    const { cover, endTime, startTime, ...data } = productData;
+    const { cover, endTime: _endTime, startTime: _startTime, ...data } = productData;
 
     const updateData: UpdateProduct = {
       ...data,
-      endTime: toDate(endTime),
-      startTime: toDate(startTime),
+      endTime,
+      startTime,
     };
 
     if (cover) {

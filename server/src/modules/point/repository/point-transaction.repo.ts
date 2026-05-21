@@ -59,8 +59,8 @@ export class PointTransactionRepository {
         type: query.type,
         pointTypeId: query.pointTypeId,
         createdAt: {
-          gte: parseDate(query.startTime),
-          lte: parseDate(query.endTime),
+          gte: parseDate(query.startTime) ?? undefined,
+          lte: parseDate(query.endTime) ?? undefined,
         },
       })
       .query((findMany, { where, limit, offset }) =>
@@ -99,8 +99,8 @@ export class PointTransactionRepository {
         type: query.type,
         pointTypeId: query.pointTypeId,
         createdAt: {
-          gte: parseDate(query.startTime),
-          lte: parseDate(query.endTime),
+          gte: parseDate(query.startTime) ?? undefined,
+          lte: parseDate(query.endTime) ?? undefined,
         },
       })
       .query((findMany, { where, limit, offset }) =>

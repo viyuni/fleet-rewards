@@ -9,8 +9,8 @@ export class PointConversionRulePolicy {
     toAmount?: number;
     minConvertAmount?: number | null;
     maxConvertAmount?: number | null;
-    startsAt?: Date | number | null;
-    endsAt?: Date | number | null;
+    startTime?: Date | null;
+    endTime?: Date | null;
   }) {
     if (
       input.fromPointTypeId !== undefined &&
@@ -35,11 +35,11 @@ export class PointConversionRulePolicy {
     }
 
     if (
-      input.startsAt !== undefined &&
-      input.endsAt !== undefined &&
-      input.startsAt !== null &&
-      input.endsAt !== null &&
-      input.startsAt >= input.endsAt
+      input.startTime !== undefined &&
+      input.endTime !== undefined &&
+      input.startTime !== null &&
+      input.endTime !== null &&
+      input.startTime >= input.endTime
     ) {
       throw new PointConversionRuleInvalidError('生效时间必须早于失效时间');
     }
@@ -50,11 +50,11 @@ export class PointConversionRulePolicy {
       throw new PointConversionRuleUnavailableError('积分转换规则已停用');
     }
 
-    if (rule.startsAt && rule.startsAt > now) {
+    if (rule.startTime && rule.startTime > now) {
       throw new PointConversionRuleUnavailableError('积分转换规则尚未生效');
     }
 
-    if (rule.endsAt && rule.endsAt <= now) {
+    if (rule.endTime && rule.endTime <= now) {
       throw new PointConversionRuleUnavailableError('积分转换规则已失效');
     }
   }

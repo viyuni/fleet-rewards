@@ -1,7 +1,6 @@
+import * as v from '@internal/shared';
 import { createEnv } from '@t3-oss/env-core';
-import * as v from 'valibot';
 
-import { port } from '#shared/common';
 import { sharedEnv } from '#utils';
 
 export const userEnv = createEnv({
@@ -10,7 +9,7 @@ export const userEnv = createEnv({
     /**
      * 用户服务端口
      */
-    USER_PORT: port(3800),
+    USER_PORT: v.optional(v.port(), 3600),
 
     /**
      * 数据密钥

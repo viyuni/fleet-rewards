@@ -1,10 +1,8 @@
 <script setup lang="ts">
 import { UpdatePointTypeSchema, type UpdatePointTypeBody } from '@internal/shared/point-type';
-import { toTypedSchema } from '@vee-validate/valibot';
 import { Button } from '@web/ui/components/ui/button';
-import { FormField } from '@web/ui/components/ui/form';
+import { FormFieldItem, usePopoverForm } from '@web/ui/components/ui/form';
 import { Loader2 } from 'lucide-vue-next';
-import { useForm } from 'vee-validate';
 
 import { useUpdatePointType } from '../mutations';
 import type { PointType } from './PointTypeListView.vue';
@@ -15,7 +13,7 @@ const props = defineProps<{
 
 const open = defineModel<boolean>('open', { default: false });
 
-const { mutateAsync: updatePointType, isLoading } = useUpdatePointType();
+const updatePointTypeMutation = useUpdatePointType();
 
 function createDefaultValues(pointType: PointType): UpdatePointTypeBody {
   return {
@@ -24,34 +22,19 @@ function createDefaultValues(pointType: PointType): UpdatePointTypeBody {
   };
 }
 
-const formSchema = toTypedSchema(UpdatePointTypeSchema);
-
-const { handleSubmit, meta, resetForm } = useForm<UpdatePointTypeBody>({
-  validationSchema: formSchema,
-  initialValues: createDefaultValues(props.pointType),
-});
-
-const onSubmit = handleSubmit(async values => {
-  await updatePointType({
-    pointTypeId: props.pointType.id,
-    body: values,
-  });
-
-  resetForm({ values: createDefaultValues(props.pointType) });
-  open.value = false;
-});
-
-watch(
-  () => props.pointType,
-  pointType => {
-    resetForm({ values: createDefaultValues(pointType) });
+const { canSubmit, handleSubmit, isLoading } = usePopoverForm({
+  schema: UpdatePointTypeSchema,
+  open,
+  initialValues: () => createDefaultValues(props.pointType),
+  mutation: {
+    isLoading: updatePointTypeMutation.isLoading,
+    mutateAsync(body) {
+      return updatePointTypeMutation.mutateAsync({
+        pointTypeId: props.pointType.id,
+        body,
+      });
+    },
   },
-);
-
-watch(open, isOpen => {
-  if (!isOpen) {
-    resetForm({ values: createDefaultValues(props.pointType) });
-  }
 });
 </script>
 
@@ -63,40 +46,20 @@ watch(open, isOpen => {
         <DialogDescription>更新积分类型的展示信息。</DialogDescription>
       </DialogHeader>
 
-      <form class="space-y-4" @submit="onSubmit">
-        <FormField v-slot="{ field, errors, meta: fieldMeta }" name="name">
-          <Field :data-invalid="fieldMeta.touched && errors.length > 0">
-            <FieldLabel>名称</FieldLabel>
-            <Input
-              v-bind="field"
-              :model-value="field.value ?? ''"
-              :aria-invalid="fieldMeta.touched && errors.length > 0"
-              placeholder="例如：舰队积分"
-            />
+      <form class="space-y-4" @submit="handleSubmit">
+        <FormFieldItem v-slot="{ componentField }" name="name" label="名称" required>
+          <Input v-bind="componentField" placeholder="例如：舰队积分" />
+        </FormFieldItem>
 
-            <FieldError :errors="errors" />
-          </Field>
-        </FormField>
-
-        <FormField v-slot="{ field, errors, meta: fieldMeta }" name="description">
-          <Field :data-invalid="fieldMeta.touched && errors.length > 0">
-            <FieldLabel>描述</FieldLabel>
-            <Textarea
-              v-bind="field"
-              :model-value="field.value ?? ''"
-              :aria-invalid="fieldMeta.touched && errors.length > 0"
-              placeholder="可选"
-            />
-
-            <FieldError :errors="errors" />
-          </Field>
-        </FormField>
+        <FormFieldItem v-slot="{ componentField }" name="description" label="描述">
+          <Textarea v-bind="componentField" placeholder="可选" />
+        </FormFieldItem>
 
         <DialogFooter>
           <DialogClose as-child>
             <Button variant="outline" type="button">取消</Button>
           </DialogClose>
-          <Button type="submit" :disabled="isLoading || !meta.valid">
+          <Button type="submit" :disabled="!canSubmit">
             <Loader2 v-if="isLoading" class="animate-spin" />
             保存
           </Button>

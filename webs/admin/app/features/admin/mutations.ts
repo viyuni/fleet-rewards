@@ -41,7 +41,7 @@ export const useUpdateAdmin = defineMutation(() => {
       successMessage: '管理员已更新',
     },
     mutation(input: { adminId: string; body: SuperAdminUpdateBody }) {
-      return $api.admin({ adminId: input.adminId }).patch(normalizePatchBody(input.body));
+      return $api.admin({ adminId: input.adminId }).patch(input.body);
     },
     onSettled: invalidateAdmins,
   });
@@ -57,7 +57,7 @@ export const useUpdateCurrentAdmin = defineMutation(() => {
       successMessage: '账户信息已更新',
     },
     mutation(body: AdminUpdateBody) {
-      return $api.admin.me.patch(normalizePatchBody(body));
+      return $api.admin.me.patch(body);
     },
     onSuccess({ data }) {
       if (data && authStore.user) {

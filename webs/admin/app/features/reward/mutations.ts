@@ -35,9 +35,7 @@ export const useUpdateRewardRule = defineMutation(() => {
       successMessage: '积分规则已更新',
     },
     mutation(input: { rewardRuleId: string; body: UpdateRewardRuleBody }) {
-      return $api.rewards
-        .rules({ rewardRuleId: input.rewardRuleId })
-        .put(normalizePatchBody(input.body));
+      return $api.rewards.rules({ rewardRuleId: input.rewardRuleId }).put(input.body);
     },
     onSettled: invalidateRewards,
   });

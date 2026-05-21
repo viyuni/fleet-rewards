@@ -113,6 +113,7 @@ declare module 'vue' {
     FluidCursor: typeof import('@web/ui/components/ui/fluid-cursor')['FluidCursor']
     FormControl: typeof import('@web/ui/components/ui/form')['FormControl']
     FormDescription: typeof import('@web/ui/components/ui/form')['FormDescription']
+    FormFieldItem: typeof import('@web/ui/components/ui/form')['FormFieldItem']
     FormItem: typeof import('@web/ui/components/ui/form')['FormItem']
     FormLabel: typeof import('@web/ui/components/ui/form')['FormLabel']
     FormMessage: typeof import('@web/ui/components/ui/form')['FormMessage']

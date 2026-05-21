@@ -33,6 +33,7 @@ describeWithDatabase('奖励发放真实数据库', () => {
       name: `${prefix}_reward_rule`,
       conditions: {
         type: 'biliGuard',
+        guardTypes: [3],
       },
       pointTypeId: pointType.id,
       points: 10,
@@ -98,14 +99,14 @@ describeWithDatabase('奖励发放真实数据库', () => {
 
   it('只发放匹配大航海类型且同组优先级最高的规则', async () => {
     const prefix = newBatch('reward');
-    const stackablePointType = await seedPointType(`${prefix}_stackable_point`);
+    const noGuardTypesPointType = await seedPointType(`${prefix}_no_guard_types_point`);
     const groupedPointType = await seedPointType(`${prefix}_grouped_point`);
     const ignoredPointType = await seedPointType(`${prefix}_ignored_point`);
     const biliUid = createBiliUid();
     const user = await seedUser(`${prefix}_user`, biliUid);
     const { rewardUseCase } = createDeps();
 
-    await createRewardRule(`${prefix}_all`, stackablePointType.id, {
+    await createRewardRule(`${prefix}_no_guard_types`, noGuardTypesPointType.id, {
       points: 5,
       conditions: {
         type: 'biliGuard',
@@ -149,8 +150,8 @@ describeWithDatabase('奖励发放真实数据库', () => {
       throw new Error('首次大航海奖励应正常处理');
     }
 
-    const stackableAccount = await db.query.pointAccounts.findFirst({
-      where: { userId: user.id, pointTypeId: stackablePointType.id },
+    const noGuardTypesAccount = await db.query.pointAccounts.findFirst({
+      where: { userId: user.id, pointTypeId: noGuardTypesPointType.id },
     });
     const groupedAccount = await db.query.pointAccounts.findFirst({
       where: { userId: user.id, pointTypeId: groupedPointType.id },
@@ -161,9 +162,38 @@ describeWithDatabase('奖励发放真实数据库', () => {
 
     expect(result.items.map(item => item.ruleSnapshot.id)).toContain(pickedGroupedRule.id);
     expect(result.items.map(item => item.ruleSnapshot.id)).not.toContain(shadowedRule.id);
-    expect(stackableAccount?.balance).toBe(10);
+    expect(noGuardTypesAccount).toBeUndefined();
     expect(groupedAccount?.balance).toBe(60);
     expect(ignoredAccount).toBeUndefined();
+  });
+
+  it('大航海规则没有任何 guardTypes 时不会发放奖励', async () => {
+    const prefix = newBatch('reward_no_guard_types');
+    const pointType = await seedPointType(`${prefix}_point`);
+    const biliUid = createBiliUid();
+    const user = await seedUser(`${prefix}_user`, biliUid);
+    const { rewardUseCase } = createDeps();
+
+    await createRewardRule(prefix, pointType.id, {
+      conditions: {
+        type: 'biliGuard',
+        guardTypes: [],
+      },
+      points: 10,
+    });
+
+    const result = await rewardUseCase.rewardBiliGuard(
+      createBiliGuardEvent(prefix, Number(biliUid), {
+        totalNormalized: 2,
+      }),
+    );
+
+    const account = await db.query.pointAccounts.findFirst({
+      where: { userId: user.id, pointTypeId: pointType.id },
+    });
+
+    expect(result?.items).toEqual([]);
+    expect(account).toBeUndefined();
   });
 
   it('到期规则不会发放奖励', async () => {
@@ -177,13 +207,13 @@ describeWithDatabase('奖励发放真实数据库', () => {
 
     await createRewardRule(`${prefix}_expired`, expiredPointType.id, {
       points: 50,
-      startsAt: new Date('2026-05-12T11:00:00.000Z').getTime(),
-      endsAt: now.getTime(),
+      startTime: '2026-05-12T11:00:00',
+      endTime: '2026-05-12T12:00:00',
     });
     await createRewardRule(`${prefix}_active`, activePointType.id, {
       points: 15,
-      startsAt: new Date('2026-05-12T11:00:00.000Z').getTime(),
-      endsAt: new Date('2026-05-12T13:00:00.000Z').getTime(),
+      startTime: '2026-05-12T11:00:00',
+      endTime: '2026-05-12T13:00:00',
     });
 
     const result = await rewardUseCase.rewardBiliGuard(
@@ -307,8 +337,8 @@ describeWithDatabase('奖励发放真实数据库', () => {
     await rewardUseCase.rewardBiliGuard(event);
     await rewardRuleUseCase.update(rule.id, {
       points: 99,
-      startsAt: new Date('2026-05-12T10:00:00.000Z').getTime(),
-      endsAt: new Date('2026-05-12T11:00:00.000Z').getTime(),
+      startTime: '2026-05-12T10:00:00',
+      endTime: '2026-05-12T11:00:00',
     });
     await createRewardRule(`${prefix}_new_rule`, pointType.id, {
       points: 99,

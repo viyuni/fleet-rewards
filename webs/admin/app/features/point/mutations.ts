@@ -63,9 +63,7 @@ export const useUpdatePointType = defineMutation(() => {
       successMessage: '积分类型已更新',
     },
     mutation(input: { pointTypeId: string; body: UpdatePointTypeBody }) {
-      return $api.points
-        .types({ pointTypeId: input.pointTypeId })
-        .put(normalizePatchBody(input.body));
+      return $api.points.types({ pointTypeId: input.pointTypeId }).put(input.body);
     },
     onSettled: invalidatePoints,
   });
@@ -131,7 +129,7 @@ export const useUpdatePointConversionRule = defineMutation(() => {
     mutation(input: { pointConversionRuleId: string; body: UpdatePointConversionRuleBody }) {
       return $api.points
         .conversions({ pointConversionRuleId: input.pointConversionRuleId })
-        .put(normalizePatchBody(input.body));
+        .put(input.body);
     },
     onSettled: invalidatePoints,
   });

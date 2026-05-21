@@ -117,8 +117,8 @@ export async function seedProduct(input: {
   name: string;
   pointTypeId: string;
   price: number;
-  endTime?: number;
-  startTime?: number;
+  endTime?: string;
+  startTime?: string;
   stock: number;
 }) {
   const { productUseCase } = createDeps();
@@ -183,6 +183,7 @@ export async function createRewardRule(
     name: `${prefix}_reward_rule_${crypto.randomUUID().slice(0, 8)}`,
     conditions: {
       type: 'biliGuard',
+      guardTypes: [3],
     },
     pointTypeId,
     points: 10,

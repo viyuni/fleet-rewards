@@ -1,6 +1,4 @@
-import * as v from 'valibot';
-
-import { DateRangeQuerySchema, emptyable, KeywordQuerySchema, PageQuerySchema } from './common';
+import * as v from '.';
 
 /**
  * 积分奖励规则 ID Params Schema。
@@ -21,10 +19,11 @@ export const BiliEventIdParamsSchema = v.object({
 export type BiliEventIdParams = v.InferOutput<typeof BiliEventIdParamsSchema>;
 
 export const BiliEventPageQuerySchema = v.intersect([
-  PageQuerySchema,
-  KeywordQuerySchema,
-  DateRangeQuerySchema,
+  v.pageQuery,
   v.object({
+    keyword: v.optional(v.keyword),
+    startTime: v.optional(v.dateTimeLocal),
+    endTime: v.optional(v.dateTimeLocal),
     status: v.optional(
       v.picklist(['processing', 'succeeded', 'failed', 'ignored'], '请选择有效的事件状态'),
     ),
@@ -114,7 +113,7 @@ export type RewardRuleCondition = v.InferOutput<typeof RewardRuleConditionSchema
  */
 export const CreateRewardRuleSchema = v.object({
   name: RewardRuleNameSchema,
-  description: v.optional(emptyable(RewardRuleDescriptionSchema)),
+  description: v.optional(v.emptyable(RewardRuleDescriptionSchema)),
 
   conditions: RewardRuleConditionSchema,
 
@@ -127,22 +126,10 @@ export const CreateRewardRuleSchema = v.object({
   ),
 
   enabled: v.optional(v.pipe(v.boolean('请选择是否启用'), v.description('是否启用'))),
-  group: v.optional(emptyable(RewardRuleGroupSchema)),
+  group: v.optional(v.emptyable(RewardRuleGroupSchema)),
 
-  startsAt: v.optional(
-    v.pipe(
-      v.number('请输入生效开始时间戳'),
-      v.integer('生效开始时间戳必须是整数'),
-      v.description('生效开始时间戳'),
-    ),
-  ),
-  endsAt: v.optional(
-    v.pipe(
-      v.number('请输入生效结束时间戳'),
-      v.integer('生效结束时间戳必须是整数'),
-      v.description('生效结束时间戳'),
-    ),
-  ),
+  startTime: v.optional(v.emptyable(v.dateTimeLocal)),
+  endTime: v.optional(v.emptyable(v.dateTimeLocal)),
 
   priority: v.optional(
     v.pipe(
@@ -153,7 +140,6 @@ export const CreateRewardRuleSchema = v.object({
   ),
 });
 
-export type CreateRewardRuleInput = v.InferInput<typeof CreateRewardRuleSchema>;
 export type CreateRewardRuleBody = v.InferOutput<typeof CreateRewardRuleSchema>;
 
 /**
@@ -161,7 +147,7 @@ export type CreateRewardRuleBody = v.InferOutput<typeof CreateRewardRuleSchema>;
  */
 export const UpdateRewardRuleSchema = v.object({
   name: v.optional(RewardRuleNameSchema),
-  description: v.nullish(emptyable(RewardRuleDescriptionSchema)),
+  description: v.nullish(v.emptyable(RewardRuleDescriptionSchema)),
 
   conditions: v.optional(RewardRuleConditionSchema),
 
@@ -176,22 +162,10 @@ export const UpdateRewardRuleSchema = v.object({
   ),
 
   enabled: v.optional(v.pipe(v.boolean('请选择是否启用'), v.description('是否启用'))),
-  group: v.nullish(emptyable(RewardRuleGroupSchema)),
+  group: v.nullish(v.emptyable(RewardRuleGroupSchema)),
 
-  startsAt: v.nullish(
-    v.pipe(
-      v.number('请输入生效开始时间戳'),
-      v.integer('生效开始时间戳必须是整数'),
-      v.description('生效开始时间戳'),
-    ),
-  ),
-  endsAt: v.nullish(
-    v.pipe(
-      v.number('请输入生效结束时间戳'),
-      v.integer('生效结束时间戳必须是整数'),
-      v.description('生效结束时间戳'),
-    ),
-  ),
+  startTime: v.nullish(v.emptyable(v.dateTimeLocal)),
+  endTime: v.nullish(v.emptyable(v.dateTimeLocal)),
 
   priority: v.optional(
     v.pipe(

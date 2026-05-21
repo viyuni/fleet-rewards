@@ -1,7 +1,6 @@
+import * as v from '@internal/shared';
 import { createEnv } from '@t3-oss/env-core';
-import * as v from 'valibot';
 
-import { port } from '#shared/common';
 import { PasswordUtil } from '#utils';
 import { sharedEnv } from '#utils';
 
@@ -11,7 +10,7 @@ export const adminEnv = createEnv({
     /**
      * 管理员服务端口
      */
-    ADMIN_PORT: port(3600),
+    ADMIN_PORT: v.optional(v.port(), 3600),
 
     /**
      * 数据密钥
@@ -26,10 +25,7 @@ export const adminEnv = createEnv({
     /**
      * 超级管理员默认 UID
      */
-    SUPER_ADMIN_UID: v.optional(
-      v.pipe(v.string(), v.minLength(4), v.maxLength(32), v.regex(/^[0-9]+$/)),
-      '0721',
-    ),
+    SUPER_ADMIN_UID: v.optional(v.bilibiliUid, '0721'),
 
     /**
      * 超级管理员默认密码

@@ -1,12 +1,4 @@
-import * as v from 'valibot';
-
-import {
-  BiliUidSchema,
-  emptyable,
-  PageQuerySchema,
-  PasswordSchema,
-  UsernameSchema,
-} from './common';
+import * as v from '.';
 
 /**
  * 管理员角色 Schema
@@ -19,6 +11,13 @@ export const AdminRoleSchema = v.pipe(
 export type AdminRole = v.InferOutput<typeof AdminRoleSchema>;
 
 /**
+ * 管理员列表分页查询 Query Schema
+ */
+export const AdminPageQuerySchema = v.pageQuery;
+
+export type AdminPageQuery = v.InferOutput<typeof AdminPageQuerySchema>;
+
+/**
  * 管理员 ID Params Schema
  */
 export const AdminIdParamsSchema = v.object({
@@ -29,11 +28,11 @@ export const AdminIdParamsSchema = v.object({
  * 创建管理员请求参数 Schema
  */
 export const AdminCreateSchema = v.object({
-  uid: BiliUidSchema,
-  username: UsernameSchema,
-  password: PasswordSchema,
+  uid: v.bilibiliUid,
+  username: v.username,
+  password: v.password,
   remark: v.optional(
-    emptyable(
+    v.emptyable(
       v.pipe(
         v.string('请输入备注'),
         v.maxLength(500, '备注不能超过 500 个字符'),
@@ -49,9 +48,9 @@ export type AdminCreateBody = v.InferOutput<typeof AdminCreateSchema>;
  * 更新管理员请求参数 Schema
  */
 export const SuperAdminUpdateSchema = v.object({
-  username: v.optional(UsernameSchema),
+  username: v.optional(v.username),
   remark: v.nullish(
-    emptyable(
+    v.emptyable(
       v.pipe(
         v.string('请输入备注'),
         v.maxLength(500, '备注不能超过 500 个字符'),
@@ -67,31 +66,27 @@ export type SuperAdminUpdateBody = v.InferOutput<typeof SuperAdminUpdateSchema>;
  * 更新管理员请求参数 Schema
  */
 export const AdminUpdateSchema = v.object({
-  username: v.optional(UsernameSchema),
+  username: v.optional(v.username),
 });
 
 export type AdminUpdateBody = v.InferOutput<typeof AdminUpdateSchema>;
 
 export const AdminUpdatePasswordSchema = v.object({
-  oldPassword: PasswordSchema,
-  newPassword: PasswordSchema,
+  oldPassword: v.password,
+  newPassword: v.password,
 });
 
 export type AdminUpdatePasswordBody = v.InferOutput<typeof AdminUpdatePasswordSchema>;
 
 /**
- * 管理员分页查询 Schema
- */
-export const AdminPageQuerySchema = PageQuerySchema;
 
-export type AdminPageQuery = v.InferOutput<typeof AdminPageQuerySchema>;
 
 /**
  * 管理员登录请求参数 Schema
  */
 export const AdminLoginSchema = v.object({
-  uid: BiliUidSchema,
-  password: PasswordSchema,
+  uid: v.bilibiliUid,
+  password: v.password,
 });
 
 export type AdminLoginBody = v.InferOutput<typeof AdminLoginSchema>;

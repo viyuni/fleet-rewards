@@ -31,6 +31,8 @@ const columns = [
   { accessorKey: 'maxConvertAmount', header: '最大转换' },
   { accessorKey: 'createdAt', header: '创建时间' },
   { accessorKey: 'enabled', header: '状态' },
+  { accessorKey: 'startTime', header: '开始时间' },
+  { accessorKey: 'endTime', header: '结束时间' },
   { id: 'actions', enableHiding: false },
 ] as const satisfies PointConversionColumns;
 
@@ -83,6 +85,14 @@ function toggleConversionRuleEnabled(conversion: PointConversion, enabled: boole
         :disabled="isUpdatingEnabled"
         @update:model-value="toggleConversionRuleEnabled(rowData, $event)"
       />
+    </template>
+
+    <template #startTime="{ value }">
+      {{ value?.toLocaleString() ?? '-' }}
+    </template>
+
+    <template #endTime="{ value }">
+      {{ value?.toLocaleString() ?? '-' }}
     </template>
 
     <template #createdAt="{ value }">

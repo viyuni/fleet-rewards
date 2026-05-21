@@ -1,10 +1,8 @@
 <script setup lang="ts">
 import { ConvertPointSchema, type ConvertPointBody } from '@internal/shared/point-conversion';
-import { toTypedSchema } from '@vee-validate/valibot';
 import { Button } from '@web/ui/components/ui/button';
-import { FormField } from '@web/ui/components/ui/form';
+import { FormFieldItem, usePopoverForm } from '@web/ui/components/ui/form';
 import { Loader2 } from 'lucide-vue-next';
-import { useForm } from 'vee-validate';
 
 import UserSelect from '../../user/components/UserSelect.vue';
 import { useConvertPoint } from '../mutations';
@@ -16,7 +14,7 @@ const props = defineProps<{
 
 const open = defineModel<boolean>('open', { default: false });
 
-const { mutateAsync: convertPoint, isLoading } = useConvertPoint();
+const convertPointMutation = useConvertPoint();
 const userSelect = ref<InstanceType<typeof UserSelect>>();
 
 const fromPointTypeName = computed(
@@ -42,34 +40,28 @@ function createDefaultValues(ruleId: string): ConvertPointBody {
   };
 }
 
-const formSchema = toTypedSchema(ConvertPointSchema);
-
-const { handleSubmit, meta, resetForm } = useForm<ConvertPointBody>({
-  validationSchema: formSchema,
-  initialValues: createDefaultValues(props.conversion.id),
-});
-
-const onSubmit = handleSubmit(async values => {
-  await convertPoint({
-    ...values,
-    ruleId: props.conversion.id,
-    nonce: crypto.randomUUID(),
-  });
-
-  resetForm({ values: createDefaultValues(props.conversion.id) });
-  open.value = false;
-});
-
-watch(
-  () => props.conversion.id,
-  ruleId => {
-    resetForm({ values: createDefaultValues(ruleId) });
+const { canSubmit, handleSubmit, isLoading, onSubmitSuccess } = usePopoverForm({
+  schema: ConvertPointSchema,
+  open,
+  initialValues: () => createDefaultValues(props.conversion.id),
+  mutation: {
+    isLoading: convertPointMutation.isLoading,
+    mutateAsync(values) {
+      return convertPointMutation.mutateAsync({
+        ...values,
+        ruleId: props.conversion.id,
+        nonce: crypto.randomUUID(),
+      });
+    },
   },
-);
+});
+
+onSubmitSuccess(() => {
+  userSelect.value?.reset();
+});
 
 watch(open, isOpen => {
   if (!isOpen) {
-    resetForm({ values: createDefaultValues(props.conversion.id) });
     userSelect.value?.reset();
   }
 });
@@ -86,58 +78,29 @@ watch(open, isOpen => {
         </DialogDescription>
       </DialogHeader>
 
-      <form class="space-y-4" @submit="onSubmit">
-        <FormField v-slot="{ field, errors, meta: fieldMeta }" name="userId">
-          <Field :data-invalid="fieldMeta.touched && errors.length > 0">
-            <FieldLabel>用户 ID</FieldLabel>
-            <UserSelect
-              ref="userSelect"
-              :model-value="field.value"
-              :aria-invalid="fieldMeta.touched && errors.length > 0"
-              @update:model-value="field.onChange($event)"
-              @blur="field.onBlur"
-            />
+      <form class="space-y-4" @submit="handleSubmit">
+        <FormFieldItem v-slot="{ componentField }" name="userId" label="用户 ID" required>
+          <UserSelect ref="userSelect" v-bind="componentField" />
+        </FormFieldItem>
 
-            <FieldError :errors="errors" />
-          </Field>
-        </FormField>
+        <FormFieldItem
+          v-slot="{ componentField }"
+          name="fromAmount"
+          :label="`${fromPointTypeName}数量`"
+          required
+        >
+          <Input v-bind="componentField" type="number" min="1" step="1" />
+        </FormFieldItem>
 
-        <FormField v-slot="{ field, errors, meta: fieldMeta }" name="fromAmount">
-          <Field :data-invalid="fieldMeta.touched && errors.length > 0">
-            <FieldLabel>{{ `${fromPointTypeName}数量` }}</FieldLabel>
-            <Input
-              :model-value="field.value"
-              :aria-invalid="fieldMeta.touched && errors.length > 0"
-              type="number"
-              min="1"
-              step="1"
-              @blur="field.onBlur"
-              @input="field.onChange(Number($event.target.value))"
-            />
-
-            <FieldError :errors="errors" />
-          </Field>
-        </FormField>
-
-        <FormField v-slot="{ field, errors, meta: fieldMeta }" name="remark">
-          <Field :data-invalid="fieldMeta.touched && errors.length > 0">
-            <FieldLabel>备注</FieldLabel>
-            <Textarea
-              v-bind="field"
-              :model-value="field.value ?? ''"
-              :aria-invalid="fieldMeta.touched && errors.length > 0"
-              placeholder="可选"
-            />
-
-            <FieldError :errors="errors" />
-          </Field>
-        </FormField>
+        <FormFieldItem v-slot="{ componentField }" name="remark" label="备注">
+          <Textarea v-bind="componentField" placeholder="可选" />
+        </FormFieldItem>
 
         <DialogFooter>
           <DialogClose as-child>
             <Button variant="outline" type="button">取消</Button>
           </DialogClose>
-          <Button type="submit" :disabled="isLoading || !meta.valid">
+          <Button type="submit" :disabled="!canSubmit">
             <Loader2 v-if="isLoading" class="animate-spin" />
             执行转换
           </Button>

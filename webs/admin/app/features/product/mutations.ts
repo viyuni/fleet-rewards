@@ -2,8 +2,6 @@ import type { CreateProductBody, UpdateProductBody } from '@internal/shared/prod
 import type { StockAdjustmentBody } from '@internal/shared/stock';
 import { defineMutation, useMutation, useQueryCache } from '@pinia/colada';
 
-import { stripUndefined } from '~/utils/form';
-
 import { PRODUCT_QUERY_KEYS } from './queries';
 
 function useInvalidateProducts() {
@@ -22,9 +20,7 @@ export const useAdjustProductStock = defineMutation(() => {
       successMessage: '库存已调整',
     },
     mutation(input: { productId: string; body: StockAdjustmentBody }) {
-      return $api
-        .products({ productId: input.productId })
-        .stock.adjust.patch(normalizePatchBody(input.body));
+      return $api.products({ productId: input.productId }).stock.adjust.patch(input.body);
     },
     onSettled: invalidateProducts,
   });
@@ -40,7 +36,7 @@ export const useCreateProduct = defineMutation(() => {
       successMessage: '商品已创建',
     },
     mutation(body: CreateProductBody) {
-      return $api.products.post(stripUndefined(body));
+      return $api.products.post(body);
     },
     onSettled: invalidateProducts,
   });
@@ -56,7 +52,7 @@ export const useUpdateProduct = defineMutation(() => {
       successMessage: '商品已更新',
     },
     mutation(input: { productId: string; body: UpdateProductBody }) {
-      return $api.products({ productId: input.productId }).put(normalizePatchBody(input.body));
+      return $api.products({ productId: input.productId }).put(input.body);
     },
     onSettled: invalidateProducts,
   });

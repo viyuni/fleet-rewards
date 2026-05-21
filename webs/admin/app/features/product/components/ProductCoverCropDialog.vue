@@ -11,7 +11,6 @@ export type ProductCoverCropResult = {
 const props = withDefaults(
   defineProps<{
     currentCoverUrl?: string;
-    file?: File;
     invalid?: boolean;
     previewSize?: number;
   }>(),
@@ -21,13 +20,13 @@ const props = withDefaults(
 );
 
 const emit = defineEmits<{
-  'update:file': [file: File | undefined];
-  blur: [];
+  blur: [event: FocusEvent];
   reject: [];
   resolve: [result: ProductCoverCropResult];
 }>();
 
 const open = defineModel<boolean>('open', { default: false });
+const file = defineModel<File | undefined>('file');
 const inputKey = ref(0);
 const cropper = ref<{
   exportImage: () => Promise<ImageCropperResult>;
@@ -58,7 +57,7 @@ function revokeSourceUrl() {
 }
 
 function createCroppedCoverFile(result: ImageCropperResult) {
-  const originalName = props.file?.name.replace(/\.[^.]+$/, '') || 'product-cover';
+  const originalName = file.value?.name.replace(/\.[^.]+$/, '') || 'product-cover';
 
   return new File([result.blob], `${originalName}.png`, {
     type: result.blob.type || 'image/png',
@@ -67,20 +66,20 @@ function createCroppedCoverFile(result: ImageCropperResult) {
 
 function reset() {
   revokePreviewUrl();
-  emit('update:file', undefined);
+  file.value = undefined;
   inputKey.value += 1;
   isDragging.value = false;
   open.value = false;
 }
 
-function setFile(file: File | undefined) {
+function setFile(selectedFile: File | undefined) {
   inputKey.value += 1;
 
-  if (!file || !file.type.startsWith('image/')) {
+  if (!selectedFile || !selectedFile.type.startsWith('image/')) {
     return;
   }
 
-  emit('update:file', file);
+  file.value = selectedFile;
   open.value = true;
 }
 
@@ -101,26 +100,26 @@ async function confirm() {
   }
 
   const result = await cropper.value.exportImage();
-  const file = createCroppedCoverFile(result);
+  const croppedFile = createCroppedCoverFile(result);
   const nextPreviewUrl = URL.createObjectURL(result.blob);
 
   revokePreviewUrl();
   previewUrl.value = nextPreviewUrl;
-  emit('update:file', file);
+  file.value = croppedFile;
   emit('resolve', {
-    file,
+    file: croppedFile,
     previewUrl: nextPreviewUrl,
   });
   open.value = false;
 }
 
 watch(
-  () => props.file,
-  file => {
+  file,
+  value => {
     revokeSourceUrl();
 
-    if (file) {
-      sourceUrl.value = URL.createObjectURL(file);
+    if (value) {
+      sourceUrl.value = URL.createObjectURL(value);
     }
   },
   { immediate: true },
@@ -156,7 +155,7 @@ onBeforeUnmount(() => {
       :aria-invalid="invalid"
       type="file"
       accept="image/jpeg,image/png,image/webp"
-      @blur="emit('blur')"
+      @blur="emit('blur', $event)"
       @change="handleChange"
     />
     <div class="bg-muted h-24 w-24 shrink-0 overflow-hidden rounded-md border">

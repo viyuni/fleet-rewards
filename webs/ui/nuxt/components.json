@@ -101,6 +101,7 @@
   "FluidCursor": "@web/ui/components/ui/fluid-cursor",
   "FormControl": "@web/ui/components/ui/form",
   "FormDescription": "@web/ui/components/ui/form",
+  "FormFieldItem": "@web/ui/components/ui/form",
   "FormItem": "@web/ui/components/ui/form",
   "FormLabel": "@web/ui/components/ui/form",
   "FormMessage": "@web/ui/components/ui/form",

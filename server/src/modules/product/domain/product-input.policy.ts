@@ -13,7 +13,7 @@ export class ProductInputPolicy {
     }
   }
 
-  static assertTimeRange(startTime: number | null | undefined, endTime: number | null | undefined) {
+  static assertTimeRange(startTime: Date | null | undefined, endTime: Date | null | undefined) {
     if (startTime && endTime && startTime >= endTime) {
       throw new ProductInvalidInputError('商品开始时间必须早于结束时间');
     }

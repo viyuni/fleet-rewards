@@ -227,11 +227,11 @@ describeWithDatabase('积分转换真实数据库并发保护', () => {
       enabled: false,
     });
     const future = await seedConversionFixture(`${prefix}_future`, {
-      startsAt: Date.now() + 60_000,
+      startTime: new Date(Date.now() + 60_000).toISOString(),
     });
     const expired = await seedConversionFixture(`${prefix}_expired`, {
-      startsAt: Date.now() - 120_000,
-      endsAt: Date.now() - 60_000,
+      startTime: new Date(Date.now() - 120_000).toISOString(),
+      endTime: new Date(Date.now() - 60_000).toISOString(),
     });
 
     await expectRejectsInstanceOf(
