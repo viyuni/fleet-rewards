@@ -12,7 +12,7 @@ const props = defineProps<{
   user: User;
 }>();
 
-const open = defineModel<boolean>('open', { default: false });
+const open = defineModel<boolean>('open', { default: true });
 
 const updateUserMutation = useUpdateUser();
 
@@ -28,15 +28,13 @@ function createDefaultValues(user: User): UpdateUserBody {
 const { canSubmit, handleSubmit, isLoading } = usePopoverForm({
   schema: UserUpdateSchema,
   open,
+  mutation: updateUserMutation,
   initialValues: () => createDefaultValues(props.user),
-  mutation: {
-    isLoading: updateUserMutation.isLoading,
-    mutateAsync(body) {
-      return updateUserMutation.mutateAsync({
-        userId: props.user.id,
-        body,
-      });
-    },
+  transform(body) {
+    return {
+      userId: props.user.id,
+      body,
+    };
   },
 });
 </script>

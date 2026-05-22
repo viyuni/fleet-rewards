@@ -50,11 +50,15 @@ export type FormSubmissionHandler<TSchema extends AnyFormSchema> = SubmissionHan
   FormOutput<TSchema>
 >;
 
-export type FormSubmitSuccessHandler<TSchema extends AnyFormSchema> = (
+export type FormTransform<TSchema extends AnyFormSchema, TVariables = FormOutput<TSchema>> = (
   values: FormOutput<TSchema>,
   ctx: FormSubmissionContext<TSchema>,
-  result: unknown,
-) => unknown;
+) => Promise<TVariables> | TVariables;
+
+export type FormSubmitSuccessHandler<
+  TSchema extends AnyFormSchema,
+  TVariables = FormOutput<TSchema>,
+> = (values: TVariables, ctx: FormSubmissionContext<TSchema>, result: unknown) => unknown;
 
 export type FormInvalidSubmissionHandler<TSchema extends AnyFormSchema> = (
   ctx: InvalidSubmissionContext<TSchema>,
@@ -65,19 +69,26 @@ export interface FormMutation<TVariables, TData = unknown> {
   mutateAsync(variables: TVariables): Promise<TData> | TData;
 }
 
-type UseFormOptions<TSchema extends AnyFormSchema> = {
+type UseFormOptions<TSchema extends AnyFormSchema, TVariables = FormOutput<TSchema>> = {
   schema: TSchema;
   resetOnSuccess?: boolean;
-  mutation?: FormMutation<FormOutput<TSchema>>;
+  mutation?: FormMutation<TVariables>;
   omitUndefinedField?: boolean;
+  transform?: FormTransform<TSchema, TVariables>;
   initialValues: () => FormInitialValues<TSchema>;
 };
 
-function omitUndefined<T extends Record<string, unknown>>(input: T) {
+function omitUndefined<T>(input: T) {
+  if (!input || typeof input !== 'object' || Array.isArray(input)) {
+    return input;
+  }
+
   return Object.fromEntries(Object.entries(input).filter(([, value]) => value !== undefined)) as T;
 }
 
-export function useForm<const TSchema extends AnyFormSchema>(opts: UseFormOptions<TSchema>) {
+export function useForm<const TSchema extends AnyFormSchema, TVariables = FormOutput<TSchema>>(
+  opts: UseFormOptions<TSchema, TVariables>,
+) {
   const validationSchema = toTypedSchema<TSchema, FormOutput<TSchema>, FormInput<TSchema>>(
     opts.schema,
   );
@@ -90,10 +101,11 @@ export function useForm<const TSchema extends AnyFormSchema>(opts: UseFormOption
   });
 
   const submitSuccessHook =
-    createEventHook<[FormOutput<TSchema>, FormSubmissionContext<TSchema>, unknown]>();
+    createEventHook<[TVariables, FormSubmissionContext<TSchema>, unknown]>();
+
   const invalidSubmitHook = createEventHook<InvalidSubmissionContext<TSchema>>();
 
-  function onSubmitSuccess(handler: FormSubmitSuccessHandler<TSchema>) {
+  function onSubmitSuccess(handler: FormSubmitSuccessHandler<TSchema, TVariables>) {
     return submitSuccessHook.on(handler);
   }
 
@@ -111,21 +123,25 @@ export function useForm<const TSchema extends AnyFormSchema>(opts: UseFormOption
   const handleSubmit = form.handleSubmit(
     async (values, ctx) => {
       let result: unknown;
-      let formValues = values;
+      let formValues: FormOutput<TSchema> = values;
 
       if (omitUndefinedField) {
         formValues = omitUndefined(formValues);
       }
 
+      const submitValues = opts.transform
+        ? await opts.transform(formValues, ctx)
+        : (formValues as unknown as TVariables);
+
       if (opts.mutation) {
-        result = await opts.mutation.mutateAsync(formValues);
+        result = await opts.mutation.mutateAsync(submitValues);
       }
 
       if (resetOnSuccess) {
         resetForm();
       }
 
-      await submitSuccessHook.trigger(formValues, ctx, result);
+      await submitSuccessHook.trigger(submitValues, ctx, result);
 
       return result;
     },
@@ -148,7 +164,10 @@ export function useForm<const TSchema extends AnyFormSchema>(opts: UseFormOption
   };
 }
 
-type UsePopoverFormOptions<TSchema extends AnyFormSchema> = UseFormOptions<TSchema> & {
+type UsePopoverFormOptions<
+  TSchema extends AnyFormSchema,
+  TVariables = FormOutput<TSchema>,
+> = UseFormOptions<TSchema, TVariables> & {
   open?: Ref<boolean>;
   resetOnClose?: boolean;
   resetOnMount?: boolean;
@@ -157,9 +176,10 @@ type UsePopoverFormOptions<TSchema extends AnyFormSchema> = UseFormOptions<TSche
   closeOnSuccess?: boolean;
 };
 
-export function usePopoverForm<const TSchema extends AnyFormSchema>(
-  opts: UsePopoverFormOptions<TSchema>,
-) {
+export function usePopoverForm<
+  const TSchema extends AnyFormSchema,
+  TVariables = FormOutput<TSchema>,
+>(opts: UsePopoverFormOptions<TSchema, TVariables>) {
   const open = opts.open ?? ref(false);
   const form = useForm(opts);
   const {
