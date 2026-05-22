@@ -22,7 +22,8 @@ export interface AdminLoginUser {
 }
 
 export interface AdminLoginResult {
-  token: string;
+  accessToken: string;
+  refreshToken: string;
   user: AdminLoginUser;
 }
 
@@ -48,10 +49,10 @@ export class AdminAuthUseCase {
 
     const loggedIn = await this.deps.adminRepo.updateLastLoginAt(user.id);
     const { id, uid, username, role, lastLoginAt } = loggedIn ?? user;
-    const token = await this.deps.authUseCase.sign({ id: user.id, role: user.role });
+    const tokens = await this.deps.authUseCase.signTokenPair({ id: user.id, role: user.role });
 
     return {
-      token,
+      ...tokens,
       user: {
         id,
         uid,

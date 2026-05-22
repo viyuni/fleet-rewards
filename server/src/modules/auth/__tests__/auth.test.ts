@@ -34,6 +34,33 @@ describe('AuthUseCase', () => {
       role: undefined,
     });
   });
+
+  it('使用 refreshToken 刷新 accessToken', async () => {
+    const authUseCase = new AuthUseCase('test-secret');
+
+    const { refreshToken } = await authUseCase.signTokenPair({
+      id: 'user-id',
+      role: 'user',
+    });
+    const accessToken = await authUseCase.refreshAccessToken(refreshToken);
+    const payload = await authUseCase.verifyAccessToken(accessToken);
+
+    expect(payload).toEqual({
+      id: 'user-id',
+      role: 'user',
+    });
+  });
+
+  it('拒绝把 accessToken 当 refreshToken 使用', async () => {
+    const authUseCase = new AuthUseCase('test-secret');
+
+    const accessToken = await authUseCase.signAccessToken({
+      id: 'user-id',
+      role: 'user',
+    });
+
+    await expect(authUseCase.refreshAccessToken(accessToken)).rejects.toThrow();
+  });
 });
 
 describe('requiredSuperAdminAuth', () => {
@@ -65,7 +92,7 @@ describe('requiredSuperAdminAuth', () => {
     const response = await app.handle(
       new Request('http://localhost/super', {
         headers: {
-          cookie: 'authorization=token',
+          cookie: 'accessToken=token',
         },
       }),
     );
@@ -87,7 +114,7 @@ describe('requiredSuperAdminAuth', () => {
     const response = await app.handle(
       new Request('http://localhost/super', {
         headers: {
-          cookie: 'authorization=token',
+          cookie: 'accessToken=token',
         },
       }),
     );
@@ -104,7 +131,7 @@ describe('requiredSuperAdminAuth', () => {
     const response = await app.handle(
       new Request('http://localhost/super', {
         headers: {
-          cookie: 'authorization=token',
+          cookie: 'accessToken=token',
         },
       }),
     );

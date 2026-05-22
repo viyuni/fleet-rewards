@@ -1,6 +1,6 @@
 {
   "$schema": "https://www.schemastore.org/tsconfig",
-  "include": ["src/**/*", "package.json", "./env.d.ts"],
+  "include": ["src/**/*", "package.json", "./env.d.ts", "*.config.ts"],
   "compilerOptions": {
     "lib": ["ESNext"],
     "target": "ESNext",

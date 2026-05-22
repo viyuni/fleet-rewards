@@ -24,7 +24,7 @@ export class AuthUseCase {
       throw new InvalidCredentialsError();
     }
 
-    const token = await this.deps.authUseCase.sign({
+    const tokens = await this.deps.authUseCase.signTokenPair({
       id: user.id,
       role: 'user',
     });
@@ -36,7 +36,7 @@ export class AuthUseCase {
         username: user.username,
         status: user.status,
       },
-      token,
+      ...tokens,
     };
   }
 
