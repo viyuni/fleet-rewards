@@ -11,37 +11,28 @@ const condition = defineModel<RewardRuleCondition>({
   default: () => ({ type: 'biliGuard' }),
 });
 
-function updateSelectedGuardTypes(guardType: BiliGuardType, selected: boolean) {
-  const selectedGuardTypes = condition.value.guardTypes ?? [];
-  let nextGuardTypes = selectedGuardTypes;
+const selected = ref(new Set<BiliGuardType>());
 
-  if (selected && !selectedGuardTypes.includes(guardType)) {
-    nextGuardTypes = [...selectedGuardTypes, guardType];
+function updateSelectedGuardTypes(guardType: BiliGuardType, state: boolean) {
+  if (state) {
+    selected.value.add(guardType);
+  } else {
+    selected.value.delete(guardType);
   }
 
-  if (!selected) {
-    nextGuardTypes = selectedGuardTypes.filter(item => item !== guardType);
-  }
-
-  condition.value = {
-    type: 'biliGuard',
-    guardTypes: nextGuardTypes.length > 0 ? nextGuardTypes : undefined,
-  };
+  condition.value.guardTypes = [...selected.value];
 }
 </script>
 
 <template>
   <div class="flex flex-wrap gap-4">
-    <label
+    <Label
       v-for="option in guardTypeOptions"
       :key="option.value"
       class="flex items-center gap-2 text-sm"
     >
-      <Checkbox
-        :model-value="condition.guardTypes?.includes(option.value) ?? false"
-        @update:model-value="updateSelectedGuardTypes(option.value, Boolean($event))"
-      />
+      <Checkbox @update:model-value="updateSelectedGuardTypes(option.value, Boolean($event))" />
       {{ option.label }}
-    </label>
+    </Label>
   </div>
 </template>
