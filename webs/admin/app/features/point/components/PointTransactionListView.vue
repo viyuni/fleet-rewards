@@ -4,8 +4,6 @@ import type { PointTransactionPageQuery } from '@internal/shared/point-transacti
 import type { ColumnDef } from '@tanstack/vue-table';
 import { DataTable } from '@web/ui/components/ui/table';
 
-import { useDebouncedPageQuery } from '~/composables/useDebouncedPageQuery';
-import { usePageQuery } from '~/composables/usePageQuery';
 import type { AdminApi } from '~/plugins/api';
 
 import { pointTransactionPageQuery } from '../queries';
@@ -71,7 +69,7 @@ const { items: transactions, meta } = usePageQuery(() => pointTransactionPageQue
       {{ rowData?.user?.biliUid }}
     </template>
 
-    <template #title="{ value, rowData }">
+    <template #title="{ rowData }">
       {{ rowData.title }}
     </template>
 

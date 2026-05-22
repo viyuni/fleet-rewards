@@ -31,7 +31,6 @@ function handleNotImplemented(e: Event) {
     <Card>
       <CardHeader class="text-center">
         <CardTitle class="text-xl"> Welcome back </CardTitle>
-        <CardDescription> Login with your Bilibili account </CardDescription>
       </CardHeader>
       <CardContent>
         <form @submit="handleSubmit">
@@ -48,7 +47,7 @@ function handleNotImplemented(e: Event) {
             </FieldSeparator>
 
             <FormFieldItem v-slot="{ componentField }" name="uid" label="UID" required>
-              <Input v-bind="componentField" placeholder="90424564xxx" autocomplete="off" />
+              <Input v-bind="componentField" placeholder="90424564" autocomplete="off" />
             </FormFieldItem>
 
             <FormFieldItem v-slot="{ componentField }" name="password" label="Password" required>
@@ -56,7 +55,7 @@ function handleNotImplemented(e: Event) {
                 v-bind="componentField"
                 type="password"
                 autocomplete="off"
-                placeholder="?????"
+                placeholder="密密麻麻"
               />
             </FormFieldItem>
 

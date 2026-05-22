@@ -11,7 +11,7 @@ export default defineConfig({
         input: [{ auto: true }, '!**/*.tsbuildinfo'],
       },
       'generate:manifest': {
-        command: 'bun scripts/generate-manifest.ts',
+        command: 'bun scripts/generateManifest.ts',
       },
     },
   },

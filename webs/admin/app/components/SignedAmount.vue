@@ -4,7 +4,6 @@ import type { HTMLAttributes } from 'vue';
 
 const props = defineProps<{
   class?: HTMLAttributes['class'];
-  showPlus?: boolean;
   value: number | string;
 }>();
 
@@ -12,11 +11,10 @@ const numericValue = computed(() => Number(props.value));
 const isPositive = computed(() => numericValue.value > 0);
 const isNegative = computed(() => numericValue.value < 0);
 const displayValue = computed(() => {
-  if (props.showPlus === false || !isPositive.value) {
-    return String(props.value);
+  if (isPositive.value) {
+    return `+${props.value}`;
   }
-
-  return `+${props.value}`;
+  return String(props.value);
 });
 </script>
 

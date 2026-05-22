@@ -23,7 +23,9 @@ export interface AdminLoginUser {
 
 export interface AdminLoginResult {
   accessToken: string;
+  accessTokenExpiresAt: number;
   refreshToken: string;
+  refreshTokenExpiresAt: number;
   user: AdminLoginUser;
 }
 

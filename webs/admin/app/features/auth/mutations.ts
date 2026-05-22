@@ -4,7 +4,8 @@ import { defineMutation, useMutation } from '@pinia/colada';
 import { useAuthStore } from './store';
 
 export const useLogin = defineMutation(() => {
-  const { updateUser } = useAuthStore();
+  const { updateSession } = useAuthStore();
+  const route = useRoute();
   const router = useRouter();
   const { $api } = useNuxtApp();
 
@@ -18,9 +19,31 @@ export const useLogin = defineMutation(() => {
     },
     onSuccess({ data }) {
       if (data) {
-        updateUser(data);
-        router.push('/app/users');
+        updateSession(data);
+        const redirect =
+          typeof route.query.redirect === 'string' ? route.query.redirect : '/app/users';
+        router.push(redirect);
       }
+    },
+  });
+});
+
+export const useLogout = defineMutation(() => {
+  const { clearSession } = useAuthStore();
+  const router = useRouter();
+  const { $api } = useNuxtApp();
+
+  return useMutation({
+    meta: {
+      showToast: true,
+      successMessage: '已退出登录',
+    },
+    mutation() {
+      return $api.auth.logout.post();
+    },
+    onSettled() {
+      clearSession();
+      router.push('/login');
     },
   });
 });

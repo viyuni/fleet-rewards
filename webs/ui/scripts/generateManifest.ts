@@ -1,13 +1,12 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath, pathToFileURL } from 'node:url';
+import { pathToFileURL } from 'node:url';
 
-import { basePackageExports } from '../package-exports';
 import pkg from '../package.json' with { type: 'json' };
+import { basePackageExports } from '../packageExports';
 
 const scriptDir = import.meta.dirname;
 const packageRoot = path.resolve(scriptDir, '..');
-const __filename = fileURLToPath(import.meta.url);
 
 type ComponentExport = {
   exportName: string;

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useSidebar } from '@web/ui/components/ui/sidebar';
-import { ChevronRight } from 'lucide-vue-next';
+import { ChevronRight, SearchIcon } from 'lucide-vue-next';
 import type { RouteLocationRaw } from 'vue-router';
 
 import type { MenuItem } from '~/types';

@@ -1,6 +1,6 @@
 import * as v from 'valibot';
 
-import { bilibiliUid, emptyable, pageQuery, password, username } from './common';
+import { bilibiliUid, emptyable, loginPassword, pageQuery, password, username } from './common';
 
 /**
  * User ID Params Schema。
@@ -57,7 +57,7 @@ export type UpdateUserPasswordBody = v.InferOutput<typeof UserUpdatePasswordSche
  */
 export const UserLoginSchema = v.object({
   biliUid: bilibiliUid,
-  password: password,
+  password: loginPassword,
 });
 
 export type UserLoginBody = v.InferOutput<typeof UserLoginSchema>;

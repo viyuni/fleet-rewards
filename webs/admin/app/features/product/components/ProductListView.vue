@@ -7,8 +7,6 @@ import { useOverlay } from '@web/ui/components/ui/overlay';
 import { DataTable } from '@web/ui/components/ui/table';
 import { MoreHorizontal, PackagePlus, Pencil, Plus } from 'lucide-vue-next';
 
-import { useDebouncedPageQuery } from '~/composables/useDebouncedPageQuery';
-import { usePageQuery } from '~/composables/usePageQuery';
 import type { AdminApi } from '~/plugins/api';
 
 import { useDisableProduct, useEnableProduct } from '../mutations';

@@ -1,16 +1,10 @@
-import tailwindcss from '@tailwindcss/vite';
-
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
-  runtimeConfig: {
-    public: {
-      apiBaseUrl: process.env.NUXT_PUBLIC_API_BASE_URL ?? process.env.VITE_SERVER_BASE_URL,
-    },
-  },
+  extends: ['../base'],
   app: {
     head: {
-      title: 'Viyuni - Guard Rewards',
+      title: 'Viyuni - Guard+',
       htmlAttrs: {
         class: 'dark',
       },
@@ -23,46 +17,7 @@ export default defineNuxtConfig({
     },
   },
   ssr: false,
-  devtools: {
-    enabled: true,
-  },
   nitro: {
     preset: 'static',
-  },
-  css: ['~/assets/main.css'],
-  vite: {
-    plugins: [tailwindcss()],
-    optimizeDeps: {
-      include: [
-        '@elysia/eden',
-        '@tanstack/vue-form',
-        '@tanstack/vue-table',
-        '@vueuse/core',
-        '@vueuse/router',
-        'class-variance-authority',
-        'clsx',
-        'lucide-vue-next',
-        'reka-ui',
-        'tailwind-merge',
-        'valibot',
-        'vue-sonner',
-      ],
-    },
-  },
-  experimental: {
-    viteEnvironmentApi: true,
-  },
-  modules: ['@web/ui/nuxt', '@pinia/nuxt', '@pinia/colada-nuxt'],
-  typescript: {
-    tsConfig: {
-      compilerOptions: {
-        paths: {
-          '@web/ui/*': ['../../ui/src/*'],
-        },
-      },
-    },
-    sharedTsConfig: {
-      include: ['../colada.options.ts'],
-    },
   },
 });

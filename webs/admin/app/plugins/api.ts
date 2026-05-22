@@ -1,16 +1,7 @@
-import { treaty } from '@elysia/eden';
+import { type Treaty } from '@elysia/eden';
 import type { AdminApp } from '@server/app';
 
 import { defineNuxtPlugin, useRuntimeConfig } from '#app';
-
-function createAdminApi(apiBaseUrl: string) {
-  return treaty<AdminApp>(apiBaseUrl, {
-    throwHttpError: true,
-    fetch: {
-      credentials: 'include',
-    },
-  });
-}
 
 export default defineNuxtPlugin(() => {
   const {
@@ -21,7 +12,7 @@ export default defineNuxtPlugin(() => {
     throw new Error('NUXT_PUBLIC_API_BASE_URL is required to create the Eden client.');
   }
 
-  const api = createAdminApi(apiBaseUrl);
+  const api = createApiClient<AdminApp>(apiBaseUrl, client => client.auth.refresh.post());
 
   return {
     provide: {
@@ -30,4 +21,4 @@ export default defineNuxtPlugin(() => {
   };
 });
 
-export type AdminApi = ReturnType<typeof createAdminApi>;
+export type AdminApi = Treaty.Create<AdminApp>;

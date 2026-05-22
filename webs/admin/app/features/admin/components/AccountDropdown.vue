@@ -1,13 +1,15 @@
 <script setup lang="ts">
 import { Button } from '@web/ui/components/ui/button';
 import { useOverlay } from '@web/ui/components/ui/overlay';
-import { KeyRound, UserRound } from 'lucide-vue-next';
+import { KeyRound, LogOut, UserRound } from 'lucide-vue-next';
 
+import { useLogout } from '../../auth/mutations';
 import { useAuthStore } from '../../auth/store';
 import AccountPasswordDialog from './AccountPasswordDialog.vue';
 import AccountProfileDialog from './AccountProfileDialog.vue';
 
 const { user } = storeToRefs(useAuthStore());
+const { mutate: logout } = useLogout();
 
 const [openAccountProfileDialog] = useOverlay(AccountProfileDialog);
 const [openAccountPasswordDialog] = useOverlay(AccountPasswordDialog);
@@ -40,6 +42,13 @@ const [openAccountPasswordDialog] = useOverlay(AccountPasswordDialog);
       <DropdownMenuItem @click="openAccountPasswordDialog">
         <KeyRound />
         修改账户密码
+      </DropdownMenuItem>
+
+      <DropdownMenuSeparator />
+
+      <DropdownMenuItem variant="destructive" @click="logout">
+        <LogOut />
+        退出登录
       </DropdownMenuItem>
     </DropdownMenuContent>
   </DropdownMenu>

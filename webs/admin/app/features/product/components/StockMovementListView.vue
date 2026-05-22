@@ -4,8 +4,6 @@ import type { StockMovementPageQuery } from '@internal/shared/stock';
 import type { ColumnDef } from '@tanstack/vue-table';
 import { DataTable } from '@web/ui/components/ui/table';
 
-import { useDebouncedPageQuery } from '~/composables/useDebouncedPageQuery';
-import { usePageQuery } from '~/composables/usePageQuery';
 import type { AdminApi } from '~/plugins/api';
 
 import { stockMovementPageQuery } from '../queries';

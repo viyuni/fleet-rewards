@@ -1,6 +1,6 @@
 // TSConfig for modules that run in Node.js environment via either transpilation or type-stripping.
 {
-  "include": ["scripts/*", "package-exports.ts"],
+  "include": ["scripts/*", "packageExports.ts"],
   "compilerOptions": {
     // Most tools use transpilation instead of Node.js's native type-stripping.
     // Bundler mode provides a smoother developer experience.

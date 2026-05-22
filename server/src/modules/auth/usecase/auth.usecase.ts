@@ -2,9 +2,14 @@ import { SignJWT, jwtVerify } from 'jose';
 
 import { UnauthorizedError } from '#utils';
 
+import { ACCESS_TOKEN_EXPIRES_IN_SECONDS, REFRESH_TOKEN_EXPIRES_IN_SECONDS } from '../constants';
 import type { AuthPayload } from '../domain';
 
 type AuthTokenType = 'access' | 'refresh';
+
+function getTokenExpiresInSeconds(type: AuthTokenType) {
+  return type === 'access' ? ACCESS_TOKEN_EXPIRES_IN_SECONDS : REFRESH_TOKEN_EXPIRES_IN_SECONDS;
+}
 
 export class AuthUseCase {
   private encodedSecret: Uint8Array<ArrayBuffer>;
@@ -14,6 +19,8 @@ export class AuthUseCase {
   }
 
   private async signToken(payload: AuthPayload, type: AuthTokenType) {
+    const expiresInSeconds = getTokenExpiresInSeconds(type);
+
     return new SignJWT({
       id: payload.id,
       role: payload.role,
@@ -21,7 +28,7 @@ export class AuthUseCase {
     })
       .setProtectedHeader({ alg: 'HS256' })
       .setIssuedAt()
-      .setExpirationTime(type === 'access' ? '15m' : '7d')
+      .setExpirationTime(`${expiresInSeconds}s`)
       .sign(this.encodedSecret);
   }
 
@@ -38,6 +45,7 @@ export class AuthUseCase {
   }
 
   async signTokenPair(payload: AuthPayload) {
+    const now = Date.now();
     const [accessToken, refreshToken] = await Promise.all([
       this.signAccessToken(payload),
       this.signRefreshToken(payload),
@@ -45,7 +53,9 @@ export class AuthUseCase {
 
     return {
       accessToken,
+      accessTokenExpiresAt: now + ACCESS_TOKEN_EXPIRES_IN_SECONDS * 1000,
       refreshToken,
+      refreshTokenExpiresAt: now + REFRESH_TOKEN_EXPIRES_IN_SECONDS * 1000,
     };
   }
 

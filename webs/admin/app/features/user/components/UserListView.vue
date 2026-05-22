@@ -6,9 +6,6 @@ import { useOverlay } from '@web/ui/components/ui/overlay';
 import { DataTable } from '@web/ui/components/ui/table';
 import { UserPlus } from 'lucide-vue-next';
 
-import { useDebouncedPageQuery } from '~/composables/useDebouncedPageQuery';
-import { usePageQuery } from '~/composables/usePageQuery';
-
 import { userPageQuery } from '../queries';
 import type { User } from '../types';
 import CreateUserDialog from './CreateUserDialog.vue';
@@ -50,17 +47,6 @@ function formatPointBalance(balance: number | string) {
 
 function getPointAccountName(pointAccount: User['pointAccounts'][number]) {
   return pointAccount.pointType?.name ?? '未知积分';
-}
-
-function getPointAccountCount(user: User) {
-  return user.pointAccounts.length;
-}
-
-function getTotalPointBalance(user: User) {
-  return user.pointAccounts.reduce(
-    (total, pointAccount) => total + Number(pointAccount.balance),
-    0,
-  );
 }
 </script>
 

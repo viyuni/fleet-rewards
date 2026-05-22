@@ -3,7 +3,7 @@ import { RewardRuleListView } from '~/features/reward';
 </script>
 
 <script setup lang="ts">
-definePageMeta({ title: '积分规则' });
+definePageMeta({ title: '奖励规则' });
 </script>
 
 <template>

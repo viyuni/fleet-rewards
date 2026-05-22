@@ -1,4 +1,4 @@
-import { ClipboardList, Coins, Radio, ShoppingBag, UserRound } from 'lucide-vue-next';
+import { ClipboardList, Coins, Radio, ShoppingBag, UserRound, ScrollText } from 'lucide-vue-next';
 
 import type { MenuItem } from '~/types';
 
@@ -22,9 +22,13 @@ export const menus = [
     items: [
       { title: '积分类型', to: '/app/points/types' },
       { title: '积分流水', to: '/app/points/transactions' },
-      { title: '积分规则', to: '/app/points/rules' },
       { title: '积分转换', to: '/app/points/conversions' },
     ],
+  },
+  {
+    title: '奖励规则',
+    to: '/app/rewards/rules',
+    icon: ScrollText,
   },
   {
     title: '商品管理',

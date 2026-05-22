@@ -1,6 +1,6 @@
 import * as v from 'valibot';
 
-import { bilibiliUid, emptyable, pageQuery, password, username } from './common';
+import { bilibiliUid, emptyable, loginPassword, pageQuery, password, username } from './common';
 
 /**
  * 管理员角色 Schema
@@ -88,7 +88,7 @@ export type AdminUpdatePasswordBody = v.InferOutput<typeof AdminUpdatePasswordSc
  */
 export const AdminLoginSchema = v.object({
   uid: bilibiliUid,
-  password: password,
+  password: loginPassword,
 });
 
 export type AdminLoginBody = v.InferOutput<typeof AdminLoginSchema>;

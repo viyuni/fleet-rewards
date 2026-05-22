@@ -6,8 +6,6 @@ import { Button } from '@web/ui/components/ui/button';
 import { DataTable } from '@web/ui/components/ui/table';
 import { Eye, MoreHorizontal, RotateCcw } from 'lucide-vue-next';
 
-import { useDebouncedPageQuery } from '~/composables/useDebouncedPageQuery';
-import { usePageQuery } from '~/composables/usePageQuery';
 import type { AdminApi } from '~/plugins/api';
 
 import { useReplayBiliGuardReward } from '../mutations';

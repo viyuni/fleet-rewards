@@ -37,6 +37,7 @@
     "./components/ui/input": "./src/components/ui/input/index.ts",
     "./components/ui/input-group": "./src/components/ui/input-group/index.ts",
     "./components/ui/item": "./src/components/ui/item/index.ts",
+    "./components/ui/kbd": "./src/components/ui/kbd/index.ts",
     "./components/ui/label": "./src/components/ui/label/index.ts",
     "./components/ui/native-select": "./src/components/ui/native-select/index.ts",
     "./components/ui/number-field": "./src/components/ui/number-field/index.ts",

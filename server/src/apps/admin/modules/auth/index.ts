@@ -23,18 +23,24 @@ export const auth = new Elysia({
   .post(
     '/login',
     async ({ body, cookie, adminAuthUseCase }) => {
-      const { user, accessToken, refreshToken } = await adminAuthUseCase.login(body);
+      const { user, accessToken, accessTokenExpiresAt, refreshToken, refreshTokenExpiresAt } =
+        await adminAuthUseCase.login(body);
 
       cookie[ACCESS_TOKEN_COOKIE_NAME]!.set({
         ...ACCESS_TOKEN_COOKIE_OPTIONS,
         value: accessToken,
       });
+
       cookie[REFRESH_TOKEN_COOKIE_NAME]!.set({
         ...REFRESH_TOKEN_COOKIE_OPTIONS,
         value: refreshToken,
       });
 
-      return user;
+      return {
+        user,
+        accessTokenExpiresAt,
+        refreshTokenExpiresAt,
+      };
     },
     {
       body: AdminLoginSchema,

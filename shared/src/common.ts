@@ -125,6 +125,12 @@ export const password = v.pipe(
   v.description('密码'),
 );
 
+export const loginPassword = v.pipe(
+  v.string('请输入密码'),
+  v.minLength(12, '请输入正确的密码'),
+  v.description('密码'),
+);
+
 /**
  * 路由参数 ID Schema
  */
