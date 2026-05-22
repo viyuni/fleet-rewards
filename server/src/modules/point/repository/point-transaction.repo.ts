@@ -2,7 +2,7 @@ import type { PointTransactionPageQuery } from '@internal/shared/point-transacti
 import { eq } from 'drizzle-orm';
 
 import type { DbExecutor, DbTransaction } from '#db';
-import { parseDate, QueryPageBuilder } from '#db/helper';
+import { QueryPageBuilder } from '#db/helper';
 import { pointTransactions, type InsertPointTransaction } from '#db/schema';
 
 import { PointTransactionNotFoundError } from '../domain';
@@ -59,8 +59,8 @@ export class PointTransactionRepository {
         type: query.type,
         pointTypeId: query.pointTypeId,
         createdAt: {
-          gte: parseDate(query.startTime) ?? undefined,
-          lte: parseDate(query.endTime) ?? undefined,
+          gte: query.startAt ?? undefined,
+          lte: query.endAt ?? undefined,
         },
       })
       .query((findMany, { where, limit, offset }) =>
@@ -99,8 +99,8 @@ export class PointTransactionRepository {
         type: query.type,
         pointTypeId: query.pointTypeId,
         createdAt: {
-          gte: parseDate(query.startTime) ?? undefined,
-          lte: parseDate(query.endTime) ?? undefined,
+          gte: query.startAt ?? undefined,
+          lte: query.endAt ?? undefined,
         },
       })
       .query((findMany, { where, limit, offset }) =>

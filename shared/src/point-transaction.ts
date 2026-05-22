@@ -1,4 +1,6 @@
-import * as v from '.';
+import * as v from 'valibot';
+
+import { dateRange, pageQuery } from './common';
 
 /**
  * 积分流水 ID Params Schema。
@@ -33,15 +35,12 @@ export type PointTransactionType = v.InferOutput<typeof PointTransactionTypeSche
 /**
  * 积分流水分页查询 Query Schema。
  */
-export const TransactionPageQuerySchema = v.intersect([
-  v.pageQuery,
-  v.object({
-    type: v.optional(PointTransactionTypeSchema),
-    pointTypeId: v.optional(v.pipe(v.string('请输入积分类型 ID'), v.description('积分类型 ID'))),
-    userId: v.optional(v.pipe(v.string('请输入用户 ID'), v.description('用户 ID'))),
-    startTime: v.optional(v.emptyable(v.dateTimeLocal)),
-    endTime: v.optional(v.emptyable(v.dateTimeLocal)),
-  }),
-]);
+export const TransactionPageQuerySchema = v.object({
+  type: v.optional(PointTransactionTypeSchema),
+  pointTypeId: v.optional(v.pipe(v.string('请输入积分类型 ID'), v.description('积分类型 ID'))),
+  userId: v.optional(v.pipe(v.string('请输入用户 ID'), v.description('用户 ID'))),
+  ...dateRange.entries,
+  ...pageQuery.entries,
+});
 
 export type PointTransactionPageQuery = v.InferOutput<typeof TransactionPageQuerySchema>;

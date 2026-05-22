@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { AdminCreateSchema, type AdminCreateBody } from '@internal/shared/admin';
+import { AdminCreateSchema } from '@internal/shared/admin';
 import { Button } from '@web/ui/components/ui/button';
 import { FormFieldItem, usePopoverForm } from '@web/ui/components/ui/form';
 import { Loader2 } from 'lucide-vue-next';
@@ -10,19 +10,15 @@ const open = defineModel<boolean>('open', { default: false });
 
 const createAdminMutation = useCreateAdmin();
 
-function createDefaultValues(): AdminCreateBody {
-  return {
+const { canSubmit, handleSubmit, isLoading } = usePopoverForm({
+  schema: AdminCreateSchema,
+  open,
+  initialValues: () => ({
     uid: '',
     username: '',
     password: '',
     remark: undefined,
-  };
-}
-
-const { canSubmit, handleSubmit, isLoading } = usePopoverForm({
-  schema: AdminCreateSchema,
-  open,
-  initialValues: createDefaultValues,
+  }),
   mutation: createAdminMutation,
 });
 </script>

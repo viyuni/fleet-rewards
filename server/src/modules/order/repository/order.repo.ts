@@ -2,7 +2,7 @@ import type { OrderPageQuery } from '@internal/shared/order';
 import { and, eq } from 'drizzle-orm';
 
 import type { DbExecutor, DbTransaction } from '#db';
-import { parseDate, QueryPageBuilder } from '#db/helper';
+import { QueryPageBuilder } from '#db/helper';
 import { orders, type InsertOrder, type UpdateOrder } from '#db/schema';
 
 export class OrderRepository {
@@ -19,8 +19,8 @@ export class OrderRepository {
         status: query.status,
         userId: query.userId,
         createdAt: {
-          gte: parseDate(query.startTime) ?? undefined,
-          lte: parseDate(query.endTime) ?? undefined,
+          gte: query.startAt ?? undefined,
+          lte: query.endAt ?? undefined,
         },
         OR: query.keyword
           ? [

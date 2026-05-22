@@ -2,7 +2,7 @@ import type { BiliEventPageQuery } from '@internal/shared/reward';
 import { and, asc, eq, inArray, sql } from 'drizzle-orm';
 
 import type { DbExecutor } from '#db';
-import { parseDate, QueryPageBuilder } from '#db/helper';
+import { QueryPageBuilder } from '#db/helper';
 import {
   biliEvents,
   type BiliEventRewardItemSnapshot,
@@ -44,8 +44,8 @@ export class BiliEventRepository {
         eventType: 'biliGuard',
         status: query.status,
         occurredAt: {
-          gte: parseDate(query.startTime) ?? undefined,
-          lte: parseDate(query.endTime) ?? undefined,
+          gte: query.startAt ?? undefined,
+          lte: query.endAt ?? undefined,
         },
         OR: query.keyword
           ? [

@@ -1,8 +1,5 @@
 <script setup lang="ts">
-import {
-  UpdatePointConversionRuleSchema,
-  type UpdatePointConversionRuleBody,
-} from '@internal/shared/point-conversion';
+import { UpdatePointConversionRuleSchema } from '@internal/shared/point-conversion';
 import { Button } from '@web/ui/components/ui/button';
 import { FormFieldItem, usePopoverForm } from '@web/ui/components/ui/form';
 import { Loader2 } from 'lucide-vue-next';
@@ -19,36 +16,28 @@ const open = defineModel<boolean>('open', { default: false });
 
 const updateConversionRuleMutation = useUpdatePointConversionRule();
 
-type PointConversionRuleFormValues = UpdatePointConversionRuleBody;
-
-function createDefaultValues(conversion?: PointConversion): PointConversionRuleFormValues {
-  return {
-    name: conversion?.name ?? '',
-    description: conversion?.description ?? undefined,
-    remark: conversion?.remark ?? undefined,
-    fromPointTypeId: conversion?.fromPointTypeId ?? '',
-    toPointTypeId: conversion?.toPointTypeId ?? '',
-    toAmount: conversion?.toAmount ?? 1,
-    minConvertAmount: conversion?.minConvertAmount ?? undefined,
-    maxConvertAmount: conversion?.maxConvertAmount ?? undefined,
-    enabled: conversion?.enabled ?? false,
-    startTime: toDatetimeLocalValue(conversion?.startTime),
-    endTime: toDatetimeLocalValue(conversion?.endTime),
-  };
-}
-
 const { canSubmit, handleSubmit, isLoading } = usePopoverForm({
   schema: UpdatePointConversionRuleSchema,
   open,
-  initialValues: () => createDefaultValues(props.conversion),
-  mutation: {
-    isLoading: updateConversionRuleMutation.isLoading,
-    mutateAsync(body) {
-      return updateConversionRuleMutation.mutateAsync({
-        pointConversionRuleId: props.conversion.id,
-        body,
-      });
-    },
+  initialValues: () => ({
+    name: props.conversion?.name,
+    description: props.conversion?.description,
+    remark: props.conversion?.remark,
+    fromPointTypeId: props.conversion?.fromPointTypeId,
+    toPointTypeId: props.conversion?.toPointTypeId,
+    minConvertAmount: props.conversion?.minConvertAmount,
+    maxConvertAmount: props.conversion?.maxConvertAmount,
+    startAt: props.conversion?.startAt,
+    endAt: props.conversion?.endAt,
+    toAmount: props.conversion?.toAmount ?? 1,
+    enabled: props.conversion?.enabled ?? false,
+  }),
+  mutation: updateConversionRuleMutation,
+  transform(body) {
+    return {
+      pointConversionRuleId: props.conversion.id,
+      body,
+    };
   },
 });
 </script>
@@ -92,12 +81,12 @@ const { canSubmit, handleSubmit, isLoading } = usePopoverForm({
           <Input v-bind="componentField" type="number" min="1" step="1" placeholder="不限制" />
         </FormFieldItem>
 
-        <FormFieldItem v-slot="{ componentField }" name="startTime" label="开始时间">
-          <Input v-bind="componentField" type="datetime-local" step="1" />
+        <FormFieldItem v-slot="{ componentField }" name="startAt" label="开始时间">
+          <DateTimeLocalInput v-bind="componentField" type="datetime-local" step="1" />
         </FormFieldItem>
 
-        <FormFieldItem v-slot="{ componentField }" name="endTime" label="结束时间">
-          <Input v-bind="componentField" type="datetime-local" step="1" />
+        <FormFieldItem v-slot="{ componentField }" name="endAt" label="结束时间">
+          <DateTimeLocalInput v-bind="componentField" type="datetime-local" step="1" />
         </FormFieldItem>
 
         <FormFieldItem v-slot="{ componentField }" name="enabled" label="启用状态">

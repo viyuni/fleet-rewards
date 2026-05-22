@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ConvertPointSchema, type ConvertPointBody } from '@internal/shared/point-conversion';
+import { ConvertPointSchema } from '@internal/shared/point-conversion';
 import { Button } from '@web/ui/components/ui/button';
 import { FormFieldItem, usePopoverForm } from '@web/ui/components/ui/form';
 import { Loader2 } from 'lucide-vue-next';
@@ -30,29 +30,23 @@ const toPointTypeName = computed(
     props.conversion.toPointTypeId,
 );
 
-function createDefaultValues(ruleId: string): ConvertPointBody {
-  return {
-    ruleId,
+const { canSubmit, handleSubmit, isLoading, onSubmitSuccess } = usePopoverForm({
+  schema: ConvertPointSchema,
+  open,
+  initialValues: () => ({
+    ruleId: props.conversion.id,
     userId: '',
     fromAmount: props.conversion.minConvertAmount ?? 1,
     remark: undefined,
     nonce: crypto.randomUUID(),
-  };
-}
-
-const { canSubmit, handleSubmit, isLoading, onSubmitSuccess } = usePopoverForm({
-  schema: ConvertPointSchema,
-  open,
-  initialValues: () => createDefaultValues(props.conversion.id),
-  mutation: {
-    isLoading: convertPointMutation.isLoading,
-    mutateAsync(values) {
-      return convertPointMutation.mutateAsync({
-        ...values,
-        ruleId: props.conversion.id,
-        nonce: crypto.randomUUID(),
-      });
-    },
+  }),
+  mutation: convertPointMutation,
+  transform(values) {
+    return {
+      ...values,
+      ruleId: props.conversion.id,
+      nonce: crypto.randomUUID(),
+    };
   },
 });
 

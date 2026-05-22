@@ -1,4 +1,6 @@
-import * as v from '.';
+import * as v from 'valibot';
+
+import { boolish, dateRange, emptyable, keyword, numeric, pageQuery } from './common';
 
 /**
  * 商品 ID Params Schema。
@@ -91,7 +93,7 @@ const ProductPointTypeIdSchema = v.pipe(
  * 商品兑换价格 Schema。
  */
 const ProductPriceSchema = v.pipe(
-  v.numeric('请输入兑换所需积分数量'),
+  numeric('请输入兑换所需积分数量'),
   v.integer('兑换所需积分数量必须是整数'),
   v.minValue(1, '兑换所需积分数量必须大于 0'),
   v.description('兑换所需积分数量'),
@@ -101,7 +103,7 @@ const ProductPriceSchema = v.pipe(
  * 商品库存 Schema。
  */
 const ProductStockSchema = v.pipe(
-  v.numeric('请输入商品库存'),
+  numeric('请输入商品库存'),
   v.integer('商品库存必须是整数'),
   v.minValue(0, '商品库存不能小于 0'),
   v.description('商品库存'),
@@ -111,7 +113,7 @@ const ProductStockSchema = v.pipe(
  * 商品排序值 Schema。
  */
 const ProductSortSchema = v.pipe(
-  v.numeric('请输入排序值'),
+  numeric('请输入排序值'),
   v.integer('排序值必须是整数'),
   v.description('排序值'),
 );
@@ -120,7 +122,7 @@ const ProductSortSchema = v.pipe(
  * 商品是否允许用户取消订单 Schema。
  */
 const ProductAllowCancelSchema = v.pipe(
-  v.boolish('请选择是否允许用户取消订单'),
+  boolish('请选择是否允许用户取消订单'),
   v.description('是否允许用户取消订单'),
 );
 
@@ -136,15 +138,13 @@ const ProductMetadataSchema = v.pipe(
 /**
  * 商品列表分页查询 Query Schema。
  */
-export const ProductPageQuerySchema = v.intersect([
-  v.pageQuery,
-  v.object({
-    keyword: v.optional(v.keyword),
-    status: v.optional(ProductStatusSchema),
-    pointTypeId: v.optional(ProductPointTypeIdSchema),
-    deliveryType: v.optional(ProductDeliveryTypeSchema),
-  }),
-]);
+export const ProductPageQuerySchema = v.object({
+  keyword: v.optional(keyword),
+  status: v.optional(ProductStatusSchema),
+  pointTypeId: v.optional(ProductPointTypeIdSchema),
+  deliveryType: v.optional(ProductDeliveryTypeSchema),
+  ...pageQuery.entries,
+});
 
 export type ProductPageQuery = v.InferOutput<typeof ProductPageQuerySchema>;
 
@@ -154,9 +154,9 @@ export type ProductPageQuery = v.InferOutput<typeof ProductPageQuerySchema>;
 export const CreateProductSchema = v.object({
   name: ProductNameSchema,
 
-  description: v.optional(v.emptyable(ProductDescriptionSchema)),
+  description: v.optional(emptyable(ProductDescriptionSchema)),
   cover: v.optional(ProductCoverSchema),
-  detail: v.optional(v.emptyable(ProductDetailSchema)),
+  detail: v.optional(emptyable(ProductDetailSchema)),
 
   pointTypeId: ProductPointTypeIdSchema,
   price: ProductPriceSchema,
@@ -164,11 +164,10 @@ export const CreateProductSchema = v.object({
   status: v.optional(ProductStatusSchema),
   stock: v.optional(ProductStockSchema),
   deliveryType: v.optional(ProductDeliveryTypeSchema),
-  startTime: v.optional(v.dateTimeLocal),
-  endTime: v.optional(v.dateTimeLocal),
   allowCancel: v.optional(ProductAllowCancelSchema),
   sort: v.optional(ProductSortSchema),
-  metadata: v.optional(v.emptyable(ProductMetadataSchema)),
+  metadata: v.optional(emptyable(ProductMetadataSchema)),
+  ...dateRange.entries,
 });
 
 export type CreateProductBody = v.InferOutput<typeof CreateProductSchema>;
@@ -179,9 +178,9 @@ export type CreateProductBody = v.InferOutput<typeof CreateProductSchema>;
 export const UpdateProductSchema = v.object({
   name: v.optional(ProductNameSchema),
 
-  description: v.nullish(v.emptyable(ProductDescriptionSchema)),
+  description: v.nullish(emptyable(ProductDescriptionSchema)),
   cover: v.optional(ProductCoverSchema),
-  detail: v.nullish(v.emptyable(ProductDetailSchema)),
+  detail: v.nullish(emptyable(ProductDetailSchema)),
 
   pointTypeId: v.optional(ProductPointTypeIdSchema),
   price: v.optional(ProductPriceSchema),
@@ -189,11 +188,10 @@ export const UpdateProductSchema = v.object({
   status: v.optional(ProductStatusSchema),
   stock: v.optional(ProductStockSchema),
   deliveryType: v.optional(ProductDeliveryTypeSchema),
-  startTime: v.nullish(v.dateTimeLocal),
-  endTime: v.nullish(v.dateTimeLocal),
   allowCancel: v.optional(ProductAllowCancelSchema),
   sort: v.optional(ProductSortSchema),
-  metadata: v.nullish(v.emptyable(ProductMetadataSchema)),
+  metadata: v.nullish(emptyable(ProductMetadataSchema)),
+  ...dateRange.entries,
 });
 
 export type UpdateProductBody = v.InferOutput<typeof UpdateProductSchema>;

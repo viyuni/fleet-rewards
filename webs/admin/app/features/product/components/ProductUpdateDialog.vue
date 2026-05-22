@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ProductDeliveryType, ProductStatus, UpdateProductSchema } from '@internal/shared/product';
 import { Button } from '@web/ui/components/ui/button';
-import { FormFieldItem, type FormInput, usePopoverForm } from '@web/ui/components/ui/form';
+import { FormFieldItem, usePopoverForm } from '@web/ui/components/ui/form';
 import { Loader2 } from 'lucide-vue-next';
 
 import PointTypeSelect from '../../point/components/PointTypeSelect.vue';
@@ -12,8 +12,6 @@ import type { Product } from './ProductListView.vue';
 const props = defineProps<{
   product: Product;
 }>();
-
-type ProductUpdateFormValues = FormInput<typeof UpdateProductSchema>;
 
 const open = defineModel<boolean>('open', { default: false });
 
@@ -26,25 +24,6 @@ const {
 } = useRuntimeConfig();
 const imageBaseUrl = computed(() => apiBaseUrl.replace(/\/$/, ''));
 const currentCoverUrl = computed(() => getImageUrl(props.product.cover));
-
-function createDefaultValues(product: Product): ProductUpdateFormValues {
-  return {
-    name: product?.name ?? '',
-    description: product?.description ?? undefined,
-    cover: undefined,
-    detail: product?.detail ?? undefined,
-    pointTypeId: product?.pointTypeId ?? '',
-    price: product?.price ?? 1,
-    status: product?.status ?? ProductStatus.Disabled,
-    stock: product?.stock ?? 0,
-    deliveryType: product?.deliveryType ?? ProductDeliveryType.Manual,
-    startTime: toDatetimeLocalValue(product?.startTime),
-    endTime: toDatetimeLocalValue(product?.endTime),
-    allowCancel: false,
-    sort: product?.sort ?? 0,
-    metadata: undefined,
-  };
-}
 
 function resetSelectedCover() {
   productCoverCropDialog.value?.reset();
@@ -67,15 +46,28 @@ function getImageUrl(cover: Product['cover'] | undefined) {
 const { canSubmit, handleSubmit, isLoading, onSubmitSuccess } = usePopoverForm({
   schema: UpdateProductSchema,
   open,
-  initialValues: () => createDefaultValues(props.product),
-  mutation: {
-    isLoading: updateProductMutation.isLoading,
-    mutateAsync(values) {
-      return updateProductMutation.mutateAsync({
-        productId: props.product.id,
-        body: values,
-      });
-    },
+  initialValues: () => ({
+    name: props.product?.name ?? '',
+    description: props.product?.description ?? undefined,
+    cover: undefined,
+    detail: props.product?.detail ?? undefined,
+    pointTypeId: props.product?.pointTypeId ?? '',
+    price: props.product?.price ?? 1,
+    status: props.product?.status ?? ProductStatus.Disabled,
+    stock: props.product?.stock ?? 0,
+    deliveryType: props.product?.deliveryType ?? ProductDeliveryType.Manual,
+    startAt: props.product?.startAt,
+    endAt: props.product?.endAt,
+    allowCancel: false,
+    sort: props.product?.sort ?? 0,
+    metadata: undefined,
+  }),
+  mutation: updateProductMutation,
+  transform(body) {
+    return {
+      productId: props.product.id,
+      body,
+    };
   },
 });
 
@@ -129,12 +121,12 @@ watch(open, isOpen => {
           </NativeSelect>
         </FormFieldItem>
 
-        <FormFieldItem v-slot="{ componentField }" name="startTime" label="开始时间">
-          <Input v-bind="componentField" type="datetime-local" step="1" />
+        <FormFieldItem v-slot="{ componentField }" name="startAt" label="开始时间">
+          <DateTimeLocalInput v-bind="componentField" type="datetime-local" step="1" />
         </FormFieldItem>
 
-        <FormFieldItem v-slot="{ componentField, field }" name="endTime" label="结束时间">
-          <Input v-bind="componentField" type="datetime-local" step="1" />
+        <FormFieldItem v-slot="{ componentField }" name="endAt" label="结束时间">
+          <DateTimeLocalInput v-bind="componentField" type="datetime-local" step="1" />
         </FormFieldItem>
 
         <FormFieldItem v-slot="{ componentField }" name="allowCancel" label="允许取消订单" required>
@@ -149,19 +141,16 @@ watch(open, isOpen => {
         </FormFieldItem>
 
         <FormFieldItem
-          v-slot="{ field, invalid }"
+          v-slot="{ componentField }"
           class="sm:col-span-2 lg:col-span-3"
           name="cover"
           label="封面"
         >
           <ProductCoverCropDialog
             ref="productCoverCropDialog"
-            :file="field.value"
+            v-bind="componentField"
             :current-cover-url="currentCoverUrl"
-            :invalid="invalid"
             :preview-size="coverCropPreviewSize"
-            @blur="field.onBlur($event)"
-            @update:file="field.onChange"
           />
         </FormFieldItem>
 

@@ -167,14 +167,14 @@ describeWithDatabase('订单真实数据库并发保护', () => {
       pointTypeId: pointType.id,
       price: 1,
       stock: 1,
-      startTime: new Date(Date.now() + 60_000).toISOString(),
+      startAt: new Date(Date.now() + 60_000),
     });
     const expiredProduct = await seedProduct({
       name: `${prefix}_expired_product`,
       pointTypeId: pointType.id,
       price: 1,
       stock: 1,
-      endTime: new Date(Date.now() - 60_000).toISOString(),
+      endAt: new Date(Date.now() - 60_000),
     });
 
     await expectRejectsInstanceOf(

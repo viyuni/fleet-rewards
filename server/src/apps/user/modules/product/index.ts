@@ -1,4 +1,4 @@
-import { PageQuerySchema } from '@internal/shared/common';
+import { pageQuery } from '@internal/shared';
 import { ProductIdParamsSchema } from '@internal/shared/product';
 import Elysia from 'elysia';
 
@@ -18,7 +18,7 @@ export const product = new Elysia({
       return productUseCase.pageRedeem(query);
     },
     {
-      query: PageQuerySchema,
+      query: pageQuery,
       detail: {
         description: '可兑换商品列表',
       },

@@ -15,11 +15,11 @@ export class ProductPolicy {
       return false;
     }
 
-    if (product.startTime && product.startTime > now) {
+    if (product.startAt && product.startAt > now) {
       return false;
     }
 
-    if (product.endTime && product.endTime <= now) {
+    if (product.endAt && product.endAt <= now) {
       return false;
     }
 

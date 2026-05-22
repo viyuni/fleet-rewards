@@ -1,4 +1,6 @@
-import * as v from '.';
+import * as v from 'valibot';
+
+import { nonce, remark } from './common';
 
 /**
  * 调整积分 Body Schema。
@@ -6,7 +8,7 @@ import * as v from '.';
  * 用于管理员手动调整账户积分。
  */
 export const AdjustBalanceSchema = v.object({
-  nonce: v.nonce,
+  nonce: nonce,
   userId: v.pipe(v.string('请输入用户 ID'), v.description('用户 ID')),
   pointTypeId: v.pipe(v.string('请输入积分类型 ID'), v.description('积分类型 ID')),
   delta: v.pipe(
@@ -14,7 +16,7 @@ export const AdjustBalanceSchema = v.object({
     v.integer('积分变动数量必须是整数'),
     v.description('积分变动数量'),
   ),
-  remark: v.optional(v.remark),
+  remark: v.optional(remark),
 });
 
 export type AdjustBalanceBody = v.InferOutput<typeof AdjustBalanceSchema>;
@@ -24,7 +26,7 @@ export type AdjustBalanceBody = v.InferOutput<typeof AdjustBalanceSchema>;
  */
 export const ReversalTransactionSchema = v.object({
   transactionId: v.pipe(v.string('请输入积分流水 ID'), v.description('积分流水 ID')),
-  remark: v.optional(v.remark),
+  remark: v.optional(remark),
 });
 
 export type ReversalPointTransactionBody = v.InferOutput<typeof ReversalTransactionSchema>;

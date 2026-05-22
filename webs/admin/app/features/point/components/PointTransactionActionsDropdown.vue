@@ -3,7 +3,6 @@ import { Button } from '@web/ui/components/ui/button';
 import { useOverlay } from '@web/ui/components/ui/overlay';
 import { MoreHorizontal, Undo2 } from 'lucide-vue-next';
 
-import { useReversePointTransaction } from '../mutations';
 import type { PointTransaction } from './PointTransactionListView.vue';
 import ReversePointTransactionDialog from './ReversePointTransactionDialog.vue';
 
@@ -12,7 +11,6 @@ const props = defineProps<{
 }>();
 
 const [openReversePointTransactionDialog] = useOverlay(ReversePointTransactionDialog);
-const { mutateAsync: reverseTransaction, isLoading: isReversing } = useReversePointTransaction();
 
 const canReverse = computed(
   () =>
@@ -21,19 +19,9 @@ const canReverse = computed(
     !props.transaction.reversal,
 );
 
-async function openReversalDialog() {
-  const payload = await openReversePointTransactionDialog({
+function openReversalDialog() {
+  openReversePointTransactionDialog({
     transaction: props.transaction,
-    reversing: isReversing.value,
-  });
-
-  if (!payload) {
-    return;
-  }
-
-  await reverseTransaction({
-    transactionId: payload.transaction.id,
-    remark: payload.remark,
   });
 }
 </script>
@@ -47,11 +35,7 @@ async function openReversalDialog() {
       </Button>
     </DropdownMenuTrigger>
     <DropdownMenuContent align="end" class="w-50">
-      <DropdownMenuItem
-        variant="destructive"
-        :disabled="!canReverse || isReversing"
-        @click="openReversalDialog"
-      >
+      <DropdownMenuItem variant="destructive" :disabled="!canReverse" @click="openReversalDialog">
         <Undo2 />
         冲正流水
       </DropdownMenuItem>

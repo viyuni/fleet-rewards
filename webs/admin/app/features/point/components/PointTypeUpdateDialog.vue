@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { UpdatePointTypeSchema, type UpdatePointTypeBody } from '@internal/shared/point-type';
+import { UpdatePointTypeSchema } from '@internal/shared/point-type';
 import { Button } from '@web/ui/components/ui/button';
 import { FormFieldItem, usePopoverForm } from '@web/ui/components/ui/form';
 import { Loader2 } from 'lucide-vue-next';
@@ -15,25 +15,19 @@ const open = defineModel<boolean>('open', { default: false });
 
 const updatePointTypeMutation = useUpdatePointType();
 
-function createDefaultValues(pointType: PointType): UpdatePointTypeBody {
-  return {
-    name: pointType?.name ?? '',
-    description: pointType?.description ?? undefined,
-  };
-}
-
 const { canSubmit, handleSubmit, isLoading } = usePopoverForm({
   schema: UpdatePointTypeSchema,
   open,
-  initialValues: () => createDefaultValues(props.pointType),
-  mutation: {
-    isLoading: updatePointTypeMutation.isLoading,
-    mutateAsync(body) {
-      return updatePointTypeMutation.mutateAsync({
-        pointTypeId: props.pointType.id,
-        body,
-      });
-    },
+  initialValues: () => ({
+    name: props.pointType?.name ?? '',
+    description: props.pointType?.description ?? undefined,
+  }),
+  mutation: updatePointTypeMutation,
+  transform(body) {
+    return {
+      pointTypeId: props.pointType.id,
+      body,
+    };
   },
 });
 </script>

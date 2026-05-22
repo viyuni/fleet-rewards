@@ -5,7 +5,7 @@ const props = withDefaults(
   defineProps<{
     autoSelectFirst?: boolean;
     placeholder: string;
-    invalid?: boolean;
+    ariaInvalid?: boolean;
   }>(),
   {
     autoSelectFirst: true,
@@ -50,8 +50,8 @@ watch(
 
 <template>
   <NativeSelect
-    :model-value="modelValue"
-    :aria-invalid="invalid"
+    :model-value
+    :aria-invalid
     @blur="emit('blur', $event)"
     @update:model-value="modelValue = String($event)"
   >

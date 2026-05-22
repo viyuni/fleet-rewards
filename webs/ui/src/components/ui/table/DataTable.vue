@@ -337,11 +337,11 @@ watch(totalPages, maxPage => {
 
     <slot name="toolbar" :table="resolvedTable" />
 
-    <div :class="cn('', props.class)">
+    <div :class="cn('overflow-hidden rounded-md border', props.class)">
       <Table>
-        <TableHeader>
+        <TableHeader class="bg-muted/80">
           <TableRow v-for="headerGroup in resolvedTable.getHeaderGroups()" :key="headerGroup.id">
-            <TableHead v-for="header in headerGroup.headers" :key="header.id">
+            <TableHead v-for="header in headerGroup.headers" :key="header.id" class="px-4">
               <!-- 指定列的 header 插槽优先于 TanStack 的 header 渲染器。 -->
               <slot
                 v-if="!header.isPlaceholder && hasHeaderSlot(header.column.id)"
@@ -360,7 +360,7 @@ watch(totalPages, maxPage => {
           <template v-if="resolvedTable.getRowModel().rows?.length">
             <template v-for="row in resolvedTable.getRowModel().rows" :key="row.id">
               <TableRow :data-state="row.getIsSelected() && 'selected'">
-                <TableCell v-for="cell in row.getVisibleCells()" :key="cell.id">
+                <TableCell v-for="cell in row.getVisibleCells()" :key="cell.id" class="px-4">
                   <!-- 指定列的 body 插槽优先于 TanStack 的 cell 渲染器。 -->
                   <slot
                     v-if="hasColumnSlot(cell.column.id)"
@@ -399,7 +399,7 @@ watch(totalPages, maxPage => {
       :total="resolvedTotal"
       :sibling-count="1"
       :show-edges="true"
-      class="flex justify-between"
+      class="flex justify-between px-2"
     >
       <slot name="footer-start" :table="resolvedTable">
         <div class="text-muted-foreground text-sm">共 {{ total }} 条数据</div>

@@ -1,4 +1,6 @@
-import * as v from '.';
+import * as v from 'valibot';
+
+import { dateRange, emptyable, nonce, pageQuery, remark } from './common';
 
 /**
  * 库存变动类型。
@@ -39,15 +41,12 @@ const NonZeroIntegerSchema = v.pipe(
  *
  * 用于按商品、库存变动类型、时间范围分页查询库存流水。
  */
-export const StockMovementPageQuerySchema = v.intersect([
-  v.pageQuery,
-  v.object({
-    type: v.optional(StockMovementTypeSchema),
-    productId: v.optional(v.pipe(v.string('请输入商品 ID'), v.description('商品 ID'))),
-    startTime: v.optional(v.emptyable(v.dateTimeLocal)),
-    endTime: v.optional(v.emptyable(v.dateTimeLocal)),
-  }),
-]);
+export const StockMovementPageQuerySchema = v.object({
+  type: v.optional(StockMovementTypeSchema),
+  productId: v.optional(v.pipe(v.string('请输入商品 ID'), v.description('商品 ID'))),
+  ...dateRange.entries,
+  ...pageQuery.entries,
+});
 
 export type StockMovementPageQuery = v.InferOutput<typeof StockMovementPageQuerySchema>;
 
@@ -57,9 +56,9 @@ export type StockMovementPageQuery = v.InferOutput<typeof StockMovementPageQuery
  * 用于管理员手动调整商品库存。
  */
 export const StockAdjustmentSchema = v.object({
-  nonce: v.nonce,
+  nonce: nonce,
   delta: NonZeroIntegerSchema,
-  remark: v.optional(v.emptyable(v.remark)),
+  remark: v.optional(emptyable(remark)),
 });
 
 export type StockAdjustmentBody = v.InferOutput<typeof StockAdjustmentSchema>;

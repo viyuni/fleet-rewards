@@ -1,6 +1,5 @@
 import type { CreateRewardRuleBody, UpdateRewardRuleBody } from '@internal/shared/reward';
 
-import { parseDate } from '#db/helper';
 import type { InsertRewardRule, UpdateRewardRule } from '#db/schema';
 import { PointTypeUseCase } from '#modules/point';
 
@@ -34,11 +33,11 @@ export class RewardRuleUseCase {
       throw new RewardRuleNameExistsError();
     }
 
-    const { endTime, startTime, ...data } = ruleData;
+    const { endAt, startAt, ...data } = ruleData;
     const createData: InsertRewardRule = {
       ...data,
-      endTime: parseDate(endTime),
-      startTime: parseDate(startTime),
+      endAt,
+      startAt,
     };
 
     const rule = await this.deps.rewardRuleRepo.create(createData);
@@ -57,19 +56,18 @@ export class RewardRuleUseCase {
       await this.deps.pointTypeUseCase.getAvailableById(ruleData.pointTypeId);
     }
 
-    const startTime = ruleData.startTime === undefined ? undefined : parseDate(ruleData.startTime);
-    const endTime = ruleData.endTime === undefined ? undefined : parseDate(ruleData.endTime);
+    const { startAt, endAt } = ruleData;
 
     RewardRulePolicy.assertValidTimeRange({
-      startTime: startTime === undefined ? current.startTime : startTime,
-      endTime: endTime === undefined ? current.endTime : endTime,
+      startAt: startAt === undefined ? current.startAt : startAt,
+      endAt: endAt === undefined ? current.endAt : endAt,
     });
 
-    const { endTime: _endTime, startTime: _startTime, ...data } = ruleData;
+    const { endAt: _endAt, startAt: _startAt, ...data } = ruleData;
     const updateData: UpdateRewardRule = {
       ...data,
-      endTime,
-      startTime,
+      endAt,
+      startAt,
     };
 
     const rule = await this.deps.rewardRuleRepo.update(rewardRuleId, updateData);

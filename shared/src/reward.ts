@@ -1,4 +1,6 @@
-import * as v from '.';
+import * as v from 'valibot';
+
+import { dateRange, emptyable, keyword, pageQuery } from './common';
 
 /**
  * 积分奖励规则 ID Params Schema。
@@ -18,17 +20,14 @@ export const BiliEventIdParamsSchema = v.object({
 
 export type BiliEventIdParams = v.InferOutput<typeof BiliEventIdParamsSchema>;
 
-export const BiliEventPageQuerySchema = v.intersect([
-  v.pageQuery,
-  v.object({
-    keyword: v.optional(v.keyword),
-    startTime: v.optional(v.dateTimeLocal),
-    endTime: v.optional(v.dateTimeLocal),
-    status: v.optional(
-      v.picklist(['processing', 'succeeded', 'failed', 'ignored'], '请选择有效的事件状态'),
-    ),
-  }),
-]);
+export const BiliEventPageQuerySchema = v.object({
+  keyword: v.optional(keyword),
+  status: v.optional(
+    v.picklist(['processing', 'succeeded', 'failed', 'ignored'], '请选择有效的事件状态'),
+  ),
+  ...dateRange.entries,
+  ...pageQuery.entries,
+});
 
 export type BiliEventPageQuery = v.InferOutput<typeof BiliEventPageQuerySchema>;
 
@@ -113,7 +112,7 @@ export type RewardRuleCondition = v.InferOutput<typeof RewardRuleConditionSchema
  */
 export const CreateRewardRuleSchema = v.object({
   name: RewardRuleNameSchema,
-  description: v.optional(v.emptyable(RewardRuleDescriptionSchema)),
+  description: v.optional(emptyable(RewardRuleDescriptionSchema)),
 
   conditions: RewardRuleConditionSchema,
 
@@ -126,10 +125,7 @@ export const CreateRewardRuleSchema = v.object({
   ),
 
   enabled: v.optional(v.pipe(v.boolean('请选择是否启用'), v.description('是否启用'))),
-  group: v.optional(v.emptyable(RewardRuleGroupSchema)),
-
-  startTime: v.optional(v.emptyable(v.dateTimeLocal)),
-  endTime: v.optional(v.emptyable(v.dateTimeLocal)),
+  group: v.optional(emptyable(RewardRuleGroupSchema)),
 
   priority: v.optional(
     v.pipe(
@@ -138,6 +134,7 @@ export const CreateRewardRuleSchema = v.object({
       v.description('优先级，数字越小优先级越高'),
     ),
   ),
+  ...dateRange.entries,
 });
 
 export type CreateRewardRuleBody = v.InferOutput<typeof CreateRewardRuleSchema>;
@@ -147,7 +144,7 @@ export type CreateRewardRuleBody = v.InferOutput<typeof CreateRewardRuleSchema>;
  */
 export const UpdateRewardRuleSchema = v.object({
   name: v.optional(RewardRuleNameSchema),
-  description: v.nullish(v.emptyable(RewardRuleDescriptionSchema)),
+  description: v.nullish(emptyable(RewardRuleDescriptionSchema)),
 
   conditions: v.optional(RewardRuleConditionSchema),
 
@@ -162,10 +159,7 @@ export const UpdateRewardRuleSchema = v.object({
   ),
 
   enabled: v.optional(v.pipe(v.boolean('请选择是否启用'), v.description('是否启用'))),
-  group: v.nullish(v.emptyable(RewardRuleGroupSchema)),
-
-  startTime: v.nullish(v.emptyable(v.dateTimeLocal)),
-  endTime: v.nullish(v.emptyable(v.dateTimeLocal)),
+  group: v.nullish(emptyable(RewardRuleGroupSchema)),
 
   priority: v.optional(
     v.pipe(
@@ -174,6 +168,7 @@ export const UpdateRewardRuleSchema = v.object({
       v.description('优先级，数字越小优先级越高'),
     ),
   ),
+  ...dateRange.entries,
 });
 
 export type UpdateRewardRuleInput = v.InferInput<typeof UpdateRewardRuleSchema>;

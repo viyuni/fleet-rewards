@@ -204,10 +204,10 @@ export class ProductRepository {
         status: 'active',
         AND: [
           {
-            OR: [{ startTime: { isNull: true } }, { startTime: { lte: now } }],
+            OR: [{ startAt: { isNull: true } }, { startAt: { lte: now } }],
           },
           {
-            OR: [{ endTime: { isNull: true } }, { endTime: { gt: now } }],
+            OR: [{ endAt: { isNull: true } }, { endAt: { gt: now } }],
           },
         ],
       })
@@ -225,8 +225,8 @@ export class ProductRepository {
             price: true,
             stock: true,
             deliveryType: true,
-            startTime: true,
-            endTime: true,
+            startAt: true,
+            endAt: true,
           },
           with: {
             pointType: {

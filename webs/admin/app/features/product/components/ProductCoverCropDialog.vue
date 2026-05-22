@@ -10,8 +10,8 @@ export type ProductCoverCropResult = {
 
 const props = withDefaults(
   defineProps<{
+    'aria-invalid'?: boolean;
     currentCoverUrl?: string;
-    invalid?: boolean;
     previewSize?: number;
   }>(),
   {
@@ -26,7 +26,7 @@ const emit = defineEmits<{
 }>();
 
 const open = defineModel<boolean>('open', { default: false });
-const file = defineModel<File | undefined>('file');
+const file = defineModel<File | undefined>();
 const inputKey = ref(0);
 const cropper = ref<{
   exportImage: () => Promise<ImageCropperResult>;
@@ -141,7 +141,7 @@ onBeforeUnmount(() => {
   <label
     class="group hover:border-primary hover:bg-accent/50 flex min-h-36 cursor-pointer items-center gap-4 rounded-md border border-dashed p-4 transition-colors"
     :class="[
-      invalid ? 'border-destructive' : undefined,
+      props['aria-invalid'] ? 'border-destructive' : undefined,
       isDragging ? 'border-primary bg-accent/60' : undefined,
     ]"
     @dragenter.prevent="isDragging = true"
@@ -152,7 +152,7 @@ onBeforeUnmount(() => {
     <input
       :key="inputKey"
       class="sr-only"
-      :aria-invalid="invalid"
+      :aria-invalid="props['aria-invalid']"
       type="file"
       accept="image/jpeg,image/png,image/webp"
       @blur="emit('blur', $event)"

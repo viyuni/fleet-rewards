@@ -47,8 +47,8 @@ const {
   query,
 } = useDebouncedPageQuery<BiliEventPageQuery>({
   status: undefined,
-  startTime: undefined,
-  endTime: undefined,
+  startAt: undefined,
+  endAt: undefined,
 });
 
 const { items: events, meta } = usePageQuery(() => biliGuardEventPageQuery(query.value));

@@ -1,7 +1,7 @@
 {
   "version": "8",
   "dialect": "postgres",
-  "id": "9f5f38c3-bc86-49ed-8a9e-035964ea65ca",
+  "id": "c1eaf08f-00b9-4e1e-856c-a175a1e310bf",
   "prevIds": [
     "00000000-0000-0000-0000-000000000000"
   ],
@@ -1071,7 +1071,7 @@
       "default": null,
       "generated": null,
       "identity": null,
-      "name": "start_time",
+      "name": "start_at",
       "entityType": "columns",
       "schema": "public",
       "table": "point_conversion_rules"
@@ -1084,7 +1084,7 @@
       "default": null,
       "generated": null,
       "identity": null,
-      "name": "end_time",
+      "name": "end_at",
       "entityType": "columns",
       "schema": "public",
       "table": "point_conversion_rules"
@@ -1617,7 +1617,7 @@
       "default": null,
       "generated": null,
       "identity": null,
-      "name": "start_time",
+      "name": "start_at",
       "entityType": "columns",
       "schema": "public",
       "table": "products"
@@ -1630,7 +1630,7 @@
       "default": null,
       "generated": null,
       "identity": null,
-      "name": "end_time",
+      "name": "end_at",
       "entityType": "columns",
       "schema": "public",
       "table": "products"
@@ -2137,7 +2137,7 @@
       "default": null,
       "generated": null,
       "identity": null,
-      "name": "start_time",
+      "name": "start_at",
       "entityType": "columns",
       "schema": "public",
       "table": "reward_rules"
@@ -2150,7 +2150,7 @@
       "default": null,
       "generated": null,
       "identity": null,
-      "name": "end_time",
+      "name": "end_at",
       "entityType": "columns",
       "schema": "public",
       "table": "reward_rules"
@@ -2806,14 +2806,14 @@
       "nameExplicit": true,
       "columns": [
         {
-          "value": "start_time",
+          "value": "start_at",
           "isExpression": false,
           "asc": true,
           "nullsFirst": false,
           "opclass": null
         },
         {
-          "value": "end_time",
+          "value": "end_at",
           "isExpression": false,
           "asc": true,
           "nullsFirst": false,
@@ -3219,14 +3219,14 @@
       "nameExplicit": true,
       "columns": [
         {
-          "value": "start_time",
+          "value": "start_at",
           "isExpression": false,
           "asc": true,
           "nullsFirst": false,
           "opclass": null
         },
         {
-          "value": "end_time",
+          "value": "end_at",
           "isExpression": false,
           "asc": true,
           "nullsFirst": false,
@@ -3744,14 +3744,14 @@
       "nameExplicit": true,
       "columns": [
         {
-          "value": "start_time",
+          "value": "start_at",
           "isExpression": false,
           "asc": true,
           "nullsFirst": false,
           "opclass": null
         },
         {
-          "value": "end_time",
+          "value": "end_at",
           "isExpression": false,
           "asc": true,
           "nullsFirst": false,

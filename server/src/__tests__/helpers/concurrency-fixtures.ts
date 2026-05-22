@@ -117,8 +117,8 @@ export async function seedProduct(input: {
   name: string;
   pointTypeId: string;
   price: number;
-  endTime?: string;
-  startTime?: string;
+  endAt?: Date;
+  startAt?: Date;
   stock: number;
 }) {
   const { productUseCase } = createDeps();

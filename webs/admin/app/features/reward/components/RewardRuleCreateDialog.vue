@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { CreateRewardRuleSchema, type CreateRewardRuleBody } from '@internal/shared/reward';
+import { CreateRewardRuleSchema } from '@internal/shared/reward';
 import { Button } from '@web/ui/components/ui/button';
 import { FormFieldItem, usePopoverForm } from '@web/ui/components/ui/form';
 import { Loader2 } from 'lucide-vue-next';
@@ -12,30 +12,24 @@ const open = defineModel<boolean>('open', { default: false });
 
 const createRewardRuleMutation = useCreateRewardRule();
 
-type RewardRuleFormValues = CreateRewardRuleBody;
-
-function createDefaultValues(): RewardRuleFormValues {
-  return {
+const { canSubmit, handleSubmit, isLoading } = usePopoverForm({
+  schema: CreateRewardRuleSchema,
+  open,
+  initialValues: () => ({
     name: '',
     description: undefined,
     conditions: {
-      type: 'biliGuard',
+      type: 'biliGuard' as const,
       guardTypes: undefined,
     },
     pointTypeId: '',
     points: 1,
     enabled: false,
     group: undefined,
-    startTime: '',
-    endTime: '',
+    startAt: undefined,
+    endAt: undefined,
     priority: 0,
-  };
-}
-
-const { canSubmit, handleSubmit, isLoading } = usePopoverForm({
-  schema: CreateRewardRuleSchema,
-  open,
-  initialValues: createDefaultValues,
+  }),
   mutation: createRewardRuleMutation,
 });
 </script>
@@ -78,18 +72,18 @@ const { canSubmit, handleSubmit, isLoading } = usePopoverForm({
           <Switch v-bind="componentField" />
         </FormFieldItem>
 
-        <FormFieldItem v-slot="{ componentField }" name="startTime" label="开始时间">
-          <Input v-bind="componentField" type="datetime-local" step="1" />
+        <FormFieldItem v-slot="{ componentField }" name="startAt" label="开始时间">
+          <DateTimeLocalInput v-bind="componentField" type="datetime-local" step="1" />
         </FormFieldItem>
 
-        <FormFieldItem v-slot="{ componentField }" name="endTime" label="结束时间">
-          <Input v-bind="componentField" type="datetime-local" step="1" />
+        <FormFieldItem v-slot="{ componentField }" name="endAt" label="结束时间">
+          <DateTimeLocalInput v-bind="componentField" type="datetime-local" step="1" />
         </FormFieldItem>
 
         <FormFieldItem
           v-slot="{ field }"
           class="sm:col-span-2"
-          name="conditions"
+          name="conditions.guardTypes"
           label="大航海类型"
           description="不选择时不会触发奖励。"
         >

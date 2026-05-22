@@ -1,7 +1,7 @@
 import type { StockMovementPageQuery } from '@internal/shared/stock';
 
 import type { DbExecutor } from '#db';
-import { parseDate, QueryPageBuilder } from '#db/helper';
+import { QueryPageBuilder } from '#db/helper';
 import { productStockMovements, type InsertProductStockMovement } from '#db/schema';
 
 export class StockMovementRepository {
@@ -15,8 +15,8 @@ export class StockMovementRepository {
         productId: query.productId,
         type: query.type,
         createdAt: {
-          gte: parseDate(query.startTime) ?? undefined,
-          lte: parseDate(query.endTime) ?? undefined,
+          gte: query.startAt ?? undefined,
+          lte: query.endAt ?? undefined,
         },
       })
       .query((findMany, { where, limit, offset }) =>

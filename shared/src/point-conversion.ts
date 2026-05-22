@@ -1,4 +1,6 @@
-import * as v from '.';
+import * as v from 'valibot';
+
+import { dateRange, emptyable, nonce } from './common';
 
 /**
  * 积分转换规则 ID Params Schema。
@@ -45,8 +47,8 @@ const ConversionRuleRemarkSchema = v.pipe(
  */
 export const CreatePointConversionRuleSchema = v.object({
   name: ConversionRuleNameSchema,
-  description: v.optional(v.emptyable(ConversionRuleDescriptionSchema)),
-  remark: v.optional(v.emptyable(ConversionRuleRemarkSchema)),
+  description: v.optional(emptyable(ConversionRuleDescriptionSchema)),
+  remark: v.optional(emptyable(ConversionRuleRemarkSchema)),
 
   fromPointTypeId: v.pipe(v.string('请输入来源积分类型 ID'), v.description('来源积分类型 ID')),
   toPointTypeId: v.pipe(v.string('请输入目标积分类型 ID'), v.description('目标积分类型 ID')),
@@ -75,10 +77,8 @@ export const CreatePointConversionRuleSchema = v.object({
     ),
   ),
 
-  startTime: v.optional(v.emptyable(v.dateTimeLocal)),
-  endTime: v.optional(v.emptyable(v.dateTimeLocal)),
-
   enabled: v.optional(v.pipe(v.boolean('请选择是否启用'), v.description('是否启用'))),
+  ...dateRange.entries,
 });
 
 export type CreatePointConversionRuleBody = v.InferOutput<typeof CreatePointConversionRuleSchema>;
@@ -88,8 +88,8 @@ export type CreatePointConversionRuleBody = v.InferOutput<typeof CreatePointConv
  */
 export const UpdatePointConversionRuleSchema = v.object({
   name: v.optional(ConversionRuleNameSchema),
-  description: v.nullish(v.emptyable(ConversionRuleDescriptionSchema)),
-  remark: v.nullish(v.emptyable(ConversionRuleRemarkSchema)),
+  description: v.nullish(emptyable(ConversionRuleDescriptionSchema)),
+  remark: v.nullish(emptyable(ConversionRuleRemarkSchema)),
 
   fromPointTypeId: v.optional(
     v.pipe(v.string('请输入来源积分类型 ID'), v.description('来源积分类型 ID')),
@@ -126,8 +126,7 @@ export const UpdatePointConversionRuleSchema = v.object({
 
   enabled: v.optional(v.pipe(v.boolean('请选择是否启用'), v.description('是否启用'))),
 
-  startTime: v.nullish(v.dateTimeLocal),
-  endTime: v.nullish(v.dateTimeLocal),
+  ...dateRange.entries,
 });
 
 export type UpdatePointConversionRuleBody = v.InferOutput<typeof UpdatePointConversionRuleSchema>;
@@ -138,7 +137,7 @@ export type UpdatePointConversionRuleBody = v.InferOutput<typeof UpdatePointConv
  * 用于用户按转换规则兑换积分。
  */
 export const ConvertPointSchema = v.object({
-  nonce: v.nonce,
+  nonce: nonce,
   ruleId: v.pipe(v.string('请输入积分转换规则 ID'), v.description('积分转换规则 ID')),
   userId: v.pipe(v.string('请输入用户 ID'), v.description('用户 ID')),
   fromAmount: v.pipe(
@@ -147,7 +146,7 @@ export const ConvertPointSchema = v.object({
     v.minValue(1, '来源积分数量必须大于 0'),
     v.description('来源积分数量'),
   ),
-  remark: v.optional(v.emptyable(ConversionRuleRemarkSchema)),
+  remark: v.optional(emptyable(ConversionRuleRemarkSchema)),
 });
 
 export type ConvertPointBody = v.InferOutput<typeof ConvertPointSchema>;

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { CreateProductSchema, ProductDeliveryType, ProductStatus } from '@internal/shared/product';
 import { Button } from '@web/ui/components/ui/button';
-import { FormFieldItem, type FormInput, usePopoverForm } from '@web/ui/components/ui/form';
+import { FormFieldItem, usePopoverForm } from '@web/ui/components/ui/form';
 import { Loader2 } from 'lucide-vue-next';
 
 import PointTypeSelect from '../../point/components/PointTypeSelect.vue';
@@ -20,10 +20,14 @@ const {
 const imageBaseUrl = computed(() => apiBaseUrl.replace(/\/$/, ''));
 const currentCoverUrl = computed(() => undefined);
 
-type ProductCreateFormValues = FormInput<typeof CreateProductSchema>;
+function resetSelectedCover() {
+  productCoverCropDialog.value?.reset();
+}
 
-function createDefaultValues(): ProductCreateFormValues {
-  return {
+const { canSubmit, handleSubmit, isLoading, onSubmitSuccess } = usePopoverForm({
+  schema: CreateProductSchema,
+  open,
+  initialValues: () => ({
     name: '',
     description: undefined,
     cover: undefined,
@@ -33,22 +37,12 @@ function createDefaultValues(): ProductCreateFormValues {
     status: ProductStatus.Disabled,
     stock: 0,
     deliveryType: ProductDeliveryType.Manual,
-    startTime: undefined,
-    endTime: undefined,
+    startAt: undefined,
+    endAt: undefined,
     allowCancel: false,
     sort: 0,
     metadata: undefined,
-  };
-}
-
-function resetSelectedCover() {
-  productCoverCropDialog.value?.reset();
-}
-
-const { canSubmit, handleSubmit, isLoading, onSubmitSuccess } = usePopoverForm({
-  schema: CreateProductSchema,
-  open,
-  initialValues: createDefaultValues,
+  }),
   mutation: createProductMutation,
 });
 
@@ -102,12 +96,12 @@ watch(open, isOpen => {
           </NativeSelect>
         </FormFieldItem>
 
-        <FormFieldItem v-slot="{ componentField }" name="startTime" label="开始时间">
-          <Input v-bind="componentField" type="datetime-local" step="1" />
+        <FormFieldItem v-slot="{ componentField }" name="startAt" label="开始时间">
+          <DateTimeLocalInput v-bind="componentField" type="datetime-local" step="1" />
         </FormFieldItem>
 
-        <FormFieldItem v-slot="{ componentField }" name="endTime" label="结束时间">
-          <Input v-bind="componentField" type="datetime-local" step="1" />
+        <FormFieldItem v-slot="{ componentField }" name="endAt" label="结束时间">
+          <DateTimeLocalInput v-bind="componentField" type="datetime-local" step="1" />
         </FormFieldItem>
 
         <FormFieldItem v-slot="{ componentField }" name="allowCancel" label="允许取消订单" required>
@@ -122,19 +116,16 @@ watch(open, isOpen => {
         </FormFieldItem>
 
         <FormFieldItem
-          v-slot="{ field, invalid }"
+          v-slot="{ componentField }"
           class="sm:col-span-2 lg:col-span-3"
           name="cover"
           label="封面"
         >
           <ProductCoverCropDialog
             ref="productCoverCropDialog"
-            :file="field.value"
+            v-bind="componentField"
             :current-cover-url="currentCoverUrl"
-            :invalid="invalid"
             :preview-size="coverCropPreviewSize"
-            @blur="field.onBlur($event)"
-            @update:file="field.onChange"
           />
         </FormFieldItem>
 

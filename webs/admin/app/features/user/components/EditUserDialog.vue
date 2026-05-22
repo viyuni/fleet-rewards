@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { UserUpdateSchema, type UpdateUserBody } from '@internal/shared/user';
+import { UserUpdateSchema } from '@internal/shared/user';
 import { Button } from '@web/ui/components/ui/button';
 import { usePopoverForm } from '@web/ui/components/ui/form';
 import { Loader2 } from 'lucide-vue-next';
@@ -16,20 +16,16 @@ const open = defineModel<boolean>('open', { default: true });
 
 const updateUserMutation = useUpdateUser();
 
-function createDefaultValues(user: User): UpdateUserBody {
-  return {
-    username: user.username,
-    email: user.email ?? undefined,
-    phone: user.phone ?? undefined,
-    address: user.address ?? undefined,
-  };
-}
-
 const { canSubmit, handleSubmit, isLoading } = usePopoverForm({
   schema: UserUpdateSchema,
   open,
   mutation: updateUserMutation,
-  initialValues: () => createDefaultValues(props.user),
+  initialValues: () => ({
+    username: props.user.username,
+    email: props.user.email ?? undefined,
+    phone: props.user.phone ?? undefined,
+    address: props.user.address ?? undefined,
+  }),
   transform(body) {
     return {
       userId: props.user.id,

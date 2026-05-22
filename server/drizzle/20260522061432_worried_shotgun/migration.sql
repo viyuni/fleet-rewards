@@ -90,8 +90,8 @@ CREATE TABLE "point_conversion_rules" (
 	"min_convert_amount" integer,
 	"max_convert_amount" integer,
 	"enabled" boolean DEFAULT true NOT NULL,
-	"start_time" timestamp with time zone,
-	"end_time" timestamp with time zone,
+	"start_at" timestamp with time zone,
+	"end_at" timestamp with time zone,
 	"metadata" jsonb,
 	"deleted_at" timestamp with time zone,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
@@ -141,8 +141,8 @@ CREATE TABLE "products" (
 	"status" "reward_product_status" DEFAULT 'disabled'::"reward_product_status" NOT NULL,
 	"stock" integer DEFAULT 0 NOT NULL,
 	"delivery_type" "product_delivery_type" DEFAULT 'manual'::"product_delivery_type" NOT NULL,
-	"start_time" timestamp with time zone,
-	"end_time" timestamp with time zone,
+	"start_at" timestamp with time zone,
+	"end_at" timestamp with time zone,
 	"sort" integer DEFAULT 0 NOT NULL,
 	"metadata" jsonb,
 	"deleted_at" timestamp with time zone,
@@ -190,8 +190,8 @@ CREATE TABLE "reward_rules" (
 	"points" integer NOT NULL,
 	"enabled" boolean DEFAULT false NOT NULL,
 	"group" text,
-	"start_time" timestamp with time zone,
-	"end_time" timestamp with time zone,
+	"start_at" timestamp with time zone,
+	"end_at" timestamp with time zone,
 	"priority" integer DEFAULT 0 NOT NULL,
 	"deleted_at" timestamp with time zone,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
@@ -224,7 +224,7 @@ CREATE UNIQUE INDEX "point_conversion_rules_from_to_unique_idx" ON "point_conver
 CREATE INDEX "point_conversion_rules_from_point_type_id_idx" ON "point_conversion_rules" ("from_point_type_id");--> statement-breakpoint
 CREATE INDEX "point_conversion_rules_to_point_type_id_idx" ON "point_conversion_rules" ("to_point_type_id");--> statement-breakpoint
 CREATE INDEX "point_conversion_rules_enabled_idx" ON "point_conversion_rules" ("enabled");--> statement-breakpoint
-CREATE INDEX "point_conversion_rules_time_range_idx" ON "point_conversion_rules" ("start_time","end_time");--> statement-breakpoint
+CREATE INDEX "point_conversion_rules_time_range_idx" ON "point_conversion_rules" ("start_at","end_at");--> statement-breakpoint
 CREATE UNIQUE INDEX "point_transactions_account_id_idempotency_key_unique" ON "point_transactions" ("account_id","idempotency_key");--> statement-breakpoint
 CREATE UNIQUE INDEX "point_transactions_reversal_of_transaction_id_unique" ON "point_transactions" ("reversal_of_transaction_id");--> statement-breakpoint
 CREATE INDEX "point_transactions_user_id_idx" ON "point_transactions" ("user_id");--> statement-breakpoint
@@ -241,7 +241,7 @@ CREATE INDEX "point_types_sort_idx" ON "point_types" ("sort");--> statement-brea
 CREATE UNIQUE INDEX "products_name_active_unique" ON "products" ("name") WHERE ("deleted_at" is null);--> statement-breakpoint
 CREATE INDEX "products_point_type_id_idx" ON "products" ("point_type_id");--> statement-breakpoint
 CREATE INDEX "products_status_idx" ON "products" ("status");--> statement-breakpoint
-CREATE INDEX "products_time_range_idx" ON "products" ("start_time","end_time");--> statement-breakpoint
+CREATE INDEX "products_time_range_idx" ON "products" ("start_at","end_at");--> statement-breakpoint
 CREATE INDEX "products_sort_idx" ON "products" ("sort");--> statement-breakpoint
 CREATE INDEX "products_deleted_at_idx" ON "products" ("deleted_at");--> statement-breakpoint
 CREATE INDEX "products_active_list_idx" ON "products" ("status","sort","created_at") WHERE ("deleted_at" is null);--> statement-breakpoint
@@ -261,7 +261,7 @@ CREATE UNIQUE INDEX "reward_rules_active_unique" ON "reward_rules" ("name") WHER
 CREATE INDEX "reward_rules_point_type_id_idx" ON "reward_rules" ("point_type_id");--> statement-breakpoint
 CREATE INDEX "reward_rules_enabled_idx" ON "reward_rules" ("enabled");--> statement-breakpoint
 CREATE INDEX "reward_rules_group_idx" ON "reward_rules" ("group");--> statement-breakpoint
-CREATE INDEX "reward_rules_time_range_idx" ON "reward_rules" ("start_time","end_time");--> statement-breakpoint
+CREATE INDEX "reward_rules_time_range_idx" ON "reward_rules" ("start_at","end_at");--> statement-breakpoint
 CREATE INDEX "reward_rules_priority_idx" ON "reward_rules" ("priority");--> statement-breakpoint
 CREATE INDEX "reward_rules_enabled_priority_created_at_idx" ON "reward_rules" ("enabled","priority","created_at");--> statement-breakpoint
 CREATE INDEX "reward_rules_priority_created_at_idx" ON "reward_rules" ("priority","created_at");--> statement-breakpoint

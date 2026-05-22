@@ -1,4 +1,6 @@
-import * as v from '.';
+import * as v from 'valibot';
+
+import { bilibiliUid, emptyable, pageQuery, password, username } from './common';
 
 /**
  * 管理员角色 Schema
@@ -13,7 +15,7 @@ export type AdminRole = v.InferOutput<typeof AdminRoleSchema>;
 /**
  * 管理员列表分页查询 Query Schema
  */
-export const AdminPageQuerySchema = v.pageQuery;
+export const AdminPageQuerySchema = pageQuery;
 
 export type AdminPageQuery = v.InferOutput<typeof AdminPageQuerySchema>;
 
@@ -28,11 +30,11 @@ export const AdminIdParamsSchema = v.object({
  * 创建管理员请求参数 Schema
  */
 export const AdminCreateSchema = v.object({
-  uid: v.bilibiliUid,
-  username: v.username,
-  password: v.password,
+  uid: bilibiliUid,
+  username: username,
+  password: password,
   remark: v.optional(
-    v.emptyable(
+    emptyable(
       v.pipe(
         v.string('请输入备注'),
         v.maxLength(500, '备注不能超过 500 个字符'),
@@ -48,9 +50,9 @@ export type AdminCreateBody = v.InferOutput<typeof AdminCreateSchema>;
  * 更新管理员请求参数 Schema
  */
 export const SuperAdminUpdateSchema = v.object({
-  username: v.optional(v.username),
+  username: v.optional(username),
   remark: v.nullish(
-    v.emptyable(
+    emptyable(
       v.pipe(
         v.string('请输入备注'),
         v.maxLength(500, '备注不能超过 500 个字符'),
@@ -66,14 +68,14 @@ export type SuperAdminUpdateBody = v.InferOutput<typeof SuperAdminUpdateSchema>;
  * 更新管理员请求参数 Schema
  */
 export const AdminUpdateSchema = v.object({
-  username: v.optional(v.username),
+  username: v.optional(username),
 });
 
 export type AdminUpdateBody = v.InferOutput<typeof AdminUpdateSchema>;
 
 export const AdminUpdatePasswordSchema = v.object({
-  oldPassword: v.password,
-  newPassword: v.password,
+  oldPassword: password,
+  newPassword: password,
 });
 
 export type AdminUpdatePasswordBody = v.InferOutput<typeof AdminUpdatePasswordSchema>;
@@ -85,8 +87,8 @@ export type AdminUpdatePasswordBody = v.InferOutput<typeof AdminUpdatePasswordSc
  * 管理员登录请求参数 Schema
  */
 export const AdminLoginSchema = v.object({
-  uid: v.bilibiliUid,
-  password: v.password,
+  uid: bilibiliUid,
+  password: password,
 });
 
 export type AdminLoginBody = v.InferOutput<typeof AdminLoginSchema>;

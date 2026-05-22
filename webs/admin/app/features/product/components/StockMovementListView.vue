@@ -31,8 +31,8 @@ const {
 } = useDebouncedPageQuery<StockMovementPageQuery>({
   type: undefined,
   productId: undefined,
-  startTime: undefined,
-  endTime: undefined,
+  startAt: undefined,
+  endAt: undefined,
 });
 
 const { items: movements, meta } = usePageQuery(() => stockMovementPageQuery(query.value));
@@ -63,7 +63,7 @@ const { items: movements, meta } = usePageQuery(() => stockMovementPageQuery(que
     </template>
 
     <template #delta="{ value }">
-      <span :class="Number(value) >= 0 ? 'text-emerald-600' : 'text-destructive'">{{ value }}</span>
+      <SignedAmount :value="value" />
     </template>
 
     <template #createdAt="{ value }">

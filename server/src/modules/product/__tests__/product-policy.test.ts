@@ -17,8 +17,8 @@ function product(input: Partial<Product> = {}): Product {
     status: 'active',
     stock: 1,
     deliveryType: 'manual',
-    startTime: null,
-    endTime: null,
+    startAt: null,
+    endAt: null,
     sort: 0,
     metadata: null,
     deletedAt: null,
@@ -47,18 +47,18 @@ describe('商品策略', () => {
     expect(
       ProductPolicy.isAvailable(
         product({
-          startTime: new Date('2026-05-19T11:00:00.000Z'),
-          endTime: new Date('2026-05-19T13:00:00.000Z'),
+          startAt: new Date('2026-05-19T11:00:00.000Z'),
+          endAt: new Date('2026-05-19T13:00:00.000Z'),
         }),
         now,
       ),
     ).toBe(true);
 
     expect(
-      ProductPolicy.isAvailable(product({ startTime: new Date('2026-05-19T13:00:00.000Z') }), now),
+      ProductPolicy.isAvailable(product({ startAt: new Date('2026-05-19T13:00:00.000Z') }), now),
     ).toBe(false);
     expect(
-      ProductPolicy.isAvailable(product({ endTime: new Date('2026-05-19T12:00:00.000Z') }), now),
+      ProductPolicy.isAvailable(product({ endAt: new Date('2026-05-19T12:00:00.000Z') }), now),
     ).toBe(false);
   });
 

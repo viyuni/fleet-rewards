@@ -119,6 +119,7 @@ declare module 'vue' {
     FormMessage: typeof import('@web/ui/components/ui/form')['FormMessage']
     ImageCropper: typeof import('@web/ui/components/ui/image-cropper')['ImageCropper']
     Input: typeof import('@web/ui/components/ui/input')['Input']
+    DateTimeLocalInput: typeof import('@web/ui/components/ui/input')['DateTimeLocalInput']
     InputGroup: typeof import('@web/ui/components/ui/input-group')['InputGroup']
     InputGroupAddon: typeof import('@web/ui/components/ui/input-group')['InputGroupAddon']
     InputGroupButton: typeof import('@web/ui/components/ui/input-group')['InputGroupButton']

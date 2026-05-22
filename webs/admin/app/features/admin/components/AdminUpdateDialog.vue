@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { SuperAdminUpdateSchema, type SuperAdminUpdateBody } from '@internal/shared/admin';
+import { SuperAdminUpdateSchema } from '@internal/shared/admin';
 import { Button } from '@web/ui/components/ui/button';
 import { FormFieldItem, usePopoverForm } from '@web/ui/components/ui/form';
 import { Loader2 } from 'lucide-vue-next';
@@ -15,25 +15,19 @@ const open = defineModel<boolean>('open', { default: false });
 
 const updateAdminMutation = useUpdateAdmin();
 
-function createDefaultValues(admin: Admin): SuperAdminUpdateBody {
-  return {
-    username: admin.username,
-    remark: admin.remark ?? undefined,
-  };
-}
-
 const { canSubmit, handleSubmit, isLoading } = usePopoverForm({
   schema: SuperAdminUpdateSchema,
   open,
-  initialValues: () => createDefaultValues(props.admin),
-  mutation: {
-    isLoading: updateAdminMutation.isLoading,
-    mutateAsync(body) {
-      return updateAdminMutation.mutateAsync({
-        adminId: props.admin.id,
-        body,
-      });
-    },
+  initialValues: () => ({
+    username: props.admin.username,
+    remark: props.admin.remark ?? undefined,
+  }),
+  mutation: updateAdminMutation,
+  transform(body) {
+    return {
+      adminId: props.admin.id,
+      body,
+    };
   },
 });
 </script>

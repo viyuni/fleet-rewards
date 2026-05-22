@@ -37,8 +37,8 @@ const {
   type: undefined,
   pointTypeId: undefined,
   userId: undefined,
-  startTime: undefined,
-  endTime: undefined,
+  startAt: undefined,
+  endAt: undefined,
 });
 
 const { items: transactions, meta } = usePageQuery(() => pointTransactionPageQuery(query.value));
@@ -76,7 +76,7 @@ const { items: transactions, meta } = usePageQuery(() => pointTransactionPageQue
     </template>
 
     <template #delta="{ value }">
-      <span :class="value >= 0 ? 'text-emerald-600' : 'text-destructive'">{{ value }}</span>
+      <SignedAmount :value="value" />
     </template>
 
     <template #createdAt="{ value }">

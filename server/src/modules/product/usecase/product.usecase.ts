@@ -7,7 +7,6 @@ import type {
 import type { StockAdjustmentBody } from '@internal/shared/stock';
 
 import type { DbClient, DbTransaction } from '#db';
-import { parseDate } from '#db/helper';
 import type { InsertProduct, Product, UpdateProduct } from '#db/schema';
 import { ImageUseCase } from '#modules/image';
 import { PointTypeUseCase } from '#modules/point';
@@ -68,9 +67,8 @@ export class ProductUseCase {
     await this.deps.pointTypeUseCase.getAvailableById(productData.pointTypeId);
     ProductInputPolicy.assertPrice(productData.price);
     ProductInputPolicy.assertStock(productData.stock);
-    const startTime = parseDate(productData.startTime);
-    const endTime = parseDate(productData.endTime);
-    ProductInputPolicy.assertTimeRange(startTime, endTime);
+    const { startAt, endAt } = productData;
+    ProductInputPolicy.assertTimeRange(startAt, endAt);
 
     const exists = await this.deps.productRepo.findByName(productData.name);
 
@@ -78,12 +76,12 @@ export class ProductUseCase {
       throw new ProductNameExistsError();
     }
 
-    const { cover, endTime: _endTime, startTime: _startTime, ...data } = productData;
+    const { cover, endAt: _endAt, startAt: _startAt, ...data } = productData;
 
     const updateData: InsertProduct = {
       ...data,
-      endTime,
-      startTime,
+      endAt,
+      startAt,
     };
 
     if (cover) {
@@ -102,17 +100,15 @@ export class ProductUseCase {
   async update(productId: string, productData: UpdateProductBody) {
     ProductInputPolicy.assertPrice(productData.price);
     ProductInputPolicy.assertStock(productData.stock);
-    const startTime =
-      productData.startTime === undefined ? undefined : parseDate(productData.startTime);
-    const endTime = productData.endTime === undefined ? undefined : parseDate(productData.endTime);
-    ProductInputPolicy.assertTimeRange(startTime, endTime);
+    const { startAt, endAt } = productData;
+    ProductInputPolicy.assertTimeRange(startAt, endAt);
 
-    const { cover, endTime: _endTime, startTime: _startTime, ...data } = productData;
+    const { cover, endAt: _endAt, startAt: _startAt, ...data } = productData;
 
     const updateData: UpdateProduct = {
       ...data,
-      endTime,
-      startTime,
+      endAt,
+      startAt,
     };
 
     if (cover) {

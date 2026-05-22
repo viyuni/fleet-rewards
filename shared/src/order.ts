@@ -1,4 +1,6 @@
-import * as v from '.';
+import * as v from 'valibot';
+
+import { dateRange, emptyable, keyword, nonce, pageQuery } from './common';
 
 /**
  * 订单 ID Params Schema
@@ -27,16 +29,13 @@ export const OrderStatusSchema = v.pipe(
 /**
  * 订单查询参数 Schema
  */
-export const OrderPageQuerySchema = v.intersect([
-  v.pageQuery,
-  v.object({
-    keyword: v.optional(v.keyword),
-    status: v.optional(OrderStatusSchema),
-    userId: v.optional(v.pipe(v.string('请输入用户ID'), v.description('用户ID'))),
-    startTime: v.optional(v.dateTimeLocal),
-    endTime: v.optional(v.dateTimeLocal),
-  }),
-]);
+export const OrderPageQuerySchema = v.object({
+  keyword: v.optional(keyword),
+  status: v.optional(OrderStatusSchema),
+  userId: v.optional(v.pipe(v.string('请输入用户ID'), v.description('用户ID'))),
+  ...dateRange.entries,
+  ...pageQuery.entries,
+});
 
 export type OrderPageQuery = v.InferOutput<typeof OrderPageQuerySchema>;
 
@@ -44,10 +43,10 @@ export type OrderPageQuery = v.InferOutput<typeof OrderPageQuerySchema>;
  * 创建订单 Schema
  */
 export const CreateOrderSchema = v.object({
-  nonce: v.nonce,
+  nonce: nonce,
   productId: v.pipe(v.string('请输入用户ID'), v.description('用户ID')),
   remark: v.optional(
-    v.emptyable(
+    emptyable(
       v.pipe(
         v.string('请输入备注'),
         v.maxLength(500, '备注不能超过 500 个字符'),
@@ -64,7 +63,7 @@ export type CreateOrderBody = v.InferOutput<typeof CreateOrderSchema>;
  */
 export const RefundOrderSchema = v.object({
   reason: v.optional(
-    v.emptyable(
+    emptyable(
       v.pipe(
         v.string('请输入备注'),
         v.maxLength(100, '备注不能超过 100 个字符'),
@@ -81,7 +80,7 @@ export type RefundOrderBody = v.InferOutput<typeof RefundOrderSchema>;
  */
 export const UpdateOrderExpressSchema = v.object({
   expressCompany: v.optional(
-    v.emptyable(
+    emptyable(
       v.pipe(
         v.string('请输入快递公司'),
         v.trim(),
@@ -91,7 +90,7 @@ export const UpdateOrderExpressSchema = v.object({
     ),
   ),
   expressNo: v.optional(
-    v.emptyable(
+    emptyable(
       v.pipe(
         v.string('请输入快递单号'),
         v.trim(),

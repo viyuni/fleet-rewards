@@ -44,8 +44,8 @@ export class RewardRuleRepository {
         and(
           deletedAtIsNull(rewardRules),
           eq(rewardRules.enabled, true),
-          or(isNull(rewardRules.startTime), lte(rewardRules.startTime, now)),
-          or(isNull(rewardRules.endTime), gt(rewardRules.endTime, now)),
+          or(isNull(rewardRules.startAt), lte(rewardRules.startAt, now)),
+          or(isNull(rewardRules.endAt), gt(rewardRules.endAt, now)),
         ),
       )
       .orderBy(asc(rewardRules.priority), asc(rewardRules.createdAt));
@@ -122,7 +122,7 @@ export class RewardRuleRepository {
             enabled: true,
           },
           {
-            startTime: {
+            startAt: {
               isNull: true,
               or: [
                 {
@@ -130,7 +130,7 @@ export class RewardRuleRepository {
                 },
               ],
             },
-            endTime: {
+            endAt: {
               isNull: true,
               or: [
                 {

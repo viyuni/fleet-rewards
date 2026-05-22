@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { AdjustBalanceSchema, type AdjustBalanceBody } from '@internal/shared/point-account';
+import { AdjustBalanceSchema } from '@internal/shared/point-account';
 import { Button } from '@web/ui/components/ui/button';
 import { FormFieldItem, usePopoverForm } from '@web/ui/components/ui/form';
 import { Loader2 } from 'lucide-vue-next';
@@ -16,31 +16,22 @@ const open = defineModel<boolean>('open', { default: false });
 
 const adjustUserPointsMutation = useAdjustUserPoints();
 
-function createDefaultValues(userId: string): AdjustBalanceBody {
-  return {
-    userId,
+const { canSubmit, handleSubmit, isLoading, setFieldValue, values } = usePopoverForm({
+  schema: AdjustBalanceSchema,
+  open,
+  initialValues: () => ({
+    userId: props.user.id,
     pointTypeId: '',
     delta: 1,
     remark: '',
     nonce: crypto.randomUUID(),
-  };
-}
-
-const { canSubmit, handleSubmit, isLoading, setFieldValue, values } = usePopoverForm({
-  schema: AdjustBalanceSchema,
-  open,
-  initialValues: () => createDefaultValues(props.user.id),
-  mutation: {
-    isLoading: adjustUserPointsMutation.isLoading,
-    mutateAsync(values) {
-      return adjustUserPointsMutation.mutateAsync({
-        userId: values.userId,
-        pointTypeId: values.pointTypeId,
-        delta: values.delta,
-        remark: values.remark,
-        nonce: crypto.randomUUID(),
-      });
-    },
+  }),
+  mutation: adjustUserPointsMutation,
+  transform(values) {
+    return {
+      ...values,
+      nonce: crypto.randomUUID(),
+    };
   },
 });
 

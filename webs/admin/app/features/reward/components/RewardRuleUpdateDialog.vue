@@ -3,7 +3,6 @@ import {
   BiliGuardType,
   UpdateRewardRuleSchema,
   type RewardRuleCondition,
-  type UpdateRewardRuleBody,
 } from '@internal/shared/reward';
 import { Button } from '@web/ui/components/ui/button';
 import { FormFieldItem, usePopoverForm } from '@web/ui/components/ui/form';
@@ -22,8 +21,6 @@ const open = defineModel<boolean>('open', { default: false });
 
 const updateRewardRuleMutation = useUpdateRewardRule();
 
-type RewardRuleFormValues = UpdateRewardRuleBody;
-
 const biliGuardTypes = [BiliGuardType.Zongdu, BiliGuardType.Tidu, BiliGuardType.Jianzhang];
 
 function isBiliGuardType(value: unknown): value is BiliGuardType {
@@ -37,33 +34,29 @@ function toRewardRuleCondition(condition: RewardRule['conditions']): RewardRuleC
   };
 }
 
-function createDefaultValues(rule?: RewardRule): RewardRuleFormValues {
-  return {
-    name: rule?.name ?? '',
-    description: rule?.description ?? undefined,
-    conditions: rule ? toRewardRuleCondition(rule.conditions) : { type: 'biliGuard' },
-    pointTypeId: rule?.pointTypeId ?? '',
-    points: rule?.points ?? 1,
-    enabled: rule?.enabled ?? false,
-    group: rule?.group ?? undefined,
-    startTime: toDatetimeLocalValue(rule?.startTime),
-    endTime: toDatetimeLocalValue(rule?.endTime),
-    priority: rule?.priority ?? 0,
-  };
-}
-
 const { canSubmit, handleSubmit, isLoading } = usePopoverForm({
   schema: UpdateRewardRuleSchema,
   open,
-  initialValues: () => createDefaultValues(props.rule),
-  mutation: {
-    isLoading: updateRewardRuleMutation.isLoading,
-    mutateAsync(body) {
-      return updateRewardRuleMutation.mutateAsync({
-        rewardRuleId: props.rule.id,
-        body,
-      });
-    },
+  initialValues: () => ({
+    name: props.rule?.name ?? '',
+    description: props.rule?.description ?? undefined,
+    conditions: props.rule
+      ? toRewardRuleCondition(props.rule.conditions)
+      : { type: 'biliGuard' as const },
+    pointTypeId: props.rule?.pointTypeId ?? '',
+    points: props.rule?.points ?? 1,
+    enabled: props.rule?.enabled ?? false,
+    group: props.rule?.group ?? undefined,
+    startAt: props.rule?.startAt,
+    endAt: props.rule?.endAt,
+    priority: props.rule?.priority ?? 0,
+  }),
+  mutation: updateRewardRuleMutation,
+  transform(body) {
+    return {
+      rewardRuleId: props.rule.id,
+      body,
+    };
   },
 });
 </script>
@@ -106,23 +99,23 @@ const { canSubmit, handleSubmit, isLoading } = usePopoverForm({
           <Switch v-bind="componentField" />
         </FormFieldItem>
 
-        <FormFieldItem v-slot="{ componentField }" name="startTime" label="开始时间">
-          <Input v-bind="componentField" type="datetime-local" step="1" />
+        <FormFieldItem v-slot="{ componentField }" name="startAt" label="开始时间">
+          <DateTimeLocalInput v-bind="componentField" type="datetime-local" step="1" />
         </FormFieldItem>
 
-        <FormFieldItem v-slot="{ componentField }" name="endTime" label="结束时间">
-          <Input v-bind="componentField" type="datetime-local" step="1" />
+        <FormFieldItem v-slot="{ componentField }" name="endAt" label="结束时间">
+          <DateTimeLocalInput v-bind="componentField" type="datetime-local" step="1" />
         </FormFieldItem>
 
         <FormFieldItem
           v-slot="{ field }"
           class="sm:col-span-2"
-          name="conditions"
+          name="conditions.guardTypes"
           label="大航海类型"
           description="不选择时不会触发奖励。"
         >
           <BiliGuardTypeCheckboxGroup
-            :model-value="field.value ?? { type: 'biliGuard' }"
+            :model-value="field.value"
             @update:model-value="field.onChange"
           />
         </FormFieldItem>

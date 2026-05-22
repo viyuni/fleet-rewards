@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { StockAdjustmentSchema, type StockAdjustmentBody } from '@internal/shared/stock';
+import { StockAdjustmentSchema } from '@internal/shared/stock';
 import { Button } from '@web/ui/components/ui/button';
 import { FormFieldItem, usePopoverForm } from '@web/ui/components/ui/form';
 import { Loader2 } from 'lucide-vue-next';
@@ -15,29 +15,23 @@ const open = defineModel<boolean>('open', { default: false });
 
 const adjustProductStockMutation = useAdjustProductStock();
 
-function createDefaultValues(): StockAdjustmentBody {
-  return {
-    delta: 1,
-    remark: undefined,
-    nonce: crypto.randomUUID(),
-  };
-}
-
 const { canSubmit, handleSubmit, isLoading, values } = usePopoverForm({
   schema: StockAdjustmentSchema,
   open,
-  initialValues: createDefaultValues,
-  mutation: {
-    isLoading: adjustProductStockMutation.isLoading,
-    mutateAsync(values) {
-      return adjustProductStockMutation.mutateAsync({
-        productId: props.product.id,
-        body: {
-          ...values,
-          nonce: crypto.randomUUID(),
-        },
-      });
-    },
+  initialValues: () => ({
+    delta: 1,
+    remark: undefined,
+    nonce: crypto.randomUUID(),
+  }),
+  mutation: adjustProductStockMutation,
+  transform(values) {
+    return {
+      productId: props.product.id,
+      body: {
+        ...values,
+        nonce: crypto.randomUUID(),
+      },
+    };
   },
 });
 </script>

@@ -1,8 +1,5 @@
 <script setup lang="ts">
-import {
-  CreatePointConversionRuleSchema,
-  type CreatePointConversionRuleBody,
-} from '@internal/shared/point-conversion';
+import { CreatePointConversionRuleSchema } from '@internal/shared/point-conversion';
 import { Button } from '@web/ui/components/ui/button';
 import { FormFieldItem, usePopoverForm } from '@web/ui/components/ui/form';
 import { Loader2 } from 'lucide-vue-next';
@@ -14,10 +11,10 @@ const open = defineModel<boolean>('open', { default: false });
 
 const createConversionRuleMutation = useCreatePointConversionRule();
 
-type PointConversionRuleFormValues = CreatePointConversionRuleBody;
-
-function createDefaultValues(): PointConversionRuleFormValues {
-  return {
+const { canSubmit, handleSubmit, isLoading } = usePopoverForm({
+  schema: CreatePointConversionRuleSchema,
+  open,
+  initialValues: () => ({
     name: '',
     description: undefined,
     remark: undefined,
@@ -27,15 +24,9 @@ function createDefaultValues(): PointConversionRuleFormValues {
     minConvertAmount: undefined,
     maxConvertAmount: undefined,
     enabled: false,
-    startTime: undefined,
-    endTime: undefined,
-  };
-}
-
-const { canSubmit, handleSubmit, isLoading } = usePopoverForm({
-  schema: CreatePointConversionRuleSchema,
-  open,
-  initialValues: createDefaultValues,
+    startAt: undefined,
+    endAt: undefined,
+  }),
   mutation: createConversionRuleMutation,
 });
 </script>
@@ -79,12 +70,12 @@ const { canSubmit, handleSubmit, isLoading } = usePopoverForm({
           <Input v-bind="componentField" type="number" min="1" step="1" placeholder="不限制" />
         </FormFieldItem>
 
-        <FormFieldItem v-slot="{ componentField }" name="startTime" label="开始时间">
-          <Input v-bind="componentField" type="datetime-local" step="1" />
+        <FormFieldItem v-slot="{ componentField }" name="startAt" label="开始时间">
+          <DateTimeLocalInput v-bind="componentField" type="datetime-local" step="1" />
         </FormFieldItem>
 
-        <FormFieldItem v-slot="{ componentField }" name="endTime" label="结束时间">
-          <Input v-bind="componentField" type="datetime-local" step="1" />
+        <FormFieldItem v-slot="{ componentField }" name="endAt" label="结束时间">
+          <DateTimeLocalInput v-bind="componentField" type="datetime-local" step="1" />
         </FormFieldItem>
 
         <FormFieldItem v-slot="{ componentField }" name="enabled" label="启用状态">

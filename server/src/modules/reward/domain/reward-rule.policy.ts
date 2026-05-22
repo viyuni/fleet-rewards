@@ -9,11 +9,11 @@ export class RewardRulePolicy {
       return false;
     }
 
-    if (rule.startTime && rule.startTime > now) {
+    if (rule.startAt && rule.startAt > now) {
       return false;
     }
 
-    if (rule.endTime && rule.endTime <= now) {
+    if (rule.endAt && rule.endAt <= now) {
       return false;
     }
 
@@ -67,8 +67,8 @@ export class RewardRulePolicy {
     );
   }
 
-  static assertValidTimeRange(input: { startTime?: Date | null; endTime?: Date | null }) {
-    if (input.startTime && input.endTime && input.startTime >= input.endTime) {
+  static assertValidTimeRange(input: { startAt?: Date | null; endAt?: Date | null }) {
+    if (input.startAt && input.endAt && input.startAt >= input.endAt) {
       throw new RewardRuleTimeRangeInvalidError();
     }
   }

@@ -1,58 +1,33 @@
 <script setup lang="ts">
-import {
-  ReversalTransactionSchema,
-  type ReversalPointTransactionBody,
-} from '@internal/shared/point-account';
+import { ReversalTransactionSchema } from '@internal/shared/point-account';
 import { Button } from '@web/ui/components/ui/button';
 import { FormFieldItem, usePopoverForm } from '@web/ui/components/ui/form';
 
+import { useReversePointTransaction } from '../mutations';
 import type { PointTransaction } from './PointTransactionListView.vue';
 
 const props = defineProps<{
   transaction: PointTransaction;
-  reversing?: boolean;
-}>();
-
-const emit = defineEmits<{
-  resolve: [payload: { transaction: PointTransaction; remark?: string }];
 }>();
 
 const open = defineModel<boolean>('open', { default: false });
+const reversePointTransactionMutation = useReversePointTransaction();
 
-const deltaClass = computed(() =>
-  props.transaction.delta >= 0 ? 'text-emerald-600' : 'text-destructive',
-);
-const signedDelta = computed(() =>
-  props.transaction.delta > 0 ? `+${props.transaction.delta}` : String(props.transaction.delta),
-);
-
-function createDefaultValues(transactionId: string): ReversalPointTransactionBody {
-  return {
-    transactionId,
-    remark: undefined,
-  };
-}
-
-const { handleSubmit, onSubmitSuccess, setFieldValue } = usePopoverForm({
+const { handleSubmit, isLoading } = usePopoverForm({
   schema: ReversalTransactionSchema,
   open,
-  initialValues: () => createDefaultValues(props.transaction.id),
-  resetOnSuccess: false,
-});
-
-onSubmitSuccess(values => {
-  emit('resolve', {
-    transaction: props.transaction,
-    remark: values.remark,
-  });
-});
-
-watch(
-  () => props.transaction.id,
-  transactionId => {
-    setFieldValue('transactionId', transactionId);
+  initialValues: () => ({
+    transactionId: props.transaction.id,
+    remark: undefined,
+  }),
+  mutation: reversePointTransactionMutation,
+  transform(values) {
+    return {
+      ...values,
+      transactionId: props.transaction.id,
+    };
   },
-);
+});
 </script>
 
 <template>
@@ -108,7 +83,7 @@ watch(
                   </div>
                   <div>
                     <div class="text-muted-foreground text-xs">变动</div>
-                    <div class="font-semibold" :class="deltaClass">{{ signedDelta }}</div>
+                    <SignedAmount class="font-semibold" :value="transaction.delta" />
                   </div>
                   <div>
                     <div class="text-muted-foreground text-xs">变动后</div>
@@ -128,9 +103,9 @@ watch(
 
         <DialogFooter>
           <DialogClose as-child>
-            <Button variant="outline" type="button" :disabled="reversing">取消</Button>
+            <Button variant="outline" type="button" :disabled="isLoading">取消</Button>
           </DialogClose>
-          <Button type="submit" :disabled="reversing">确认冲正</Button>
+          <Button type="submit" :disabled="isLoading">确认冲正</Button>
         </DialogFooter>
       </form>
     </DialogContent>

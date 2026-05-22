@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { BiliGuardType, type RewardRuleCondition } from '@internal/shared/reward';
+import { BiliGuardType } from '@internal/shared/reward';
 
 const guardTypeOptions = [
   { label: '总督', value: BiliGuardType.Zongdu },
@@ -7,20 +7,20 @@ const guardTypeOptions = [
   { label: '舰长', value: BiliGuardType.Jianzhang },
 ] as const;
 
-const condition = defineModel<RewardRuleCondition>({
-  default: () => ({ type: 'biliGuard' }),
-});
+const model = defineModel<BiliGuardType[] | undefined>();
 
-const selected = ref(new Set<BiliGuardType>());
+const selected = computed(() => new Set(model.value ?? []));
 
 function updateSelectedGuardTypes(guardType: BiliGuardType, state: boolean) {
+  const next = new Set(model.value ?? []);
+
   if (state) {
-    selected.value.add(guardType);
+    next.add(guardType);
   } else {
-    selected.value.delete(guardType);
+    next.delete(guardType);
   }
 
-  condition.value.guardTypes = [...selected.value];
+  model.value = [...next];
 }
 </script>
 
@@ -31,7 +31,10 @@ function updateSelectedGuardTypes(guardType: BiliGuardType, state: boolean) {
       :key="option.value"
       class="flex items-center gap-2 text-sm"
     >
-      <Checkbox @update:model-value="updateSelectedGuardTypes(option.value, Boolean($event))" />
+      <Checkbox
+        :model-value="selected.has(option.value)"
+        @update:model-value="updateSelectedGuardTypes(option.value, Boolean($event))"
+      />
       {{ option.label }}
     </Label>
   </div>

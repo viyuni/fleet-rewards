@@ -32,8 +32,8 @@ const {
   query,
 } = useDebouncedPageQuery<OrderPageQuery>({
   status: undefined,
-  startTime: undefined,
-  endTime: undefined,
+  startAt: undefined,
+  endAt: undefined,
   userId: undefined,
 });
 

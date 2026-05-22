@@ -89,12 +89,12 @@ export const pointConversionRules = pgTable(
     /**
      * 生效时间范围, null 表示永久有效
      */
-    startTime: timestamp('start_time', { withTimezone: true }),
+    startAt: timestamp('start_at', { withTimezone: true }),
 
     /**
      * 失效时间范围, null 表示永久有效
      */
-    endTime: timestamp('end_time', { withTimezone: true }),
+    endAt: timestamp('end_at', { withTimezone: true }),
 
     metadata: jsonb('metadata'),
 
@@ -108,7 +108,7 @@ export const pointConversionRules = pgTable(
     index('point_conversion_rules_from_point_type_id_idx').on(t.fromPointTypeId),
     index('point_conversion_rules_to_point_type_id_idx').on(t.toPointTypeId),
     index('point_conversion_rules_enabled_idx').on(t.enabled),
-    index('point_conversion_rules_time_range_idx').on(t.startTime, t.endTime),
+    index('point_conversion_rules_time_range_idx').on(t.startAt, t.endAt),
   ],
 );
 
