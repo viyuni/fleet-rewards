@@ -1,4 +1,4 @@
-import { randomBytes } from 'node:crypto';
+import { customAlphabet } from 'nanoid';
 
 export class OrderNo {
   static create() {
@@ -22,9 +22,4 @@ function pad(value: number, length = 2) {
   return value.toString().padStart(length, '0');
 }
 
-function createRandomHex(length: number) {
-  return randomBytes(Math.ceil(length / 2))
-    .toString('hex')
-    .slice(0, length)
-    .toUpperCase();
-}
+const createRandomHex = customAlphabet('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ');

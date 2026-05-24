@@ -1,19 +1,29 @@
 import { createListener } from '@viyuni/bevent-relay';
-import { type Guard } from '@viyuni/bevent-relay/events';
-import { Queue, Worker } from 'bunqueue/client';
+import type { Guard } from '@viyuni/bevent-relay/events';
+import { Worker } from 'bunqueue/client';
 
 import { createEventContainer } from '#context';
 import { db } from '#db';
-import { sharedEnv } from '#utils';
+import { BILIBILI_EVENT_QUEUE_NAME, bilibiliEventQueue, bilibiliEventQueueOptions } from '#queues';
+import { logger, sharedEnv } from '#utils';
 
 import { eventEnv } from './env';
 
 const {
   useCases: { rewardUseCase },
 } = createEventContainer({ db, env: eventEnv });
-const queue = new Queue<Guard>('biliGuardEvents', {
-  embedded: true,
-});
+
+// oxlint-disable-next-line no-unused-vars
+const worker = new Worker<Guard>(
+  BILIBILI_EVENT_QUEUE_NAME,
+  async job => {
+    await rewardUseCase.rewardBiliGuard(job.data);
+  },
+  {
+    ...bilibiliEventQueueOptions,
+    concurrency: 5,
+  },
+);
 
 const listener = createListener({
   roomId: eventEnv.BILI_ROOM,
@@ -23,26 +33,23 @@ const listener = createListener({
   },
 });
 
-await listener.start();
-
-// 凌晨4点重启
-Bun.cron('0 4 * * *', () => listener.refreshCookieAndRestart());
-
 listener.on('event', event => {
   if (event.type === 'guard') {
   }
 
   switch (event.type) {
     case 'guard': {
-      queue.add('biliGuardEvents', event, {
+      bilibiliEventQueue.add(BILIBILI_EVENT_QUEUE_NAME, event, {
         attempts: 3,
         backoff: 1000,
-        durable: true, // 更安全：立即写盘
+        durable: true,
       });
 
       break;
     }
-    case 'message':
+    case 'message': {
+      break;
+    }
     case 'gift':
     case 'superChat':
     case 'superChatDelete':
@@ -58,13 +65,9 @@ listener.on('event', event => {
   }
 });
 
-const _worker = new Worker<Guard>(
-  'biliGuardEvents',
-  async job => {
-    await rewardUseCase.rewardBiliGuard(job.data);
-  },
-  {
-    embedded: true,
-    concurrency: 5,
-  },
-);
+// 凌晨4点重启
+Bun.cron('0 4 * * *', () => listener.refreshCookieAndRestart());
+
+await listener.start().then(() => {
+  logger.info('Bilibili Event Worker started...');
+});

@@ -32,7 +32,8 @@
       "#server": ["./src/index.ts"],
       "#utils": ["./src/utils/index.ts"],
       "#utils/*": ["./src/utils/*"],
-      "#shared/*": ["../shared/src/*"]
+      "#shared/*": ["../shared/src/*"],
+      "#queues": ["./src/queues/index.ts"]
     }
   }
 }
