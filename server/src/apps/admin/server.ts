@@ -5,13 +5,12 @@ import { errorHandler } from '#modules/error-handler';
 import { health } from '#modules/health';
 import { image } from '#modules/image';
 import { openapi } from '#modules/openapi';
+import { version } from '~/package.json' with { type: 'json' };
 
-import { version } from '../../../package.json' with { type: 'json' };
 import { appRuntimeContext } from './context';
 import { admin } from './modules/admin';
 import { auth } from './modules/auth';
 import { dashboard } from './modules/dashboard';
-import { email } from './modules/email/index';
 import { order } from './modules/order';
 import { point } from './modules/point';
 import { product } from './modules/product';
@@ -43,7 +42,6 @@ export const app = new Elysia({
   .use(product)
   .use(order)
   .use(user)
-  .use(email)
   .use(health)
   .use(image)
   .get('/', () => 'Viyuni guard rewards server running... :)', { tags: ['Index'] });

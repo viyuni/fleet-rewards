@@ -1,29 +1,9 @@
 import { createListener } from '@viyuni/bevent-relay';
-import type { Guard } from '@viyuni/bevent-relay/events';
-import { Worker } from 'bunqueue/client';
 
-import { createEventContainer } from '#context';
-import { db } from '#db';
-import { BILIBILI_EVENT_QUEUE_NAME, bilibiliEventQueue, bilibiliEventQueueOptions } from '#queues';
+import { publishBilibiliGuardEvent } from '#queues';
 import { logger, sharedEnv } from '#utils';
 
 import { eventEnv } from './env';
-
-const {
-  useCases: { rewardUseCase },
-} = createEventContainer({ db, env: eventEnv });
-
-// oxlint-disable-next-line no-unused-vars
-const worker = new Worker<Guard>(
-  BILIBILI_EVENT_QUEUE_NAME,
-  async job => {
-    await rewardUseCase.rewardBiliGuard(job.data);
-  },
-  {
-    ...bilibiliEventQueueOptions,
-    concurrency: 5,
-  },
-);
 
 const listener = createListener({
   roomId: eventEnv.BILI_ROOM,
@@ -39,11 +19,7 @@ listener.on('event', event => {
 
   switch (event.type) {
     case 'guard': {
-      bilibiliEventQueue.add(BILIBILI_EVENT_QUEUE_NAME, event, {
-        attempts: 3,
-        backoff: 1000,
-        durable: true,
-      });
+      publishBilibiliGuardEvent(event);
 
       break;
     }
@@ -69,5 +45,5 @@ listener.on('event', event => {
 Bun.cron('0 4 * * *', () => listener.refreshCookieAndRestart());
 
 await listener.start().then(() => {
-  logger.info('Bilibili Event Worker started...');
+  logger.info('Bilibili Event Listener started...');
 });

@@ -5,12 +5,10 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: admin
-      POSTGRES_PASSWORD: 979979
+      POSTGRES_PASSWORD: guard_plus
       POSTGRES_DB: guard-plus
     ports:
       - '5433:5432'
-    # volumes:
-    #   - /home/byte/viyuni-database/guard-plus:/var/lib/postgresql
 
   guard-plus-test:
     image: postgres:18-alpine
@@ -18,9 +16,7 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: admin
-      POSTGRES_PASSWORD: 979979
+      POSTGRES_PASSWORD: guard_plus
       POSTGRES_DB: guard-plus-test
     ports:
       - '5434:5432'
-    # volumes:
-    #   - /home/byte/viyuni-database/guard-plus-test:/var/lib/postgresql

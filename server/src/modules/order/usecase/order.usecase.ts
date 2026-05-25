@@ -16,6 +16,7 @@ import {
 import { ProductPolicy, ProductUseCase, STOCK_MOVEMENT_SOURCE_TYPE } from '#modules/product';
 import { StockIdempotencyKey } from '#modules/product';
 import { UserUseCase } from '#modules/user';
+import { publishOrderCreated, type NewOrderEmailInput } from '#queues';
 
 import {
   OrderNo,
@@ -50,7 +51,7 @@ export class OrderUseCase {
   }
 
   async create(userId: string, orderData: CreateOrderBody) {
-    return this.deps.db.transaction(async tx => {
+    const { order, newOrderEmail } = await this.deps.db.transaction(async tx => {
       const user = await this.deps.userUseCase.getAvailableById(userId, tx);
       const product = await this.deps.productUseCase.requireByIdForUpdate(tx, orderData.productId);
 
@@ -128,8 +129,26 @@ export class OrderUseCase {
         throw new OrderUpdateFailedError();
       }
 
-      return updateOrder;
+      return {
+        order: updateOrder,
+        newOrderEmail: {
+          orderNo: updateOrder.orderNo,
+          username: user.username,
+          biliUid: user.biliUid,
+          productName: updateOrder.productNameSnapshot,
+          pointTypeName: updateOrder.pointTypeNameSnapshot,
+          price: updateOrder.price,
+          deliveryType: updateOrder.deliveryTypeSnapshot,
+          status: updateOrder.status,
+          createdAt: updateOrder.createdAt,
+          userRemark: updateOrder.userRemark,
+        } satisfies NewOrderEmailInput,
+      };
     });
+
+    await publishOrderCreated(newOrderEmail);
+
+    return order;
   }
 
   async complete(orderId: string) {

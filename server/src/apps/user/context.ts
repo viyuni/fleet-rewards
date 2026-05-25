@@ -3,10 +3,19 @@ import Elysia from 'elysia';
 import { userEnv } from '#apps/user/env';
 import { createAppContext } from '#context';
 import { db } from '#db';
+import { smtpEnv } from '#utils';
+
+import { createMailer } from './modules/email/domain';
+import { EmailUseCase } from './modules/email/usecase';
 
 const { context } = createAppContext({
   db,
   env: userEnv,
+});
+
+const emailUseCase = new EmailUseCase({
+  mailer: createMailer(smtpEnv),
+  notifyEmails: smtpEnv.NOTIFY_EMAILS,
 });
 
 /**
@@ -14,7 +23,9 @@ const { context } = createAppContext({
  *
  * 只能在根 app 挂载一次。
  */
-export const appRuntimeContext = context;
+export const appRuntimeContext = context.decorate({
+  emailUseCase,
+});
 
 /**
  * 业务模块上下文。

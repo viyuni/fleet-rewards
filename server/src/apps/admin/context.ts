@@ -8,12 +8,11 @@ import { AdminRepository } from './modules/admin/repository';
 import { AdminUseCase } from './modules/admin/usecase';
 import { AdminAuthUseCase } from './modules/auth/usecase';
 
+export const { context, container: adminContainer } = createAppContext({ db, env: adminEnv });
+
 const {
-  context,
-  container: {
-    useCases: { authUseCase },
-  },
-} = createAppContext({ db, env: adminEnv });
+  useCases: { authUseCase },
+} = adminContainer;
 
 const adminRepo = new AdminRepository(db);
 

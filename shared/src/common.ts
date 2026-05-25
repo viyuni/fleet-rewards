@@ -235,3 +235,9 @@ export const errorResponse = v.object({
   message: v.pipe(v.string('请输入错误消息'), v.description('错误消息')),
   details: v.array(v.string()),
 });
+
+export const envEmails = v.pipe(
+  v.string(),
+  v.transform(input => input.split(',').filter(Boolean)),
+  v.array(v.pipe(v.string(), v.trim(), v.email())),
+);

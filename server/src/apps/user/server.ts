@@ -28,6 +28,7 @@ export const app = new Elysia({
     }),
   )
   .use(appRuntimeContext)
+
   .use(errorHandler)
   .use(image)
   .use(auth)
