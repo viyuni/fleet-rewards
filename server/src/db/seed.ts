@@ -420,7 +420,6 @@ async function seedBiliGuardRewardEvents(targetDb: typeof db) {
   const { useCases } = createContainer({
     db: targetDb,
     env: {
-      DATABASE_URL: Bun.env.DATABASE_URL ?? '',
       NODE_ENV: 'development',
       LOG_LEVEL: 'info',
       IMAGE_SAVE_PATH: Bun.env.IMAGE_SAVE_PATH ?? './public/images',

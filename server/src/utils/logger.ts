@@ -1,7 +1,7 @@
 import pino from 'pino';
 import pretty from 'pino-pretty';
 
-import { sharedEnv } from '#utils';
+import { sharedEnv } from '#env/shared';
 
 function createLogger() {
   const stream =
@@ -30,7 +30,9 @@ function createLogger() {
     const baseUrl = `${protocol}://${host}:${server.port}`;
 
     logger.info(`➜  Local:   ${baseUrl}/`);
-    logger.info(`➜  Docs:    ${baseUrl}/openapi`);
+
+    // Dev mode print docs url
+    if (sharedEnv.NODE_ENV === 'development') logger.info(`➜  Docs:    ${baseUrl}/openapi`);
   }
 
   function scope(name: string) {

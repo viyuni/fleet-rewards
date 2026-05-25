@@ -2,11 +2,12 @@ import { port, bilibiliUid } from '@internal/shared';
 import { createEnv } from '@t3-oss/env-core';
 import * as v from 'valibot';
 
+import { imageEnv } from '#env/image';
+import { sharedEnv } from '#env/shared';
 import { PasswordUtil } from '#utils';
-import { sharedEnv } from '#utils';
 
 export const adminEnv = createEnv({
-  extends: [sharedEnv],
+  extends: [sharedEnv, imageEnv],
   server: {
     /**
      * 管理员服务端口

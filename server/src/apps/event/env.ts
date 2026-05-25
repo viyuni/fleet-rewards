@@ -1,7 +1,7 @@
 import { createEnv } from '@t3-oss/env-core';
 import * as v from 'valibot';
 
-import { sharedEnv } from '#utils';
+import { sharedEnv } from '#env/shared';
 
 export const eventEnv = createEnv({
   extends: [sharedEnv],

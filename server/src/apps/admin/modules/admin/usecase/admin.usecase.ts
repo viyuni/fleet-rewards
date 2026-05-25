@@ -7,8 +7,8 @@ import type {
 
 import type { AdminRole } from '#db/schema';
 import { InvalidCredentialsError } from '#utils';
-import { logger } from '#utils';
 import { PasswordUtil } from '#utils';
+import { logger } from '#utils/logger';
 
 import {
   AdminAlreadyExistsError,

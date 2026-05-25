@@ -1,6 +1,7 @@
 import { cors } from '@elysia/cors';
 import { Elysia } from 'elysia';
 
+import { imageEnv } from '#env/image';
 import { errorHandler } from '#modules/error-handler';
 import { health } from '#modules/health';
 import { image } from '#modules/image';
@@ -43,8 +44,8 @@ export const app = new Elysia({
   .use(order)
   .use(user)
   .use(health)
-  .use(image)
-  .get('/', () => 'Viyuni guard rewards server running... :)', { tags: ['Index'] });
+  .use(image({ assets: imageEnv.IMAGE_SAVE_PATH }))
+  .get('/', () => 'Viyuni Guard plus server running... :)');
 
 if (adminEnv.NODE_ENV === 'development') {
   app.use(

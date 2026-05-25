@@ -3,7 +3,7 @@ import Elysia from 'elysia';
 import { userEnv } from '#apps/user/env';
 import { createAppContext } from '#context';
 import { db } from '#db';
-import { smtpEnv } from '#utils';
+import { smtpEnv } from '#env/smtp';
 
 import { createMailer } from './modules/email/domain';
 import { EmailUseCase } from './modules/email/usecase';

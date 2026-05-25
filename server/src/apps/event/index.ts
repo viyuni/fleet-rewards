@@ -1,7 +1,8 @@
 import { createListener } from '@viyuni/bevent-relay';
 
+import { sharedEnv } from '#env/shared';
 import { publishBilibiliGuardEvent } from '#queues';
-import { logger, sharedEnv } from '#utils';
+import { logger } from '#utils/logger';
 
 import { eventEnv } from './env';
 

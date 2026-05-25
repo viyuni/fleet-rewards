@@ -77,7 +77,6 @@ export function createDeps() {
   const { repositories, useCases } = createContainer({
     db,
     env: {
-      DATABASE_URL: testDatabaseUrl ?? '',
       NODE_ENV: 'test',
       LOG_LEVEL: 'error',
       IMAGE_SAVE_PATH: '',

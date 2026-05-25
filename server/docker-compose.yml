@@ -1,7 +1,9 @@
+name: guard-plus
+
 services:
-  guard-plus:
+  guard-plus-db:
     image: postgres:18-alpine
-    container_name: guard-plus
+    container_name: gp-db
     restart: unless-stopped
     environment:
       POSTGRES_USER: admin
@@ -10,9 +12,9 @@ services:
     ports:
       - '5433:5432'
 
-  guard-plus-test:
+  guard-plus-db-test:
     image: postgres:18-alpine
-    container_name: guard-plus-test
+    container_name: gp-db-test
     restart: unless-stopped
     environment:
       POSTGRES_USER: admin
@@ -20,3 +22,16 @@ services:
       POSTGRES_DB: guard-plus-test
     ports:
       - '5434:5432'
+
+  guard-plus-redis:
+    image: redis:7.2-alpine
+    container_name: gp-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    ports:
+      - '6379:6379'
+    volumes:
+      - guard-plus-redis-data:/data
+
+volumes:
+  guard-plus-redis-data:

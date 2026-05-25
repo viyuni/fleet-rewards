@@ -68,6 +68,9 @@ export default defineConfig({
         cache: false,
         command: 'bun --env-file=.env.test drizzle-kit studio',
       },
+      'docker-compose': {
+        command: 'docker compose up -d',
+      },
     },
   },
 });

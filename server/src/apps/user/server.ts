@@ -1,6 +1,7 @@
 import cors from '@elysia/cors';
 import { Elysia } from 'elysia';
 
+import { imageEnv } from '#env/image';
 import { errorHandler } from '#modules/error-handler';
 import { image } from '#modules/image';
 import { openapi } from '#modules/openapi';
@@ -30,12 +31,13 @@ export const app = new Elysia({
   .use(appRuntimeContext)
 
   .use(errorHandler)
-  .use(image)
+  .use(image({ assets: imageEnv.IMAGE_SAVE_PATH }))
   .use(auth)
   .use(user)
   .use(product)
   .use(pointTransaction)
-  .use(order);
+  .use(order)
+  .get('/', () => 'Viyuni Guard plus server running... :)');
 
 if (userEnv.NODE_ENV === 'development') {
   app.use(

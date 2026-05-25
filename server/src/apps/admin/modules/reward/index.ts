@@ -1,7 +1,7 @@
 import Elysia from 'elysia';
 
 import { BilibiliEventWorker } from '#modules/reward';
-import { logger } from '#utils';
+import { logger } from '#utils/logger';
 
 import { appContext } from '../../context';
 import { rewardBiliGuardRoute } from './reward-bili-guard.route';

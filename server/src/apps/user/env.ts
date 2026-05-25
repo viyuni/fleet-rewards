@@ -1,10 +1,11 @@
 import * as v from '@internal/shared';
 import { createEnv } from '@t3-oss/env-core';
 
-import { sharedEnv } from '#utils';
+import { imageEnv } from '#env/image';
+import { sharedEnv } from '#env/shared';
 
 export const userEnv = createEnv({
-  extends: [sharedEnv],
+  extends: [sharedEnv, imageEnv],
   server: {
     /**
      * 用户服务端口

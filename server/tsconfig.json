@@ -28,6 +28,7 @@
       "#context/*": ["./src/context/*"],
       "#db": ["./src/db/index.ts"],
       "#db/*": ["./src/db/*"],
+      "#env/*": ["./src/env/*"],
       "#modules/*": ["./src/modules/*"],
       "#server": ["./src/index.ts"],
       "#utils": ["./src/utils/index.ts"],

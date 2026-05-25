@@ -2,7 +2,7 @@ import { CreateOrderSchema, OrderPageQuerySchema } from '@internal/shared/order'
 import Elysia from 'elysia';
 
 import { appContext } from '#apps/user/context';
-import { logger } from '#utils';
+import { logger } from '#utils/logger';
 
 import { NotifyWorker } from '../email';
 

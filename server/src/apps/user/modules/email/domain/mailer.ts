@@ -1,7 +1,7 @@
 import nodemailer from 'nodemailer';
 import type { Transporter } from 'nodemailer';
 
-import type { SmtpEnv } from '#utils';
+import type { SmtpEnv } from '#env/smtp';
 
 export interface SmtpConfig {
   host: string;

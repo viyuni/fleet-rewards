@@ -1,7 +1,7 @@
 import { SQL } from 'bun';
 import Elysia, { ValidationError } from 'elysia';
 
-import { logger } from '#utils';
+import { logger } from '#utils/logger';
 
 export function errorHandler<T extends Elysia>(app: T): T {
   app.onError(({ error, status, code }) => {

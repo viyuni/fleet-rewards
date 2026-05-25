@@ -1,7 +1,9 @@
 import Elysia from 'elysia';
 
 import type { DbClient } from '#db';
-import { logger } from '#utils';
+import type { ImageEnv } from '#env/image';
+import type { SharedEnv } from '#env/shared';
+import { logger } from '#utils/logger';
 
 import { createAuthGuard } from './modules/auth';
 import { AuthUseCase } from './modules/auth/usecase';
@@ -28,14 +30,13 @@ import {
 } from './modules/product';
 import { RewardRuleRepository, RewardRuleUseCase, RewardUseCase } from './modules/reward';
 import { UserBasicInfoCrypto, UserRepository, UserUseCase } from './modules/user';
-import { type SharedEnv } from './utils';
-
 export interface CreateSharedContextOptions {
   db: DbClient;
-  env: SharedEnv & {
-    JWT_SECRET: string;
-    DATA_SECRET: string;
-  };
+  env: SharedEnv &
+    ImageEnv & {
+      JWT_SECRET: string;
+      DATA_SECRET: string;
+    };
 }
 
 export interface CreateEventContainerOptions {
