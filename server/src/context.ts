@@ -2,11 +2,15 @@ import Elysia from 'elysia';
 
 import type { DbClient } from '#db';
 import type { ImageEnv } from '#env/image';
+import type { RedisEnv } from '#env/redis';
 import type { SharedEnv } from '#env/shared';
+import { redis } from '#modules/redis';
 import { logger } from '#utils/logger';
 
 import { createAuthGuard } from './modules/auth';
+import { AuthSessionRedisRepository, LiveLoginRedisRepository } from './modules/auth/repository';
 import { AuthUseCase } from './modules/auth/usecase';
+import { LiveLoginUseCase } from './modules/auth/usecase';
 import { BiliEventRepository } from './modules/bili-event';
 import { DashboardRepository, DashboardUseCase } from './modules/dashboard';
 import { ImageUseCase } from './modules/image';
@@ -33,6 +37,7 @@ import { UserBasicInfoCrypto, UserRepository, UserUseCase } from './modules/user
 export interface CreateSharedContextOptions {
   db: DbClient;
   env: SharedEnv &
+    RedisEnv &
     ImageEnv & {
       JWT_SECRET: string;
       DATA_SECRET: string;
@@ -41,13 +46,20 @@ export interface CreateSharedContextOptions {
 
 export interface CreateEventContainerOptions {
   db: DbClient;
-  env: SharedEnv & {
-    DATA_SECRET: string;
-  };
+  env: SharedEnv &
+    RedisEnv & {
+      DATA_SECRET: string;
+    };
 }
 
 export function createContainer({ db, env }: CreateSharedContextOptions) {
-  const authUseCase = new AuthUseCase(env.JWT_SECRET);
+  const authSessionRepo = new AuthSessionRedisRepository(redis);
+  const liveLoginRepo = new LiveLoginRedisRepository(redis, env.LIVE_LOGIN_CODE_TTL_SECONDS);
+  const authUseCase = new AuthUseCase(env.JWT_SECRET, authSessionRepo);
+  const liveLoginUseCase = new LiveLoginUseCase({
+    liveLoginRepo,
+    ttlSeconds: env.LIVE_LOGIN_CODE_TTL_SECONDS,
+  });
   const userBasicInfoCrypto = new UserBasicInfoCrypto(env.DATA_SECRET);
 
   const userRepo = new UserRepository(db);
@@ -149,6 +161,8 @@ export function createContainer({ db, env }: CreateSharedContextOptions) {
   return {
     repositories: {
       userRepo,
+      authSessionRepo,
+      liveLoginRepo,
 
       pointAccountRepo,
       pointConversionRuleRepo,
@@ -167,6 +181,7 @@ export function createContainer({ db, env }: CreateSharedContextOptions) {
 
     useCases: {
       authUseCase,
+      liveLoginUseCase,
 
       userUseCase,
 
@@ -189,6 +204,11 @@ export function createContainer({ db, env }: CreateSharedContextOptions) {
 }
 
 export function createEventContainer({ db, env }: CreateEventContainerOptions) {
+  const liveLoginRepo = new LiveLoginRedisRepository(redis, env.LIVE_LOGIN_CODE_TTL_SECONDS);
+  const liveLoginUseCase = new LiveLoginUseCase({
+    liveLoginRepo,
+    ttlSeconds: env.LIVE_LOGIN_CODE_TTL_SECONDS,
+  });
   const userBasicInfoCrypto = new UserBasicInfoCrypto(env.DATA_SECRET);
 
   const userRepo = new UserRepository(db);
@@ -229,6 +249,7 @@ export function createEventContainer({ db, env }: CreateEventContainerOptions) {
   return {
     repositories: {
       userRepo,
+      liveLoginRepo,
       pointAccountRepo,
       pointTransactionRepo,
       pointTypeRepo,
@@ -238,6 +259,7 @@ export function createEventContainer({ db, env }: CreateEventContainerOptions) {
 
     useCases: {
       userUseCase,
+      liveLoginUseCase,
       pointTypeUseCase,
       pointBalanceUseCase,
       rewardUseCase,

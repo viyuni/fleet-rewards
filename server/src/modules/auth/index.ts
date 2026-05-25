@@ -48,6 +48,7 @@ export const createAuthGuard = (authUseCase: AuthUseCase) => {
         setAuth(ctx, {
           id: payload.id,
           role: payload.role,
+          sid: payload.sid,
         });
       },
       async resolve(ctx) {

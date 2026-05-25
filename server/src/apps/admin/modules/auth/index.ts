@@ -71,13 +71,19 @@ export const auth = new Elysia({
     },
     {
       detail: {
-        description: '刷新 accessToken',
+        description: '刷新 AccessToken',
       },
     },
   )
   .post(
     '/logout',
-    ({ cookie }) => {
+    async ({ cookie, authUseCase }) => {
+      const accessToken = cookie[ACCESS_TOKEN_COOKIE_NAME]?.value;
+
+      if (accessToken && typeof accessToken === 'string') {
+        await authUseCase.revokeByAccessToken(accessToken);
+      }
+
       cookie[ACCESS_TOKEN_COOKIE_NAME]!.remove();
       cookie[REFRESH_TOKEN_COOKIE_NAME]!.remove();
 

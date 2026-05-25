@@ -10,4 +10,29 @@ export interface AuthPayload {
    * 默认为 `user` (undefined)
    */
   role?: 'user' | 'admin' | 'superAdmin';
+
+  /**
+   * Redis 会话 ID
+   */
+  sid: string;
+}
+
+export type AuthRole = NonNullable<AuthPayload['role']>;
+
+export interface AuthSession {
+  accountId: string;
+  role: AuthRole;
+  sessionId: string;
+  createdAt: string;
+}
+
+export interface LiveLoginChallenge {
+  status: 'pending' | 'matched' | 'consumed';
+  code: string;
+  createdAt: string;
+  expiresAt: string;
+  biliUid?: string;
+  biliName?: string;
+  matchedAt?: string;
+  consumedAt?: string;
 }

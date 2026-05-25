@@ -16,9 +16,19 @@ export const redisEnv = createEnv({
     REDIS_CONNECTION_TIMEOUT_MS: v.optional(numberish(), 5000),
 
     /**
-     * Redis 空闲超时时间（毫秒）
+     * Redis 空闲超时时间（毫秒），0 表示不主动断开
      */
-    REDIS_IDLE_TIMEOUT_MS: v.optional(numberish(), 30000),
+    REDIS_IDLE_TIMEOUT_MS: v.optional(numberish(), 0),
+
+    /**
+     * Redis 自动重连最大次数
+     */
+    REDIS_MAX_RETRIES: v.optional(numberish(), 100),
+
+    /**
+     * 直播验证码有效期（秒）
+     */
+    LIVE_LOGIN_CODE_TTL_SECONDS: v.optional(numberish(), 300),
   },
   runtimeEnv: process.env,
   emptyStringAsUndefined: true,

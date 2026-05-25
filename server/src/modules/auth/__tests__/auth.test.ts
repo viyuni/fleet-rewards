@@ -5,40 +5,75 @@ import Elysia from 'elysia';
 import { createAuthGuard } from '../index';
 import { AuthUseCase } from '../usecase';
 
+function createAuthUseCase() {
+  const sessions = new Map<string, { accountId: string; role: 'user' | 'admin' | 'superAdmin' }>();
+  const authSessionRepo = {
+    create: mock(async (accountId: string, role: 'user' | 'admin' | 'superAdmin') => {
+      const sessionId = `${role}-${accountId}-session`;
+      sessions.set(`${role}:${sessionId}`, { accountId, role });
+
+      return {
+        accountId,
+        role,
+        sessionId,
+        createdAt: new Date().toISOString(),
+      };
+    }),
+    find: mock(async (role: 'user' | 'admin' | 'superAdmin', sessionId: string) => {
+      const session = sessions.get(`${role}:${sessionId}`);
+
+      if (!session) return null;
+
+      return {
+        ...session,
+        sessionId,
+        createdAt: new Date().toISOString(),
+      };
+    }),
+    delete: mock(async (role: 'user' | 'admin' | 'superAdmin', sessionId: string) => {
+      sessions.delete(`${role}:${sessionId}`);
+    }),
+  } as any;
+
+  return new AuthUseCase('test-secret', authSessionRepo);
+}
+
 describe('AuthUseCase', () => {
   it('签发和解析对象 JWT payload', async () => {
-    const authUseCase = new AuthUseCase('test-secret');
+    const authUseCase = createAuthUseCase();
 
-    const token = await authUseCase.sign({
+    const { accessToken } = await authUseCase.createSessionTokenPair({
       id: 'admin-id',
       role: 'superAdmin',
     });
-    const payload = await authUseCase.verify(token);
+    const payload = await authUseCase.verify(accessToken);
 
     expect(payload).toEqual({
       id: 'admin-id',
       role: 'superAdmin',
+      sid: 'superAdmin-admin-id-session',
     });
   });
 
   it('解析没有 role 的 user token', async () => {
-    const authUseCase = new AuthUseCase('test-secret');
+    const authUseCase = createAuthUseCase();
 
-    const token = await authUseCase.sign({
+    const { accessToken } = await authUseCase.createSessionTokenPair({
       id: 'user-id',
     });
-    const payload = await authUseCase.verify(token);
+    const payload = await authUseCase.verify(accessToken);
 
     expect(payload).toEqual({
       id: 'user-id',
-      role: undefined,
+      role: 'user',
+      sid: 'user-user-id-session',
     });
   });
 
-  it('使用 refreshToken 刷新 accessToken', async () => {
-    const authUseCase = new AuthUseCase('test-secret');
+  it('使用 refreshToken 刷新 AccessToken', async () => {
+    const authUseCase = createAuthUseCase();
 
-    const { refreshToken } = await authUseCase.signTokenPair({
+    const { refreshToken } = await authUseCase.createSessionTokenPair({
       id: 'user-id',
       role: 'user',
     });
@@ -48,13 +83,14 @@ describe('AuthUseCase', () => {
     expect(payload).toEqual({
       id: 'user-id',
       role: 'user',
+      sid: 'user-user-id-session',
     });
   });
 
   it('拒绝把 accessToken 当 refreshToken 使用', async () => {
-    const authUseCase = new AuthUseCase('test-secret');
+    const authUseCase = createAuthUseCase();
 
-    const accessToken = await authUseCase.signAccessToken({
+    const { accessToken } = await authUseCase.createSessionTokenPair({
       id: 'user-id',
       role: 'user',
     });
@@ -64,7 +100,7 @@ describe('AuthUseCase', () => {
 });
 
 describe('requiredSuperAdminAuth', () => {
-  function createApp(payload: { id: string; role?: string }) {
+  function createApp(payload: { id: string; role?: string; sid: string }) {
     const authUseCase = {
       verify: mock(async () => payload),
     } as any;
@@ -87,6 +123,7 @@ describe('requiredSuperAdminAuth', () => {
     const { app, authUseCase } = createApp({
       id: 'admin-id',
       role: 'superAdmin',
+      sid: 'session-id',
     });
 
     const response = await app.handle(
@@ -109,6 +146,7 @@ describe('requiredSuperAdminAuth', () => {
     const { app } = createApp({
       id: 'admin-id',
       role: 'admin',
+      sid: 'session-id',
     });
 
     const response = await app.handle(
@@ -126,6 +164,7 @@ describe('requiredSuperAdminAuth', () => {
   it('拒绝没有角色的 user token', async () => {
     const { app } = createApp({
       id: 'user-id',
+      sid: 'session-id',
     });
 
     const response = await app.handle(
@@ -143,6 +182,7 @@ describe('requiredSuperAdminAuth', () => {
     const { app } = createApp({
       id: 'admin-id',
       role: 'superAdmin',
+      sid: 'session-id',
     });
 
     const response = await app.handle(new Request('http://localhost/super'));

@@ -51,7 +51,11 @@ export class AdminAuthUseCase {
 
     const loggedIn = await this.deps.adminRepo.updateLastLoginAt(user.id);
     const { id, uid, username, role, lastLoginAt } = loggedIn ?? user;
-    const tokens = await this.deps.authUseCase.signTokenPair({ id: user.id, role: user.role });
+
+    const tokens = await this.deps.authUseCase.createSessionTokenPair({
+      id: user.id,
+      role: user.role,
+    });
 
     return {
       ...tokens,

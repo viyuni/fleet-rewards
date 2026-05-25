@@ -1,10 +1,19 @@
 import { createListener } from '@viyuni/bevent-relay';
 
+import { createEventContainer } from '#context';
+import { db } from '#db';
 import { sharedEnv } from '#env/shared';
 import { publishBilibiliGuardEvent } from '#queues';
 import { logger } from '#utils/logger';
 
 import { eventEnv } from './env';
+
+const {
+  useCases: { liveLoginUseCase },
+} = createEventContainer({
+  db,
+  env: eventEnv,
+});
 
 const listener = createListener({
   roomId: eventEnv.BILI_ROOM,
@@ -25,6 +34,16 @@ listener.on('event', event => {
       break;
     }
     case 'message': {
+      logger.info(event, 'Bilibili Message');
+
+      liveLoginUseCase
+        .matchMessage({
+          code: event.content,
+          biliUid: event.uid.toString(),
+          biliName: event.uname,
+        })
+        .catch(error => logger.error(error, 'Live login message match failed'));
+
       break;
     }
     case 'gift':

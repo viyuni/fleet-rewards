@@ -3,11 +3,12 @@ import { createEnv } from '@t3-oss/env-core';
 import * as v from 'valibot';
 
 import { imageEnv } from '#env/image';
+import { redisEnv } from '#env/redis';
 import { sharedEnv } from '#env/shared';
 import { PasswordUtil } from '#utils';
 
 export const adminEnv = createEnv({
-  extends: [sharedEnv, imageEnv],
+  extends: [sharedEnv, imageEnv, redisEnv],
   server: {
     /**
      * 管理员服务端口

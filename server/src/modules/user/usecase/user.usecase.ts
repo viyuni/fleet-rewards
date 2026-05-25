@@ -40,6 +40,10 @@ export class UserUseCase {
     return user;
   }
 
+  async findByBiliUid(biliUid: string, db?: DbExecutor) {
+    return this.deps.userRepo.findByBiliUid(biliUid, db);
+  }
+
   /**
    * 获取用户详情
    */

@@ -3,7 +3,6 @@ import Elysia from 'elysia';
 import { userEnv } from '#apps/user/env';
 import { createAppContext } from '#context';
 import { db } from '#db';
-import { smtpEnv } from '#env/smtp';
 
 import { createMailer } from './modules/email/domain';
 import { EmailUseCase } from './modules/email/usecase';
@@ -14,8 +13,8 @@ const { context } = createAppContext({
 });
 
 const emailUseCase = new EmailUseCase({
-  mailer: createMailer(smtpEnv),
-  notifyEmails: smtpEnv.NOTIFY_EMAILS,
+  mailer: createMailer(userEnv),
+  notifyEmails: userEnv.NOTIFY_EMAILS,
 });
 
 /**

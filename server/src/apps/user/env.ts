@@ -2,15 +2,17 @@ import * as v from '@internal/shared';
 import { createEnv } from '@t3-oss/env-core';
 
 import { imageEnv } from '#env/image';
+import { redisEnv } from '#env/redis';
 import { sharedEnv } from '#env/shared';
+import { smtpEnv } from '#env/smtp';
 
 export const userEnv = createEnv({
-  extends: [sharedEnv, imageEnv],
+  extends: [sharedEnv, imageEnv, redisEnv, smtpEnv],
   server: {
     /**
      * 用户服务端口
      */
-    USER_PORT: v.optional(v.port(), 3600),
+    USER_PORT: v.optional(v.port(), 3800),
 
     /**
      * 数据密钥

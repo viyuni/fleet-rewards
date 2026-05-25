@@ -1,3 +1,4 @@
+import { LiveLoginCodeParamsSchema } from '@internal/shared/auth';
 import { UserLoginSchema, UserRegisterSchema } from '@internal/shared/user';
 import Elysia from 'elysia';
 
@@ -21,9 +22,10 @@ export const auth = new Elysia({
   },
 })
   .use(appContext)
-  .derive(({ authUseCase, rewardUseCase, userUseCase }) => ({
+  .derive(({ authUseCase, liveLoginUseCase, rewardUseCase, userUseCase }) => ({
     userAuthUseCase: new AuthUseCase({
       authUseCase,
+      liveLoginUseCase,
       rewardUseCase,
       userUseCase,
     }),
@@ -31,7 +33,8 @@ export const auth = new Elysia({
   .post(
     '/login',
     async ({ body, cookie, userAuthUseCase }) => {
-      const { user, accessToken, refreshToken } = await userAuthUseCase.login(body);
+      const { user, accessToken, accessTokenExpiresAt, refreshToken, refreshTokenExpiresAt } =
+        await userAuthUseCase.login(body);
 
       cookie[ACCESS_TOKEN_COOKIE_NAME]!.set({
         ...ACCESS_TOKEN_COOKIE_OPTIONS,
@@ -42,7 +45,11 @@ export const auth = new Elysia({
         value: refreshToken,
       });
 
-      return user;
+      return {
+        user,
+        accessTokenExpiresAt,
+        refreshTokenExpiresAt,
+      };
     },
     {
       body: UserLoginSchema,
@@ -73,13 +80,19 @@ export const auth = new Elysia({
     },
     {
       detail: {
-        summary: '刷新 accessToken',
+        summary: '刷新 AccessToken',
       },
     },
   )
   .post(
     '/logout',
-    ({ cookie }) => {
+    async ({ cookie, authUseCase }) => {
+      const accessToken = cookie[ACCESS_TOKEN_COOKIE_NAME]?.value;
+
+      if (accessToken && typeof accessToken === 'string') {
+        await authUseCase.revokeByAccessToken(accessToken);
+      }
+
       cookie[ACCESS_TOKEN_COOKIE_NAME]!.remove();
       cookie[REFRESH_TOKEN_COOKIE_NAME]!.remove();
 
@@ -102,6 +115,61 @@ export const auth = new Elysia({
       body: UserRegisterSchema,
       detail: {
         summary: '用户注册',
+      },
+    },
+  )
+  .post(
+    '/liveCode',
+    ({ userAuthUseCase }) => {
+      return userAuthUseCase.createLiveCode();
+    },
+    {
+      detail: {
+        summary: '生成直播间登录码',
+      },
+    },
+  )
+  .get(
+    '/liveCode/:code',
+    ({ params, userAuthUseCase }) => {
+      return userAuthUseCase.getLiveCodeStatus(params.code);
+    },
+    {
+      params: LiveLoginCodeParamsSchema,
+      detail: {
+        summary: '查询直播间登录码状态',
+      },
+    },
+  )
+  .post(
+    '/liveCode/:code/confirm',
+    async ({ params, cookie, userAuthUseCase }) => {
+      const result = await userAuthUseCase.confirmLiveCode(params.code);
+
+      if ('user' in result) {
+        cookie[ACCESS_TOKEN_COOKIE_NAME]!.set({
+          ...ACCESS_TOKEN_COOKIE_OPTIONS,
+          value: result.accessToken!,
+        });
+
+        cookie[REFRESH_TOKEN_COOKIE_NAME]!.set({
+          ...REFRESH_TOKEN_COOKIE_OPTIONS,
+          value: result.refreshToken!,
+        });
+
+        return {
+          user: result.user,
+          accessTokenExpiresAt: result.accessTokenExpiresAt,
+          refreshTokenExpiresAt: result.refreshTokenExpiresAt,
+        };
+      }
+
+      return result;
+    },
+    {
+      params: LiveLoginCodeParamsSchema,
+      detail: {
+        summary: '确认直播间登录码并登录',
       },
     },
   );

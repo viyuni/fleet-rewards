@@ -3,9 +3,11 @@ import { SignJWT, jwtVerify } from 'jose';
 import { UnauthorizedError } from '#utils';
 
 import { ACCESS_TOKEN_EXPIRES_IN_SECONDS, REFRESH_TOKEN_EXPIRES_IN_SECONDS } from '../constants';
-import type { AuthPayload } from '../domain';
+import type { AuthPayload, AuthRole } from '../domain';
+import type { AuthSessionRedisRepository } from '../repository';
 
 type AuthTokenType = 'access' | 'refresh';
+type AuthIdentity = Omit<AuthPayload, 'sid'>;
 
 function getTokenExpiresInSeconds(type: AuthTokenType) {
   return type === 'access' ? ACCESS_TOKEN_EXPIRES_IN_SECONDS : REFRESH_TOKEN_EXPIRES_IN_SECONDS;
@@ -14,7 +16,10 @@ function getTokenExpiresInSeconds(type: AuthTokenType) {
 export class AuthUseCase {
   private encodedSecret: Uint8Array<ArrayBuffer>;
 
-  constructor(private secret: string) {
+  constructor(
+    private secret: string,
+    private readonly authSessionRepo: AuthSessionRedisRepository,
+  ) {
     this.encodedSecret = new TextEncoder().encode(this.secret);
   }
 
@@ -24,6 +29,7 @@ export class AuthUseCase {
     return new SignJWT({
       id: payload.id,
       role: payload.role,
+      sid: payload.sid,
       type,
     })
       .setProtectedHeader({ alg: 'HS256' })
@@ -59,6 +65,17 @@ export class AuthUseCase {
     };
   }
 
+  async createSessionTokenPair(identity: AuthIdentity) {
+    const role = this.normalizeRole(identity.role);
+    const session = await this.authSessionRepo.create(identity.id, role);
+
+    return this.signTokenPair({
+      ...identity,
+      role,
+      sid: session.sessionId,
+    });
+  }
+
   private async verifyToken(token: string, expectedType: AuthTokenType) {
     try {
       const { payload } = await jwtVerify<AuthPayload & { type?: AuthTokenType }>(
@@ -67,6 +84,10 @@ export class AuthUseCase {
       );
 
       if (typeof payload.id !== 'string') {
+        throw new UnauthorizedError();
+      }
+
+      if (typeof payload.sid !== 'string') {
         throw new UnauthorizedError();
       }
 
@@ -79,13 +100,25 @@ export class AuthUseCase {
         throw new UnauthorizedError();
       }
 
+      const role = this.normalizeRole(payload.role);
+      const session = await this.authSessionRepo.find(role, payload.sid);
+
+      if (!session || session.accountId !== payload.id) {
+        throw new UnauthorizedError();
+      }
+
       return {
         id: payload.id,
-        role: payload.role,
+        role,
+        sid: payload.sid,
       };
     } catch {
       throw new UnauthorizedError();
     }
+  }
+
+  private normalizeRole(role: AuthPayload['role']): AuthRole {
+    return role ?? 'user';
   }
 
   async verify(token: string) {
@@ -104,5 +137,15 @@ export class AuthUseCase {
     const payload = await this.verifyRefreshToken(refreshToken);
 
     return this.signAccessToken(payload);
+  }
+
+  async revoke(payload: AuthPayload) {
+    await this.authSessionRepo.delete(this.normalizeRole(payload.role), payload.sid);
+  }
+
+  async revokeByAccessToken(accessToken: string) {
+    const payload = await this.verifyAccessToken(accessToken);
+
+    await this.revoke(payload);
   }
 }
