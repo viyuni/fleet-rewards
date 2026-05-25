@@ -1,6 +1,14 @@
-# Guard Rewards
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="./webs/base/app/assets/guard-plus-dark.png" />
+    <source media="(prefers-color-scheme: light)" srcset="./webs/base/app/assets/guard-plus-light.png" />
+    <img src="./webs/base/app/assets/guard-plus-light.png" alt="Guard Plus" width="230" />
+  </picture>
+</p>
 
-Guard Rewards is a Vite+ monorepo for the fleet rewards system. It contains Nuxt web apps, a shared Vue UI package, one Elysia backend package, and shared TypeScript contracts.
+# Guard Plus
+
+Guard Plus is a Vite+ monorepo for the fleet rewards system. It contains Nuxt web apps, a shared Vue UI package, one Elysia backend package, and shared TypeScript contracts.
 
 ## Packages
 

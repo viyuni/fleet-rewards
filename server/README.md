@@ -1,6 +1,6 @@
 # @server/app
 
-Elysia backend package for Guard Rewards.
+Elysia backend package for Guard Plus.
 
 This package contains the admin and user API apps, shared backend modules, Drizzle schema and relations, migrations, seed scripts, and Eden type exports used by the Nuxt apps.
 

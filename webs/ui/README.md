@@ -1,6 +1,6 @@
 # @web/ui
 
-Shared Vue UI package for Guard Rewards.
+Shared Vue UI package for Guard Plus.
 
 This package provides reusable Vue components, shared styles, fonts, Nuxt integration, and generated component metadata for auto-imports and package subpath exports.
 

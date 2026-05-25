@@ -49,7 +49,7 @@ export const app = new Elysia({
 if (adminEnv.NODE_ENV === 'development') {
   app.use(
     openapi({
-      title: 'Viyuni Guard Rewards',
+      title: 'Viyuni Guard Plus',
       version,
     }),
   );

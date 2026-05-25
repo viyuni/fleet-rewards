@@ -1,6 +1,6 @@
 # @internal/shared
 
-Shared TypeScript contracts for Guard Rewards.
+Shared TypeScript contracts for Guard Plus.
 
 This package owns Valibot schemas, request/response types, and common API DTOs consumed by the backend and Nuxt apps. Keep business logic and persistence code out of this package; it should describe cross-package contracts only.
 

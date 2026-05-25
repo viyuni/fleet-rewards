@@ -1,6 +1,6 @@
 # @web/user
 
-Nuxt user-facing app for Guard Rewards.
+Nuxt user-facing app for Guard Plus.
 
 The app consumes Eden app types from `@server/app` and shared components/styles from `@web/ui`.
 

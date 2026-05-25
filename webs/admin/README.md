@@ -1,6 +1,6 @@
 # @web/admin
 
-Nuxt admin console for Guard Rewards.
+Nuxt admin console for Guard Plus.
 
 The app consumes shared contracts from `@internal/shared`, Eden app types from `@server/app`, and shared components/styles from `@web/ui`.
 
