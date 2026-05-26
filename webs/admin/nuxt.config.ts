@@ -2,6 +2,7 @@
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   extends: ['../base'],
+  css: ['~/assets/main.css'],
   app: {
     head: {
       title: 'Viyuni - Guard+',
