@@ -43,7 +43,7 @@ export const createAuthGuard = (authUseCase: AuthUseCase) => {
           throw new UnauthorizedError('未登录');
         }
 
-        const payload = await authUseCase.verify(token);
+        const payload = await authUseCase.verifyAccessToken(token);
 
         setAuth(ctx, {
           id: payload.id,

@@ -12,7 +12,10 @@ export default defineNuxtPlugin(() => {
     throw new Error('NUXT_PUBLIC_API_BASE_URL is required to create the Eden client.');
   }
 
-  const api = createApiClient<UserApp>(apiBaseUrl, client => client.auth.refresh.post());
+  const api = createApiClient<UserApp>({
+    baseUrl: apiBaseUrl,
+    authRefresh: client => client.auth.refresh.post(),
+  });
 
   return {
     provide: {

@@ -1,7 +1,7 @@
 import type { UserLoginBody, UserRegisterBody } from '@internal/shared/user';
 
 import type { AuthUseCase as SharedAuthUseCase } from '#modules/auth';
-import type { LiveLoginUseCase } from '#modules/auth';
+import type { BiliLoginUseCase } from '#modules/auth';
 import type { RewardUseCase } from '#modules/reward';
 import type { UserUseCase } from '#modules/user';
 import { InvalidCredentialsError } from '#utils';
@@ -11,7 +11,7 @@ export class AuthUseCase {
   constructor(
     private readonly deps: {
       authUseCase: SharedAuthUseCase;
-      liveLoginUseCase?: LiveLoginUseCase;
+      biliLoginUseCase?: BiliLoginUseCase;
       rewardUseCase: RewardUseCase;
       userUseCase: UserUseCase;
     },
@@ -50,18 +50,19 @@ export class AuthUseCase {
     return user;
   }
 
-  async createLiveCode() {
-    const liveLoginUseCase = this.getLiveLoginUseCase();
-    const challenge = await liveLoginUseCase.createChallenge();
+  async createBiliLoginCode() {
+    const biliLoginUseCase = this.biliLoginUseCase;
+    const { challenge, verifier } = await biliLoginUseCase.createChallenge();
 
     return {
       code: challenge.code,
       expiresAt: challenge.expiresAt,
+      verifier,
     };
   }
 
-  async getLiveCodeStatus(code: string) {
-    const challenge = await this.getLiveLoginUseCase().getChallenge(code);
+  async getBiliLoginCodeStatus(code: string, verifier: string | undefined) {
+    const challenge = await this.biliLoginUseCase.getOwnedChallenge(code, verifier);
 
     if (!challenge || challenge.status === 'consumed') {
       return {
@@ -88,18 +89,26 @@ export class AuthUseCase {
     };
   }
 
-  async confirmLiveCode(code: string) {
-    const challenge = await this.getLiveLoginUseCase().getChallenge(code);
+  async confirmBiliLoginCode(code: string, verifier: string | undefined) {
+    const ownedChallenge = await this.biliLoginUseCase.getOwnedChallenge(code, verifier);
 
-    if (!challenge || challenge.status === 'consumed') {
+    if (!ownedChallenge || ownedChallenge.status === 'consumed') {
       return {
         status: 'expired',
       };
     }
 
-    if (challenge.status !== 'matched' || !challenge.biliUid) {
+    if (ownedChallenge.status !== 'matched') {
       return {
         status: 'pending',
+      };
+    }
+
+    const challenge = await this.biliLoginUseCase.consumeChallenge(code, verifier);
+
+    if (!challenge?.biliUid) {
+      return {
+        status: 'expired',
       };
     }
 
@@ -109,8 +118,6 @@ export class AuthUseCase {
       id: user.id,
       role: 'user',
     });
-
-    await this.getLiveLoginUseCase().consumeChallenge(challenge.code);
 
     return {
       status: 'authenticated',
@@ -124,11 +131,11 @@ export class AuthUseCase {
     };
   }
 
-  private getLiveLoginUseCase() {
-    if (!this.deps.liveLoginUseCase) {
-      throw new Error('Live login use case is not configured');
+  private get biliLoginUseCase() {
+    if (!this.deps.biliLoginUseCase) {
+      throw new Error('Bilibili login use case is not configured');
     }
 
-    return this.deps.liveLoginUseCase;
+    return this.deps.biliLoginUseCase;
   }
 }

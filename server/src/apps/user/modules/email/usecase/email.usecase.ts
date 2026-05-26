@@ -4,25 +4,22 @@ import type { NewOrderEmailInput } from '#queues';
 import { BadRequestError } from '#utils';
 
 import { Mailer } from '../domain';
+import newOrderTemplate from '../domain/new-order.template.ejs' with { type: 'text' };
 
 export interface EmailUseCaseDeps {
   mailer?: Mailer;
   notifyEmails?: string[];
 }
 
-const newOrderTemplateUrl = new URL('../domain/new-order.template.ejs', import.meta.url);
-
 export class EmailUseCase {
   constructor(private readonly deps: EmailUseCaseDeps) {}
 
-  async renderTemplateFile(path: URL, data: Record<string, unknown>) {
-    const template = await Bun.file(path).text();
-
+  renderTemplate(template: string, data: Record<string, unknown>) {
     return ejs.render(template, data);
   }
 
   async renderNewOrderEmail(input: NewOrderEmailInput) {
-    return this.renderTemplateFile(newOrderTemplateUrl, {
+    return this.renderTemplate(newOrderTemplate, {
       ...input,
       createdAt: this.formatDateTime(input.createdAt),
       deliveryType: this.formatDeliveryType(input.deliveryType),

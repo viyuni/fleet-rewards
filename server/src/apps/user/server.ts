@@ -5,8 +5,8 @@ import { imageEnv } from '#env/image';
 import { errorHandler } from '#modules/error-handler';
 import { image } from '#modules/image';
 import { openapi } from '#modules/openapi';
+import { version } from '~/package.json' with { type: 'json' };
 
-import { version } from '../../../package.json' with { type: 'json' };
 import { appRuntimeContext } from './context';
 import { userEnv } from './env';
 import { auth } from './modules/auth';

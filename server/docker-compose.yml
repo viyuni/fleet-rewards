@@ -27,11 +27,27 @@ services:
     image: redis:7.2-alpine
     container_name: gp-redis
     restart: unless-stopped
-    command: redis-server --appendonly yes
+    command:
+      - redis-server
+      - --appendonly
+      - 'yes'
+      - --appendfsync
+      - everysec
+      - --save
+      - '900 1'
+      - --save
+      - '300 10'
+      - --save
+      - '60 10000'
     ports:
       - '6379:6379'
     volumes:
       - guard-plus-redis-data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 3s
+      retries: 5
 
 volumes:
   guard-plus-redis-data:

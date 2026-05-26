@@ -121,10 +121,6 @@ export class AuthUseCase {
     return role ?? 'user';
   }
 
-  async verify(token: string) {
-    return this.verifyAccessToken(token);
-  }
-
   async verifyAccessToken(token: string) {
     return this.verifyToken(token, 'access');
   }

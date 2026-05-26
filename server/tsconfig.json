@@ -19,7 +19,7 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "noPropertyAccessFromIndexSignature": false,
-    "types": ["bun-types", "node"],
+    "types": ["bun-types", "node", "@viyuni/vpp"],
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.server.app.tsbuildinfo",
 
     "paths": {
@@ -30,6 +30,8 @@
       "#db/*": ["./src/db/*"],
       "#env/*": ["./src/env/*"],
       "#modules/*": ["./src/modules/*"],
+      "#redis": ["./src/redis/index.ts"],
+      "#redis/*": ["./src/redis/*"],
       "#server": ["./src/index.ts"],
       "#utils": ["./src/utils/index.ts"],
       "#utils/*": ["./src/utils/*"],

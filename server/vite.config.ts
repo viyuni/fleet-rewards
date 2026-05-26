@@ -9,19 +9,16 @@ export default defineConfig({
       emitDtsOnly: true,
     },
   },
+  vpp: {
+    test: 'bun:test',
+  },
   run: {
     tasks: {
-      queue: {
-        command: 'bun bunqueue start',
+      dev: {
+        command: 'bun --parallel run dev:admin dev:user dev:event',
       },
-      'dev:admin': {
-        command: 'bun --env-file=.env --watch ./src/apps/admin/index.ts',
-      },
-      'dev:user': {
-        command: 'bun --env-file=.env --watch ./src/apps/user/index.ts',
-      },
-      'dev:event': {
-        command: 'bun --env-file=.env ./src/apps/event/index.ts',
+      build: {
+        command: 'bun --sequential run build:admin build:user build:event',
       },
       dts: {
         command: 'vp pack',
@@ -35,15 +32,6 @@ export default defineConfig({
       test: {
         command:
           'bun --env-file=.env.test test --preload ./src/__tests__/setup-env.ts --pass-with-no-tests',
-      },
-      build: {
-        command: 'vpr build:admin && vpr build:user',
-      },
-      'build:admin': {
-        command: 'bun build ./src/apps/admin/index.ts --compile --outfile dist/admin',
-      },
-      'build:user': {
-        command: 'bun build ./src/apps/user/index.ts --compile --outfile dist/user',
       },
       'db:generate': {
         command: 'bun --env-file=.env drizzle-kit generate',

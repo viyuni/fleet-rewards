@@ -12,6 +12,7 @@ const props = withDefaults(
   defineProps<{
     'aria-invalid'?: boolean;
     currentCoverUrl?: string;
+    name?: string;
     previewSize?: number;
   }>(),
   {
@@ -153,6 +154,7 @@ onBeforeUnmount(() => {
       :key="inputKey"
       class="sr-only"
       :aria-invalid="props['aria-invalid']"
+      :name="props.name"
       type="file"
       accept="image/jpeg,image/png,image/webp"
       @blur="emit('blur', $event)"
@@ -187,29 +189,29 @@ onBeforeUnmount(() => {
         移除新封面
       </Button>
     </div>
+
+    <Dialog v-model:open="open">
+      <DialogContent class="max-h-[calc(100vh-2rem)] overflow-y-auto" @interact-outside.prevent>
+        <DialogHeader>
+          <DialogTitle>裁剪封面</DialogTitle>
+          <DialogDescription>调整图片位置和缩放，确认后作为商品封面。</DialogDescription>
+        </DialogHeader>
+
+        <div class="mx-auto" :style="{ width: `${previewSize + controlWidth}px` }">
+          <ImageCropper
+            v-if="sourceUrl"
+            ref="cropper"
+            :src="sourceUrl"
+            :preview-size="previewSize"
+            :output-size="512"
+          />
+        </div>
+
+        <DialogFooter class="grid grid-cols-2">
+          <Button variant="outline" type="button" @click="emit('reject')">取消</Button>
+          <Button type="button" @click="confirm">确认裁剪</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   </label>
-
-  <Dialog v-model:open="open">
-    <DialogContent class="max-h-[calc(100vh-2rem)] overflow-y-auto" @interact-outside.prevent>
-      <DialogHeader>
-        <DialogTitle>裁剪封面</DialogTitle>
-        <DialogDescription>调整图片位置和缩放，确认后作为商品封面。</DialogDescription>
-      </DialogHeader>
-
-      <div class="mx-auto" :style="{ width: `${previewSize + controlWidth}px` }">
-        <ImageCropper
-          v-if="sourceUrl"
-          ref="cropper"
-          :src="sourceUrl"
-          :preview-size="previewSize"
-          :output-size="512"
-        />
-      </div>
-
-      <DialogFooter class="grid grid-cols-2">
-        <Button variant="outline" type="button" @click="emit('reject')">取消</Button>
-        <Button type="button" @click="confirm">确认裁剪</Button>
-      </DialogFooter>
-    </DialogContent>
-  </Dialog>
 </template>

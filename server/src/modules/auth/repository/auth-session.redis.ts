@@ -4,9 +4,15 @@ import { REFRESH_TOKEN_EXPIRES_IN_SECONDS } from '../constants';
 import type { AuthRole, AuthSession } from '../domain';
 
 interface RedisLike {
-  set(key: string, value: string, ex: 'EX', seconds: number): Promise<'OK'>;
+  set(
+    key: string,
+    value: string,
+    options: {
+      expiration: { type: 'EX'; value: number };
+    },
+  ): Promise<string | null>;
   get(key: string): Promise<string | null>;
-  exists(key: string): Promise<boolean>;
+  exists(key: string): Promise<number>;
   del(key: string): Promise<number>;
 }
 
@@ -29,7 +35,12 @@ export class AuthSessionRedisRepository {
       createdAt: new Date().toISOString(),
     };
 
-    await this.redis.set(this.key(role, sessionId), JSON.stringify(session), 'EX', this.ttlSeconds);
+    await this.redis.set(this.key(role, sessionId), JSON.stringify(session), {
+      expiration: {
+        type: 'EX',
+        value: this.ttlSeconds,
+      },
+    });
 
     return session;
   }
@@ -43,7 +54,7 @@ export class AuthSessionRedisRepository {
   }
 
   async exists(role: AuthRole, sessionId: string) {
-    return this.redis.exists(this.key(role, sessionId));
+    return (await this.redis.exists(this.key(role, sessionId))) > 0;
   }
 
   async delete(role: AuthRole, sessionId: string) {

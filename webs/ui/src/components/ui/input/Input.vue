@@ -4,8 +4,8 @@ import { cn } from '@web/ui/lib/utils';
 import type { HTMLAttributes } from 'vue';
 
 const props = defineProps<{
-  defaultValue?: string | number;
-  modelValue?: string | number;
+  defaultValue?: string | number | null;
+  modelValue?: string | number | null;
   class?: HTMLAttributes['class'];
 }>();
 

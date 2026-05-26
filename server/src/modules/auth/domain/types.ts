@@ -26,9 +26,10 @@ export interface AuthSession {
   createdAt: string;
 }
 
-export interface LiveLoginChallenge {
+export interface BiliLoginChallenge {
   status: 'pending' | 'matched' | 'consumed';
   code: string;
+  verifierHash: string;
   createdAt: string;
   expiresAt: string;
   biliUid?: string;

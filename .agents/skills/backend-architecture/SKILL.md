@@ -15,6 +15,7 @@ Use these rules for backend work in this repo. Prefer the current lightweight mo
 - Valibot schemas from `@internal/shared`
 - One backend workspace package: `@server/app` in `server/`
 - Lightweight module architecture
+- Background workers use Bunqueue and live under `server/src/queues`
 
 ## Current Layout
 
@@ -24,21 +25,29 @@ server/
     apps/
       admin/          admin HTTP app, app context, env, routes
         modules/      admin-only route modules and app-only use cases
+        utils/        admin env/helpers
+      event/          event ingestion app
       user/           user HTTP app, app context, env, routes
         modules/      user-only route modules and app-only use cases
+        env.ts        user env
     db/               Drizzle client, schema, relations, seed/migrate helpers
     modules/          reusable backend modules shared by admin/user apps
+    queues/           Bunqueue job definitions and queue exports
+    redis/            Redis client lifecycle helpers
     utils/            shared backend utilities, errors, logger, env helpers
     context.ts        shared container and Elysia context wiring
     eden.ts           Eden type export surface
 ```
 
-Use `server/src/modules/*` for reusable business capability code. Use `server/src/apps/{admin,user}/modules/*` for HTTP routes and app-specific orchestration.
+Use `server/src/modules/*` for reusable business capability code. Use `server/src/apps/{admin,user}/modules/*` for HTTP routes and app-specific orchestration. Use `server/src/apps/event` only for event ingestion/runtime concerns. Use `server/src/queues` for background queue definitions.
+
+Use `server/src/redis` for the Redis client lifecycle (`createRedisClient`, `redis`, `closeRedis`, `pingRedis`). Keep Redis-backed business persistence rules, keys, and serializers inside the owning module repositories, such as `server/src/modules/auth/repository/*`.
 
 ## Core Flow
 
 ```txt
 App route module(index.ts) -> appContext/appRuntimeContext -> shared createAppContext/createContainer -> UseCase -> Repository -> DB
+Event app/queue -> createEventContainer/createContainer -> UseCase -> Repository -> DB
 ```
 
 Use a small `domain/` folder for reusable business rules, errors, and domain-only types. Keep domain code dependency-light: no Elysia, env/config, route schemas, context imports, or database client instances.
@@ -78,6 +87,7 @@ Shared modules should:
 - Keep environment-specific choices in the caller or in `server/src/context.ts`.
 - Be wired together from `server/src/context.ts` via `createContainer({ db, env })`.
 - Be exposed to routes through `createAppContext({ db, env })`, which returns `{ container, context }`.
+- Be exposed to event ingestion through `createEventContainer({ db, env })` when the event runtime needs a smaller dependency graph.
 
 Shared modules must not:
 
@@ -94,6 +104,7 @@ Shared modules must not:
 - Instantiate reusable repositories and use cases once per app DB/env.
 - Return a plain `container` with repositories and use cases for tests and app-specific use cases.
 - Return one shared Elysia `context` plugin that installs common guards/macros and decorates shared use cases.
+- Return a separate `createEventContainer` for event ingestion when auth/app HTTP decoration is not needed.
 - Keep app route paths and app-specific route metadata out of shared context.
 
 `server/src/apps/{admin,user}/context.ts` owns app dependency wiring:
@@ -106,6 +117,8 @@ Shared modules must not:
 - Register app-only startup hooks or error maps when needed.
 
 Route modules should use the type-only `appContext` and be mounted by the root app after `appRuntimeContext`.
+
+`server/src/apps/event` owns event HTTP/runtime wiring. It should import only the env, root `db`, shared container factory, queue/use case dependencies, and event-specific route/runtime setup it needs.
 
 ## Database Rules
 
@@ -120,9 +133,26 @@ Use local aliases inside the server package:
 
 Do not define Drizzle schemas, database clients, or table model types inside app modules when they belong to the shared database schema.
 
+## Queue Rules
+
+Queue definitions live in `server/src/queues`.
+
+Queues should:
+
+- Keep queue names, payload typing, and processor registration close to the queue file.
+- Delegate business behavior to use cases from `createContainer` or `createEventContainer`.
+- Accept env, logger, and use case dependencies through explicit setup functions when practical.
+- Use shared schemas/types for queue payloads when the payload is also an external contract.
+
+Queues must not:
+
+- Import app route modules.
+- Reimplement business rules that already belong to domain/use case code.
+- Open independent database transactions when the called use case owns the consistency boundary.
+
 ## Route Rules
 
-Routes live in app-server module `index.ts` files under `server/src/apps/{admin,user}/modules/*`.
+Routes live in app-server module `index.ts` files under `server/src/apps/{admin,user}/modules/*`. Event app routes, if any, live under `server/src/apps/event`.
 
 Routes should:
 
@@ -141,7 +171,7 @@ Routes must not:
 
 ## Shared Schema Rules
 
-Request/response schemas used by routes or use cases must live in `shared/src/*` and be imported from `@internal/shared` or a specific subpath such as `@internal/shared/product`.
+Request/response schemas used by routes, use cases, events, or queue payloads must live in `shared/src/*` and be imported from `@internal/shared` or a specific subpath such as `@internal/shared/product`.
 
 Routes should import schema values and attach them to Elysia route options.
 
@@ -236,6 +266,7 @@ Inside `server/`, use the server aliases from `server/tsconfig.json`:
 - `#context` for the shared app context/container.
 - `#db` and `#db/*` for database client, schema, relations, and helpers.
 - `#modules/*` for reusable backend modules.
+- `#redis` and `#redis/*` for Redis client lifecycle helpers.
 - `#utils` and `#utils/*` for backend utilities.
 
 Use `@internal/shared` or its package subpath exports for shared request/response schemas and types across packages.
@@ -264,6 +295,8 @@ Elysia name: PascalCase descriptive name, e.g. AdminAppContextTypeOnly, SharedCo
 
 - If code is HTTP-specific, keep it in `server/src/apps/{admin,user}/modules/{module}/index.ts`.
 - If code wires app env, root db, app-only use cases, or app-only startup hooks, keep it in `server/src/apps/{admin,user}/context.ts`.
+- If code wires event ingestion or event runtime dependencies, keep it in `server/src/apps/event`.
+- If code defines a background job/queue processor, keep it in `server/src/queues`.
 - If code wires reusable repositories/use cases, keep it in `server/src/context.ts`.
 - If code describes a business action, keep it in `usecase/{module}.usecase.ts`.
 - If code is a Drizzle read/write, keep it in `repository/{module}.repo.ts`.
@@ -284,6 +317,21 @@ For targeted backend checks, use:
 ```txt
 vpr @server/app#typecheck
 vpr @server/app#test
+```
+
+Useful backend tasks:
+
+```txt
+vpr @server/app#dev:admin
+vpr @server/app#dev:user
+vpr @server/app#dev:event
+vpr @server/app#queue
+vpr @server/app#db:generate
+vpr @server/app#db:push
+vpr @server/app#db:push:test
+vpr @server/app#db:seed
+vpr @server/app#db:studio
+vpr @server/app#db:studio:test
 ```
 
 Use `vp`/`vpr` commands rather than calling package-manager tools directly.

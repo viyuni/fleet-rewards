@@ -427,7 +427,9 @@ async function seedBiliGuardRewardEvents(targetDb: typeof db) {
       REDIS_CONNECTION_TIMEOUT_MS: Number(Bun.env.REDIS_CONNECTION_TIMEOUT_MS ?? 5000),
       REDIS_IDLE_TIMEOUT_MS: Number(Bun.env.REDIS_IDLE_TIMEOUT_MS ?? 0),
       REDIS_MAX_RETRIES: Number(Bun.env.REDIS_MAX_RETRIES ?? 100),
-      LIVE_LOGIN_CODE_TTL_SECONDS: Number(Bun.env.LIVE_LOGIN_CODE_TTL_SECONDS ?? 300),
+      BILI_LOGIN_CODE_TTL_SECONDS: Number(
+        Bun.env.BILI_LOGIN_CODE_TTL_SECONDS ?? Bun.env.LIVE_LOGIN_CODE_TTL_SECONDS ?? 300,
+      ),
       JWT_SECRET: Bun.env.JWT_SECRET ?? 'seed-jwt-secret',
       DATA_SECRET: Bun.env.DATA_SECRET ?? 'seed-data-secret-seed-data-secret',
     },

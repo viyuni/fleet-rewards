@@ -12,7 +12,8 @@
     "prepare": "vp config"
   },
   "dependencies": {
-    "@typescript/native-preview": "^7.0.0-dev.20260518.1"
+    "@typescript/native-preview": "^7.0.0-dev.20260518.1",
+    "redis": "^5.12.1"
   },
   "devDependencies": {
     "@tsconfig/node24": "^24.0.4",

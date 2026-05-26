@@ -1,4 +1,4 @@
-import { treaty, type Treaty } from '@elysia/eden';
+import { EdenFetchError, treaty, type Treaty } from '@elysia/eden';
 import type { Elysia } from '@server/app';
 import ky from 'ky';
 
@@ -6,11 +6,16 @@ type AnyElysia = Elysia<any, any, any, any, any, any, any>;
 
 type AuthRefresh<App extends AnyElysia> = (client: Treaty.Create<App>) => Promise<unknown>;
 
-export function createApiClient<const App extends AnyElysia>(
-  apiBaseUrl: string,
-  authRefresh: AuthRefresh<App>,
-) {
-  const refreshClient = treaty<App>(apiBaseUrl, {
+interface CreateApiClientOptions<App extends AnyElysia> {
+  baseUrl: string;
+  authRefresh: AuthRefresh<App>;
+  onAuthRefreshError?: (error: EdenFetchError) => unknown;
+}
+
+export function createApiClient<const App extends AnyElysia>(options: CreateApiClientOptions<App>) {
+  const { baseUrl, authRefresh, onAuthRefreshError } = options;
+
+  const refreshClient = treaty<App>(baseUrl, {
     throwHttpError: true,
 
     fetch: {
@@ -24,7 +29,13 @@ export function createApiClient<const App extends AnyElysia>(
     refreshPromise ??= Promise.resolve()
       .then(() => authRefresh(refreshClient))
       .then(() => true)
-      .catch(() => false)
+      .catch(async error => {
+        if (error instanceof EdenFetchError) {
+          await onAuthRefreshError?.(error);
+        }
+
+        return false;
+      })
       .finally(() => {
         refreshPromise = null;
       });
@@ -64,7 +75,7 @@ export function createApiClient<const App extends AnyElysia>(
     },
   });
 
-  return treaty<App>(apiBaseUrl, {
+  return treaty<App>(baseUrl, {
     throwHttpError: true,
     fetcher: fetcher as unknown as typeof fetch,
   });

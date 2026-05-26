@@ -10,6 +10,7 @@ defineOptions({
 
 const props = defineProps<{
   class?: HTMLAttributes['class'];
+  emptyAsNull?: boolean;
 }>();
 
 const model = defineModel<Date | string | undefined | null>();
@@ -24,11 +25,11 @@ function pad(value: number) {
 }
 
 function toDate(value: Date | string | null | undefined) {
-  if (!value) return undefined;
+  if (!value) return null;
 
   const date = value instanceof Date ? value : new Date(value);
 
-  return isValidDate(date) ? date : undefined;
+  return isValidDate(date) ? date : null;
 }
 
 function toDatetimeLocalValue(value: Date | string | null | undefined) {
@@ -45,7 +46,11 @@ function toDatetimeLocalValue(value: Date | string | null | undefined) {
 function parseDatetimeLocalValue(value: string) {
   const date = new Date(value);
 
-  return isValidDate(date) ? date : undefined;
+  return isValidDate(date) ? date : null;
+}
+
+function getEmptyValue() {
+  return props.emptyAsNull ? null : undefined;
 }
 
 watchEffect(() => {
@@ -60,7 +65,7 @@ const value = computed({
   },
 
   set(value: string) {
-    model.value = value ? parseDatetimeLocalValue(value) : undefined;
+    model.value = value ? parseDatetimeLocalValue(value) : getEmptyValue();
   },
 });
 </script>

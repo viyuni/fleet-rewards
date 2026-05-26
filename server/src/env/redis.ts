@@ -26,11 +26,15 @@ export const redisEnv = createEnv({
     REDIS_MAX_RETRIES: v.optional(numberish(), 100),
 
     /**
-     * 直播验证码有效期（秒）
+     * B 站登录码有效期（秒）
      */
-    LIVE_LOGIN_CODE_TTL_SECONDS: v.optional(numberish(), 300),
+    BILI_LOGIN_CODE_TTL_SECONDS: v.optional(numberish(), 300),
   },
-  runtimeEnv: process.env,
+  runtimeEnv: {
+    ...process.env,
+    BILI_LOGIN_CODE_TTL_SECONDS:
+      process.env.BILI_LOGIN_CODE_TTL_SECONDS ?? process.env.LIVE_LOGIN_CODE_TTL_SECONDS,
+  },
   emptyStringAsUndefined: true,
 });
 

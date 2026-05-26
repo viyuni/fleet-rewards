@@ -9,7 +9,7 @@ import { logger } from '#utils/logger';
 import { eventEnv } from './env';
 
 const {
-  useCases: { liveLoginUseCase },
+  useCases: { biliLoginUseCase },
 } = createEventContainer({
   db,
   env: eventEnv,
@@ -36,13 +36,13 @@ listener.on('event', event => {
     case 'message': {
       logger.info(event, 'Bilibili Message');
 
-      liveLoginUseCase
+      biliLoginUseCase
         .matchMessage({
           code: event.content,
           biliUid: event.uid.toString(),
           biliName: event.uname,
         })
-        .catch(error => logger.error(error, 'Live login message match failed'));
+        .catch(error => logger.error(error, 'Bilibili login message match failed'));
 
       break;
     }

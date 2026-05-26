@@ -46,7 +46,7 @@ describe('AuthUseCase', () => {
       id: 'admin-id',
       role: 'superAdmin',
     });
-    const payload = await authUseCase.verify(accessToken);
+    const payload = await authUseCase.verifyAccessToken(accessToken);
 
     expect(payload).toEqual({
       id: 'admin-id',
@@ -61,7 +61,7 @@ describe('AuthUseCase', () => {
     const { accessToken } = await authUseCase.createSessionTokenPair({
       id: 'user-id',
     });
-    const payload = await authUseCase.verify(accessToken);
+    const payload = await authUseCase.verifyAccessToken(accessToken);
 
     expect(payload).toEqual({
       id: 'user-id',
@@ -102,7 +102,7 @@ describe('AuthUseCase', () => {
 describe('requiredSuperAdminAuth', () => {
   function createApp(payload: { id: string; role?: string; sid: string }) {
     const authUseCase = {
-      verify: mock(async () => payload),
+      verifyAccessToken: mock(async () => payload),
     } as any;
 
     const app = new Elysia().use(createAuthGuard(authUseCase)).get(
@@ -139,7 +139,7 @@ describe('requiredSuperAdminAuth', () => {
       id: 'admin-id',
       role: 'superAdmin',
     });
-    expect(authUseCase.verify).toHaveBeenCalledWith('token');
+    expect(authUseCase.verifyAccessToken).toHaveBeenCalledWith('token');
   });
 
   it('拒绝普通管理员访问', async () => {

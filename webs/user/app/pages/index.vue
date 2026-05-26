@@ -10,9 +10,11 @@ const {
 const { data } = useQuery({
   key: () => ['products', page.value],
   async query() {
-    return $api.products
-      .get({ query: { pageSize: 50, page: page.value } })
-      .then(({ data }) => data);
+    return $api.products.get({ query: { pageSize: 50, page: page.value } }).then(({ data }) => {
+      console.log(data);
+
+      return data;
+    });
   },
 });
 </script>

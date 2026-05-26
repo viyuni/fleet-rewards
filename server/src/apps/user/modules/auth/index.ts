@@ -1,4 +1,4 @@
-import { LiveLoginCodeParamsSchema } from '@internal/shared/auth';
+import { BiliLoginCodeParamsSchema } from '@internal/shared/auth';
 import { UserLoginSchema, UserRegisterSchema } from '@internal/shared/user';
 import Elysia from 'elysia';
 
@@ -6,6 +6,8 @@ import { appContext } from '#apps/user/context';
 import {
   ACCESS_TOKEN_COOKIE_NAME,
   ACCESS_TOKEN_COOKIE_OPTIONS,
+  BILI_LOGIN_VERIFIER_COOKIE_NAME,
+  BILI_LOGIN_VERIFIER_COOKIE_OPTIONS,
   REFRESH_TOKEN_COOKIE_NAME,
   REFRESH_TOKEN_COOKIE_OPTIONS,
 } from '#modules/auth';
@@ -13,6 +15,10 @@ import { UnauthorizedError } from '#utils';
 
 import { AuthUseCase } from './usecase';
 export * from './usecase';
+
+function getCookieString(value: unknown) {
+  return typeof value === 'string' ? value : undefined;
+}
 
 export const auth = new Elysia({
   name: 'AuthRoute',
@@ -22,10 +28,10 @@ export const auth = new Elysia({
   },
 })
   .use(appContext)
-  .derive(({ authUseCase, liveLoginUseCase, rewardUseCase, userUseCase }) => ({
+  .derive(({ authUseCase, biliLoginUseCase, rewardUseCase, userUseCase }) => ({
     userAuthUseCase: new AuthUseCase({
       authUseCase,
-      liveLoginUseCase,
+      biliLoginUseCase,
       rewardUseCase,
       userUseCase,
     }),
@@ -119,9 +125,16 @@ export const auth = new Elysia({
     },
   )
   .post(
-    '/liveCode',
-    ({ userAuthUseCase }) => {
-      return userAuthUseCase.createLiveCode();
+    '/biliLoginCode',
+    async ({ cookie, userAuthUseCase }) => {
+      const { verifier, ...result } = await userAuthUseCase.createBiliLoginCode();
+
+      cookie[BILI_LOGIN_VERIFIER_COOKIE_NAME]!.set({
+        ...BILI_LOGIN_VERIFIER_COOKIE_OPTIONS,
+        value: verifier,
+      });
+
+      return result;
     },
     {
       detail: {
@@ -130,23 +143,35 @@ export const auth = new Elysia({
     },
   )
   .get(
-    '/liveCode/:code',
-    ({ params, userAuthUseCase }) => {
-      return userAuthUseCase.getLiveCodeStatus(params.code);
+    '/biliLoginCode/:code',
+    ({ cookie, params, userAuthUseCase }) => {
+      return userAuthUseCase.getBiliLoginCodeStatus(
+        params.code,
+        getCookieString(cookie[BILI_LOGIN_VERIFIER_COOKIE_NAME]?.value),
+      );
     },
     {
-      params: LiveLoginCodeParamsSchema,
+      params: BiliLoginCodeParamsSchema,
       detail: {
         summary: '查询直播间登录码状态',
       },
     },
   )
   .post(
-    '/liveCode/:code/confirm',
+    '/biliLoginCode/:code/confirm',
     async ({ params, cookie, userAuthUseCase }) => {
-      const result = await userAuthUseCase.confirmLiveCode(params.code);
+      const result = await userAuthUseCase.confirmBiliLoginCode(
+        params.code,
+        getCookieString(cookie[BILI_LOGIN_VERIFIER_COOKIE_NAME]?.value),
+      );
+
+      if (result.status === 'expired') {
+        cookie[BILI_LOGIN_VERIFIER_COOKIE_NAME]!.remove();
+      }
 
       if ('user' in result) {
+        cookie[BILI_LOGIN_VERIFIER_COOKIE_NAME]!.remove();
+
         cookie[ACCESS_TOKEN_COOKIE_NAME]!.set({
           ...ACCESS_TOKEN_COOKIE_OPTIONS,
           value: result.accessToken!,
@@ -167,7 +192,7 @@ export const auth = new Elysia({
       return result;
     },
     {
-      params: LiveLoginCodeParamsSchema,
+      params: BiliLoginCodeParamsSchema,
       detail: {
         summary: '确认直播间登录码并登录',
       },

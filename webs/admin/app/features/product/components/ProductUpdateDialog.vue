@@ -122,11 +122,21 @@ watch(open, isOpen => {
         </FormFieldItem>
 
         <FormFieldItem v-slot="{ componentField }" name="startAt" label="开始时间">
-          <DateTimeLocalInput v-bind="componentField" type="datetime-local" step="1" />
+          <DateTimeLocalInput
+            v-bind="componentField"
+            empty-as-null
+            type="datetime-local"
+            step="1"
+          />
         </FormFieldItem>
 
         <FormFieldItem v-slot="{ componentField }" name="endAt" label="结束时间">
-          <DateTimeLocalInput v-bind="componentField" type="datetime-local" step="1" />
+          <DateTimeLocalInput
+            v-bind="componentField"
+            empty-as-null
+            type="datetime-local"
+            step="1"
+          />
         </FormFieldItem>
 
         <FormFieldItem v-slot="{ componentField }" name="allowCancel" label="允许取消订单" required>
