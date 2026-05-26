@@ -1,13 +1,17 @@
 <script setup lang="ts">
 import { useTheme } from '@web/ui/components/ui/theme-toggle';
 
+const { width = 120 } = defineProps<{
+  width?: number | string;
+}>();
+
 const { isDark } = useTheme();
 </script>
 
 <template>
   <span class="inline-flex">
     <img
-      width="110"
+      :width
       class="select-none"
       draggable="false"
       :src="

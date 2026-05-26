@@ -47,6 +47,7 @@ export class PointConversionRuleRepository {
         and(
           eq(pointConversionRules.fromPointTypeId, input.fromPointTypeId),
           eq(pointConversionRules.toPointTypeId, input.toPointTypeId),
+          deletedAtIsNull(pointConversionRules),
         ),
       )
       .limit(1);
@@ -84,6 +85,10 @@ export class PointConversionRuleRepository {
 
   async disabled(pointConversionRuleId: string, db: DbExecutor = this.db) {
     return this.update(pointConversionRuleId, { enabled: false }, db);
+  }
+
+  async delete(pointConversionRuleId: string, db: DbExecutor = this.db) {
+    return this.update(pointConversionRuleId, { deletedAt: new Date() }, db);
   }
 
   list(db: DbExecutor = this.db) {

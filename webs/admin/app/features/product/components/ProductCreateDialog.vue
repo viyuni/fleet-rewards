@@ -6,31 +6,17 @@ import { Loader2 } from 'lucide-vue-next';
 
 import PointTypeSelect from '../../point/components/PointTypeSelect.vue';
 import { useCreateProduct } from '../mutations';
-import ProductCoverCropDialog from './ProductCoverCropDialog.vue';
 
 const open = defineModel<boolean>('open', { default: false });
 
 const createProductMutation = useCreateProduct();
 
-const productCoverCropDialog = ref<InstanceType<typeof ProductCoverCropDialog>>();
-const coverCropPreviewSize = 320;
-const {
-  public: { apiBaseUrl },
-} = useRuntimeConfig();
-const imageBaseUrl = computed(() => apiBaseUrl.replace(/\/$/, ''));
-const currentCoverUrl = computed(() => undefined);
-
-function resetSelectedCover() {
-  productCoverCropDialog.value?.reset();
-}
-
-const { canSubmit, handleSubmit, isLoading, onSubmitSuccess } = usePopoverForm({
+const { canSubmit, handleSubmit, isLoading } = usePopoverForm({
   schema: CreateProductSchema,
   open,
   initialValues: () => ({
     name: '',
     description: undefined,
-    cover: undefined,
     detail: undefined,
     pointTypeId: '',
     price: 1,
@@ -45,16 +31,6 @@ const { canSubmit, handleSubmit, isLoading, onSubmitSuccess } = usePopoverForm({
   }),
   mutation: createProductMutation,
 });
-
-onSubmitSuccess(() => {
-  resetSelectedCover();
-});
-
-watch(open, isOpen => {
-  if (!isOpen) {
-    resetSelectedCover();
-  }
-});
 </script>
 
 <template>
@@ -62,7 +38,7 @@ watch(open, isOpen => {
     <DialogContent class="max-h-[calc(100vh-2rem)] overflow-y-auto sm:max-w-2xl">
       <DialogHeader>
         <DialogTitle>添加商品</DialogTitle>
-        <DialogDescription>上传并创建一个可兑换商品。</DialogDescription>
+        <DialogDescription>创建一个可兑换商品。</DialogDescription>
       </DialogHeader>
 
       <form class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" @submit="handleSubmit">
@@ -113,20 +89,6 @@ watch(open, isOpen => {
 
         <FormFieldItem v-slot="{ componentField }" name="sort" label="排序" required>
           <Input v-bind="componentField" type="number" step="1" />
-        </FormFieldItem>
-
-        <FormFieldItem
-          v-slot="{ componentField }"
-          class="sm:col-span-2 lg:col-span-3"
-          name="cover"
-          label="封面"
-        >
-          <ProductCoverCropDialog
-            ref="productCoverCropDialog"
-            v-bind="componentField"
-            :current-cover-url="currentCoverUrl"
-            :preview-size="coverCropPreviewSize"
-          />
         </FormFieldItem>
 
         <FormFieldItem

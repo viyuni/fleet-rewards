@@ -56,6 +56,14 @@ export class RewardRuleUseCase {
       await this.deps.pointTypeUseCase.getAvailableById(ruleData.pointTypeId);
     }
 
+    if (ruleData.name && ruleData.name !== current.name) {
+      const exists = await this.deps.rewardRuleRepo.findByName(ruleData.name);
+
+      if (exists) {
+        throw new RewardRuleNameExistsError();
+      }
+    }
+
     const { startAt, endAt } = ruleData;
 
     RewardRulePolicy.assertValidTimeRange({

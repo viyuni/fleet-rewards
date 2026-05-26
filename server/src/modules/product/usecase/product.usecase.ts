@@ -1,6 +1,7 @@
 import type { PageQuery } from '@internal/shared';
 import type {
   CreateProductBody,
+  ProductCoverUploadBody,
   ProductPageQuery,
   UpdateProductBody,
 } from '@internal/shared/product';
@@ -76,20 +77,13 @@ export class ProductUseCase {
       throw new ProductNameExistsError();
     }
 
-    const { cover, endAt: _endAt, startAt: _startAt, ...data } = productData;
+    const { endAt: _endAt, startAt: _startAt, ...data } = productData;
 
     const updateData: InsertProduct = {
       ...data,
       endAt,
       startAt,
     };
-
-    if (cover) {
-      const { filename, placeholder } = await this.deps.imageUseCase.save(cover);
-
-      updateData.cover = filename;
-      updateData.coverPlaceholderUrl = placeholder;
-    }
 
     return this.deps.productRepo.create(updateData);
   }
@@ -98,12 +92,26 @@ export class ProductUseCase {
    * 更新商品
    */
   async update(productId: string, productData: UpdateProductBody) {
+    const current = await this.get(productId);
+
+    if (productData.pointTypeId) {
+      await this.deps.pointTypeUseCase.getAvailableById(productData.pointTypeId);
+    }
+
+    if (productData.name && productData.name !== current.name) {
+      const exists = await this.deps.productRepo.findByName(productData.name);
+
+      if (exists) {
+        throw new ProductNameExistsError();
+      }
+    }
+
     ProductInputPolicy.assertPrice(productData.price);
     ProductInputPolicy.assertStock(productData.stock);
     const { startAt, endAt } = productData;
     ProductInputPolicy.assertTimeRange(startAt, endAt);
 
-    const { cover, endAt: _endAt, startAt: _startAt, ...data } = productData;
+    const { endAt: _endAt, startAt: _startAt, ...data } = productData;
 
     const updateData: UpdateProduct = {
       ...data,
@@ -111,14 +119,26 @@ export class ProductUseCase {
       startAt,
     };
 
-    if (cover) {
-      const { filename, placeholder } = await this.deps.imageUseCase.save(cover);
+    const product = await this.deps.productRepo.update(productId, updateData);
 
-      updateData.cover = filename;
-      updateData.coverPlaceholderUrl = placeholder;
+    if (!product) {
+      throw new ProductNotFoundError();
     }
 
-    return this.deps.productRepo.update(productId, updateData);
+    return product;
+  }
+
+  /**
+   * 更新商品封面
+   */
+  async updateCover(productId: string, body: ProductCoverUploadBody) {
+    await this.get(productId);
+    const { filename, placeholder } = await this.deps.imageUseCase.save(body.cover);
+
+    return this.deps.productRepo.update(productId, {
+      cover: filename,
+      coverPlaceholderUrl: placeholder,
+    });
   }
 
   /**
@@ -145,6 +165,16 @@ export class ProductUseCase {
     }
 
     return this.deps.productRepo.updateStatus(productId, 'disabled');
+  }
+
+  async remove(productId: string) {
+    const product = await this.deps.productRepo.delete(productId);
+
+    if (!product) {
+      throw new ProductNotFoundError();
+    }
+
+    return product;
   }
 
   /**

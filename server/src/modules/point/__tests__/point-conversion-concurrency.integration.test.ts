@@ -2,13 +2,14 @@ import { expect, it } from 'bun:test';
 
 import { and, count, eq } from 'drizzle-orm';
 
-import { pointAccounts, pointTransactions } from '#db/schema';
+import { pointAccounts, pointConversionRules, pointTransactions } from '#db/schema';
 
 import {
   PointAccountBannedError,
   PointConversionRuleInvalidError,
   PointConversionRuleNameExistsError,
   PointConversionRulePairExistsError,
+  PointTypeNameExistsError,
   PointConversionRuleUnavailableError,
   PointIdempotencyKey,
 } from '..';
@@ -136,6 +137,141 @@ describeWithDatabase('积分转换真实数据库并发保护', () => {
       }),
       PointConversionRulePairExistsError,
     );
+  });
+
+  it('积分类型更新会拒绝重复名称', async () => {
+    const prefix = newBatch();
+    const first = await seedPointType(`${prefix}_first_point`);
+    const second = await seedPointType(`${prefix}_second_point`);
+    const { pointTypeUseCase } = createDeps();
+
+    await expectRejectsInstanceOf(
+      pointTypeUseCase.update(second.id, {
+        name: first.name,
+      }),
+      PointTypeNameExistsError,
+    );
+  });
+
+  it('积分转换规则更新会拒绝重复名称', async () => {
+    const prefix = newBatch();
+    const fromPointType = await seedPointType(`${prefix}_update_name_from_point`);
+    const toPointType = await seedPointType(`${prefix}_update_name_to_point`);
+    const otherFromPointType = await seedPointType(`${prefix}_update_name_other_from_point`);
+    const otherToPointType = await seedPointType(`${prefix}_update_name_other_to_point`);
+    const { pointConversionUseCase } = createDeps();
+    const first = await pointConversionUseCase.create({
+      name: `${prefix}_first_rule`,
+      fromPointTypeId: fromPointType.id,
+      toPointTypeId: toPointType.id,
+      toAmount: 1,
+    });
+    const second = await pointConversionUseCase.create({
+      name: `${prefix}_second_rule`,
+      fromPointTypeId: otherFromPointType.id,
+      toPointTypeId: otherToPointType.id,
+      toAmount: 1,
+    });
+
+    if (!first || !second) {
+      throw new Error('seed conversion rules failed');
+    }
+
+    await expectRejectsInstanceOf(
+      pointConversionUseCase.update(second.id, {
+        name: first.name,
+      }),
+      PointConversionRuleNameExistsError,
+    );
+  });
+
+  it('积分转换规则更新会拒绝重复来源和目标积分类型', async () => {
+    const prefix = newBatch();
+    const fromPointType = await seedPointType(`${prefix}_update_pair_from_point`);
+    const toPointType = await seedPointType(`${prefix}_update_pair_to_point`);
+    const otherFromPointType = await seedPointType(`${prefix}_update_pair_other_from_point`);
+    const otherToPointType = await seedPointType(`${prefix}_update_pair_other_to_point`);
+    const { pointConversionUseCase } = createDeps();
+
+    await pointConversionUseCase.create({
+      name: `${prefix}_first_pair_rule`,
+      fromPointTypeId: fromPointType.id,
+      toPointTypeId: toPointType.id,
+      toAmount: 1,
+    });
+    const second = await pointConversionUseCase.create({
+      name: `${prefix}_second_pair_rule`,
+      fromPointTypeId: otherFromPointType.id,
+      toPointTypeId: otherToPointType.id,
+      toAmount: 1,
+    });
+
+    if (!second) {
+      throw new Error('seed conversion rule failed');
+    }
+
+    await expectRejectsInstanceOf(
+      pointConversionUseCase.update(second.id, {
+        fromPointTypeId: fromPointType.id,
+        toPointTypeId: toPointType.id,
+      }),
+      PointConversionRulePairExistsError,
+    );
+  });
+
+  it('积分转换规则查重会忽略已软删除的规则', async () => {
+    const prefix = newBatch();
+    const fromPointType = await seedPointType(`${prefix}_deleted_pair_from_point`);
+    const toPointType = await seedPointType(`${prefix}_deleted_pair_to_point`);
+    const { pointConversionRuleRepo, pointConversionUseCase } = createDeps();
+    const rule = await pointConversionUseCase.create({
+      name: `${prefix}_deleted_pair_rule`,
+      fromPointTypeId: fromPointType.id,
+      toPointTypeId: toPointType.id,
+      toAmount: 1,
+    });
+
+    if (!rule) {
+      throw new Error('seed conversion rule failed');
+    }
+
+    await db
+      .update(pointConversionRules)
+      .set({ deletedAt: new Date() })
+      .where(eq(pointConversionRules.id, rule.id));
+
+    const exists = await pointConversionRuleRepo.findByPointTypePair({
+      fromPointTypeId: fromPointType.id,
+      toPointTypeId: toPointType.id,
+    });
+
+    expect(exists).toBeNull();
+  });
+
+  it('积分转换规则删除后可复用来源和目标积分类型', async () => {
+    const prefix = newBatch();
+    const fromPointType = await seedPointType(`${prefix}_remove_pair_from_point`);
+    const toPointType = await seedPointType(`${prefix}_remove_pair_to_point`);
+    const { pointConversionUseCase } = createDeps();
+    const removed = await createConversionRule(
+      `${prefix}_remove`,
+      fromPointType.id,
+      toPointType.id,
+    );
+
+    await pointConversionUseCase.remove(removed.id);
+
+    const recreated = await pointConversionUseCase.create({
+      name: `${prefix}_recreated_rule`,
+      fromPointTypeId: fromPointType.id,
+      toPointTypeId: toPointType.id,
+      toAmount: 1,
+    });
+    const rules = await pointConversionUseCase.list();
+
+    expect(recreated?.id).toBeDefined();
+    expect(rules.some(rule => rule.id === removed.id)).toBe(false);
+    expect(rules.some(rule => rule.id === recreated?.id)).toBe(true);
   });
 
   it('积分转换会拒绝非正数转换数量', async () => {

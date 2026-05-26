@@ -53,13 +53,18 @@ const offsetY = ref(0);
 const scale = ref(1);
 const isDragging = ref(false);
 const dragStart = ref({ x: 0, y: 0, offsetX: 0, offsetY: 0 });
+const viewportSize = ref(props.previewSize);
+let resizeObserver: ResizeObserver | undefined;
 
 const minScale = computed(() => {
   if (!naturalWidth.value || !naturalHeight.value) {
     return 1;
   }
 
-  return Math.max(props.previewSize / naturalWidth.value, props.previewSize / naturalHeight.value);
+  return Math.max(
+    viewportSize.value / naturalWidth.value,
+    viewportSize.value / naturalHeight.value,
+  );
 });
 
 const fittedWidth = computed(() => naturalWidth.value * minScale.value * scale.value);
@@ -76,11 +81,11 @@ function clamp(value: number, min: number, max: number) {
 }
 
 function clampOffset(value: number, fittedSize: number) {
-  if (fittedSize <= props.previewSize) {
-    return (props.previewSize - fittedSize) / 2;
+  if (fittedSize <= viewportSize.value) {
+    return (viewportSize.value - fittedSize) / 2;
   }
 
-  return clamp(value, props.previewSize - fittedSize, 0);
+  return clamp(value, viewportSize.value - fittedSize, 0);
 }
 
 function clampTransform() {
@@ -106,16 +111,33 @@ function syncImageNode() {
   emit('change', cropState.value);
 }
 
-function reset() {
-  scale.value = 1;
-  offsetX.value = (props.previewSize - fittedWidth.value) / 2;
-  offsetY.value = (props.previewSize - fittedHeight.value) / 2;
+function resizeAppToView() {
+  const rect = viewRef.value?.getBoundingClientRect();
+  const size = rect?.width || props.previewSize;
+
+  viewportSize.value = size;
+  app.value?.resize({ height: size, width: size });
   syncImageNode();
 }
 
-function zoomBy(delta: number, originX = props.previewSize / 2, originY = props.previewSize / 2) {
+function reset() {
+  scale.value = 1;
+  offsetX.value = (viewportSize.value - fittedWidth.value) / 2;
+  offsetY.value = (viewportSize.value - fittedHeight.value) / 2;
+  syncImageNode();
+}
+
+function zoomBy(delta: number, originX = viewportSize.value / 2, originY = viewportSize.value / 2) {
+  zoomTo(scale.value + delta, originX, originY);
+}
+
+function zoomTo(
+  nextValue: number,
+  originX = viewportSize.value / 2,
+  originY = viewportSize.value / 2,
+) {
   const previousScale = scale.value;
-  const nextScale = clamp(previousScale + delta, 1, props.maxScale);
+  const nextScale = clamp(nextValue, 1, props.maxScale);
 
   if (nextScale === previousScale) {
     return;
@@ -126,6 +148,12 @@ function zoomBy(delta: number, originX = props.previewSize / 2, originY = props.
   offsetY.value = originY - (originY - offsetY.value) * ratio;
   scale.value = nextScale;
   syncImageNode();
+}
+
+function handleScaleInput(event: Event) {
+  const input = event.target as HTMLInputElement;
+
+  zoomTo(Number(input.value));
 }
 
 function loadSourceImage(src: string) {
@@ -176,15 +204,12 @@ function getLocalPoint(event: PointerEvent | WheelEvent) {
   const rect = viewRef.value?.getBoundingClientRect();
 
   if (!rect) {
-    return { x: props.previewSize / 2, y: props.previewSize / 2 };
+    return { x: viewportSize.value / 2, y: viewportSize.value / 2 };
   }
 
-  const scaleX = props.previewSize / rect.width;
-  const scaleY = props.previewSize / rect.height;
-
   return {
-    x: (event.clientX - rect.left) * scaleX,
-    y: (event.clientY - rect.top) * scaleY,
+    x: event.clientX - rect.left,
+    y: event.clientY - rect.top,
   };
 }
 
@@ -209,7 +234,7 @@ function handlePointerMove(event: PointerEvent) {
   }
 
   const rect = viewRef.value?.getBoundingClientRect();
-  const ratio = rect ? props.previewSize / rect.width : 1;
+  const ratio = rect ? viewportSize.value / rect.width : 1;
 
   offsetX.value = dragStart.value.offsetX + (event.clientX - dragStart.value.x) * ratio;
   offsetY.value = dragStart.value.offsetY + (event.clientY - dragStart.value.y) * ratio;
@@ -243,7 +268,7 @@ function exportDataUrl() {
     throw new Error('当前浏览器不支持图片导出');
   }
 
-  const drawScale = props.outputSize / props.previewSize;
+  const drawScale = props.outputSize / viewportSize.value;
 
   canvas.width = props.outputSize;
   canvas.height = props.outputSize;
@@ -292,7 +317,7 @@ watch(
 watch(
   () => props.previewSize,
   () => {
-    app.value?.resize({ height: props.previewSize, width: props.previewSize });
+    resizeAppToView();
     reset();
   },
 );
@@ -304,15 +329,18 @@ onMounted(() => {
 
   mounted.value = true;
   app.value = new Leafer({
-    height: props.previewSize,
+    height: viewRef.value.clientWidth || props.previewSize,
     view: viewRef.value,
-    width: props.previewSize,
+    width: viewRef.value.clientWidth || props.previewSize,
   });
+  resizeObserver = new ResizeObserver(resizeAppToView);
+  resizeObserver.observe(viewRef.value);
 
   void setSource(props.src);
 });
 
 onBeforeUnmount(() => {
+  resizeObserver?.disconnect();
   app.value?.destroy();
 });
 
@@ -325,12 +353,11 @@ defineExpose({
 </script>
 
 <template>
-  <div class="grid items-center gap-3" :style="{ gridTemplateColumns: `${previewSize}px auto` }">
+  <div class="grid w-full gap-3">
     <div
       ref="viewRef"
-      class="bg-muted relative touch-none overflow-hidden rounded-md border"
+      class="bg-muted relative aspect-square w-full touch-none overflow-hidden rounded-md border"
       :class="{ 'cursor-grabbing': isDragging, 'cursor-grab': !isDragging }"
-      :style="{ aspectRatio: '1 / 1', width: `${previewSize}px` }"
       @pointerdown="handlePointerDown"
       @pointermove="handlePointerMove"
       @pointerup="handlePointerUp"
@@ -340,21 +367,21 @@ defineExpose({
       <div class="pointer-events-none absolute inset-0 ring-1 ring-white/70 ring-inset" />
     </div>
 
-    <div class="flex h-full flex-col items-center gap-2">
+    <div class="flex items-center gap-2">
       <Button variant="outline" size="icon-sm" type="button" @click="zoomBy(-0.12)">
         <Minus />
         <span class="sr-only">缩小</span>
       </Button>
       <input
-        v-model.number="scale"
-        class="accent-primary min-h-0 flex-1"
-        :style="{ writingMode: 'vertical-lr' }"
+        :value="scale"
+        class="accent-primary min-w-0 flex-1"
         type="range"
         min="1"
         :max="maxScale"
         step="0.01"
         aria-label="缩放"
-        @input="syncImageNode"
+        @change.stop
+        @input.stop="handleScaleInput"
       />
       <Button variant="outline" size="icon-sm" type="button" @click="zoomBy(0.12)">
         <Plus />

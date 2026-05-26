@@ -6,8 +6,7 @@
       class="border-base-300 container mx-auto flex items-center justify-between border-x border-b p-5"
     >
       <div class="flex gap-2 select-none">
-        <AppIcon width="26" height="26" />
-        <h1 class="text-xl font-bold uppercase">Viyuni Guard+</h1>
+        <AppLogo />
       </div>
       <ThemeToggle />
     </div>

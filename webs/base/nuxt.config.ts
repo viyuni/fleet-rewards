@@ -31,6 +31,7 @@ export default defineNuxtConfig({
         '@vueuse/router',
         'class-variance-authority',
         'clsx',
+        'ky',
         'lucide-vue-next',
         'reka-ui',
         'tailwind-merge',

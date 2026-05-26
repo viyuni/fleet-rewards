@@ -125,8 +125,6 @@ export function useForm<const TSchema extends AnyFormSchema, TVariables = FormOu
       let result: unknown;
       let formValues: FormOutput<TSchema> = values;
 
-      console.log(formValues);
-
       if (omitUndefinedField) {
         formValues = omitUndefined(formValues);
       }

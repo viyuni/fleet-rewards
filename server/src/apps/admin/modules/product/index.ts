@@ -1,5 +1,6 @@
 import {
   CreateProductSchema,
+  ProductCoverUploadSchema,
   ProductIdParamsSchema,
   ProductPageQuerySchema,
   UpdateProductSchema,
@@ -105,6 +106,25 @@ export const product = new Elysia({
       },
     },
   )
+  .put(
+    '/:productId/cover',
+    ({ body, params, productUseCase }) => {
+      return productUseCase.updateCover(params.productId, body);
+    },
+    {
+      body: ProductCoverUploadSchema,
+      params: ProductIdParamsSchema,
+      requiredAdminAuth: true,
+      detail: {
+        description: '更新商品封面',
+        requestBody: {
+          content: {
+            'multipart/form-data': {},
+          },
+        },
+      },
+    },
+  )
   .patch(
     '/:productId/enable',
     ({ params, productUseCase }) => {
@@ -128,6 +148,19 @@ export const product = new Elysia({
       requiredAdminAuth: true,
       detail: {
         description: '下架商品',
+      },
+    },
+  )
+  .delete(
+    '/:productId',
+    ({ params, productUseCase }) => {
+      return productUseCase.remove(params.productId);
+    },
+    {
+      params: ProductIdParamsSchema,
+      requiredAdminAuth: true,
+      detail: {
+        description: '删除商品',
       },
     },
   )

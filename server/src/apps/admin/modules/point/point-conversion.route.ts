@@ -83,6 +83,19 @@ export const pointConversionRoute = new Elysia({
       },
     },
   )
+  .delete(
+    '/:pointConversionRuleId',
+    ({ params, pointConversionUseCase }) => {
+      return pointConversionUseCase.remove(params.pointConversionRuleId);
+    },
+    {
+      params: PointConversionRuleIdParamsSchema,
+      requiredAdminAuth: true,
+      detail: {
+        description: '删除积分转换规则',
+      },
+    },
+  )
   .post(
     '/convert',
     ({ body, pointConversionUseCase }) => {

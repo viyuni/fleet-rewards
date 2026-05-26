@@ -61,9 +61,8 @@ listener.on('event', event => {
   }
 });
 
-// 凌晨4点重启
-Bun.cron('0 4 * * *', () => listener.refreshCookieAndRestart());
-
-await listener.start().then(() => {
+listener.start().then(() => {
   logger.info('Bilibili Event Listener started...');
 });
+
+Bun.cron('0 4 * * *', () => listener.refreshCookieAndRestart());

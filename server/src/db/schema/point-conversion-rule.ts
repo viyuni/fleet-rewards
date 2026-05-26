@@ -104,7 +104,9 @@ export const pointConversionRules = pgTable(
   },
   t => [
     uniqueIndex('point_conversion_rules_active_unique').on(t.name).where(isNull(t.deletedAt)),
-    uniqueIndex('point_conversion_rules_from_to_unique_idx').on(t.fromPointTypeId, t.toPointTypeId),
+    uniqueIndex('point_conversion_rules_from_to_unique_idx')
+      .on(t.fromPointTypeId, t.toPointTypeId)
+      .where(isNull(t.deletedAt)),
     index('point_conversion_rules_from_point_type_id_idx').on(t.fromPointTypeId),
     index('point_conversion_rules_to_point_type_id_idx').on(t.toPointTypeId),
     index('point_conversion_rules_enabled_idx').on(t.enabled),

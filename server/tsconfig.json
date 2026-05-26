@@ -1,6 +1,6 @@
 {
   "$schema": "https://www.schemastore.org/tsconfig",
-  "include": ["src/**/*", "package.json", "./env.d.ts", "*.config.ts"],
+  "include": ["src/**/*", "scripts/*", "package.json", "./env.d.ts", "*.config.ts"],
   "compilerOptions": {
     "lib": ["ESNext"],
     "target": "ESNext",
@@ -19,10 +19,11 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "noPropertyAccessFromIndexSignature": false,
-    "types": ["bun-types", "node", "@viyuni/vpp"],
+    "types": ["bun-types", "node"],
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.server.app.tsbuildinfo",
 
     "paths": {
+      "~/*": ["./*"],
       "#apps/*": ["./src/apps/*"],
       "#context": ["./src/context.ts"],
       "#context/*": ["./src/context/*"],
@@ -36,8 +37,7 @@
       "#utils": ["./src/utils/index.ts"],
       "#utils/*": ["./src/utils/*"],
       "#shared/*": ["../shared/src/*"],
-      "#queues": ["./src/queues/index.ts"],
-      "~/*": ["./*"]
+      "#queues": ["./src/queues/index.ts"]
     }
   }
 }

@@ -1,4 +1,8 @@
-import type { CreateProductBody, UpdateProductBody } from '@internal/shared/product';
+import type {
+  CreateProductBody,
+  ProductCoverUploadBody,
+  UpdateProductBody,
+} from '@internal/shared/product';
 import type { StockAdjustmentBody } from '@internal/shared/stock';
 import { defineMutation, useMutation, useQueryCache } from '@pinia/colada';
 
@@ -58,6 +62,22 @@ export const useUpdateProduct = defineMutation(() => {
   });
 });
 
+export const useUpdateProductCover = defineMutation(() => {
+  const { $api } = useNuxtApp();
+  const invalidateProducts = useInvalidateProducts();
+
+  return useMutation({
+    meta: {
+      showToast: true,
+      successMessage: '商品封面已更新',
+    },
+    mutation(input: { productId: string; body: ProductCoverUploadBody }) {
+      return $api.products({ productId: input.productId }).cover.put(input.body);
+    },
+    onSettled: invalidateProducts,
+  });
+});
+
 export const useEnableProduct = defineMutation(() => {
   const { $api } = useNuxtApp();
   const invalidateProducts = useInvalidateProducts();
@@ -85,6 +105,22 @@ export const useDisableProduct = defineMutation(() => {
     },
     mutation(productId: string) {
       return $api.products({ productId }).disable.patch();
+    },
+    onSettled: invalidateProducts,
+  });
+});
+
+export const useDeleteProduct = defineMutation(() => {
+  const { $api } = useNuxtApp();
+  const invalidateProducts = useInvalidateProducts();
+
+  return useMutation({
+    meta: {
+      showToast: true,
+      successMessage: '商品已删除',
+    },
+    mutation(productId: string) {
+      return $api.products({ productId }).delete();
     },
     onSettled: invalidateProducts,
   });

@@ -1,0 +1,2 @@
+DROP INDEX "point_conversion_rules_from_to_unique_idx";--> statement-breakpoint
+CREATE UNIQUE INDEX "point_conversion_rules_from_to_unique_idx" ON "point_conversion_rules" ("from_point_type_id","to_point_type_id") WHERE ("deleted_at" is null);

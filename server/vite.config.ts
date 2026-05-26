@@ -1,5 +1,37 @@
 import { defineConfig } from 'vite-plus';
 
+type CommandBuilder = {
+  (...commands: string[]): string;
+  with(command: string): CommandBuilder;
+};
+
+function createCommand(base: string, prevCommand = ''): CommandBuilder {
+  const current = prevCommand.trim();
+
+  const builder = ((...commands: string[]) => {
+    return [base.trim(), current, ...commands.map(command => command.trim())]
+      .filter(Boolean)
+      .join(' ');
+  }) as CommandBuilder;
+
+  builder.with = (command: string) => {
+    return createCommand(base, [current, command.trim()].filter(Boolean).join(' '));
+  };
+
+  return builder;
+}
+
+const bun = createCommand('bun');
+const bunEnv = bun.with('--env-file=.env');
+const bunTest = bun.with('--env-file=.env.test');
+const dev = bunEnv.with('--no-clear-screen --watch');
+
+const inputs = {
+  admin: './src/apps/admin/index.ts',
+  user: './src/apps/user/index.ts',
+  event: './src/apps/event/index.ts',
+} as const;
+
 export default defineConfig({
   pack: {
     entry: {
@@ -9,16 +41,26 @@ export default defineConfig({
       emitDtsOnly: true,
     },
   },
-  vpp: {
-    test: 'bun:test',
-  },
   run: {
     tasks: {
       dev: {
-        command: 'bun --parallel run dev:admin dev:user dev:event',
+        cache: false,
+        command: 'bun scripts/dev.ts',
+      },
+      'dev:admin': {
+        cache: false,
+        command: dev(inputs.admin),
+      },
+      'dev:user': {
+        cache: false,
+        command: dev(inputs.user),
+      },
+      'dev:event': {
+        cache: false,
+        command: dev(inputs.event),
       },
       build: {
-        command: 'bun --sequential run build:admin build:user build:event',
+        command: 'bun scripts/build.ts',
       },
       dts: {
         command: 'vp pack',
@@ -30,31 +72,30 @@ export default defineConfig({
         command: 'vpr typecheck && vp lint && vp fmt',
       },
       test: {
-        command:
-          'bun --env-file=.env.test test --preload ./src/__tests__/setup-env.ts --pass-with-no-tests',
+        command: bunTest('test --pass-with-no-tests'),
       },
       'db:generate': {
-        command: 'bun --env-file=.env drizzle-kit generate',
+        command: bunEnv('drizzle-kit generate'),
       },
       'db:push': {
         cache: false,
-        command: 'bun --env-file=.env drizzle-kit push',
+        command: bunEnv('drizzle-kit push'),
       },
       'db:push:test': {
         cache: false,
-        command: 'bun --env-file=.env.test drizzle-kit push',
+        command: bunTest('drizzle-kit push'),
       },
       'db:seed': {
         cache: false,
-        command: 'bun --env-file=.env ./src/db/seed.ts',
+        command: bunEnv('./src/db/seed.ts'),
       },
       'db:studio': {
         cache: false,
-        command: 'bun --env-file=.env drizzle-kit studio',
+        command: bunEnv('drizzle-kit studio'),
       },
       'db:studio:test': {
         cache: false,
-        command: 'bun --env-file=.env.test drizzle-kit studio',
+        command: bunTest('drizzle-kit studio'),
       },
       'docker-compose': {
         command: 'docker compose up -d',

@@ -5,13 +5,14 @@ import type { ColumnDef } from '@tanstack/vue-table';
 import { Button } from '@web/ui/components/ui/button';
 import { useOverlay } from '@web/ui/components/ui/overlay';
 import { DataTable } from '@web/ui/components/ui/table';
-import { MoreHorizontal, PackagePlus, Pencil, Plus } from 'lucide-vue-next';
+import { ImageUp, MoreHorizontal, PackagePlus, Pencil, Plus, Trash2 } from 'lucide-vue-next';
 
 import type { AdminApi } from '~/plugins/api';
 
-import { useDisableProduct, useEnableProduct } from '../mutations';
+import { useDeleteProduct, useDisableProduct, useEnableProduct } from '../mutations';
 import { productPageQuery } from '../queries';
 import AdjustProductStockDialog from './AdjustProductStockDialog.vue';
+import ProductCoverDialog from './ProductCoverDialog.vue';
 import ProductDialog from './ProductDialog.vue';
 
 export type ProductListPage = Treaty.Data<AdminApi['products']['get']>;
@@ -43,9 +44,11 @@ const {
 
 const { items: products, meta: productMeta } = usePageQuery(() => productPageQuery(query.value));
 const [openAdjustProductStockDialog] = useOverlay(AdjustProductStockDialog);
+const [openProductCoverDialog] = useOverlay(ProductCoverDialog);
 const [openProductDialog] = useOverlay(ProductDialog);
 const { mutate: enableProduct, isLoading: isEnabling } = useEnableProduct();
 const { mutate: disableProduct, isLoading: isDisabling } = useDisableProduct();
+const { mutate: deleteProduct, isLoading: isDeleting } = useDeleteProduct();
 
 const isUpdatingStatus = computed(() => isEnabling.value || isDisabling.value);
 const {
@@ -158,9 +161,22 @@ function getCoverUrl(cover: Product['cover']) {
             <Pencil />
             编辑商品
           </DropdownMenuItem>
+          <DropdownMenuItem @click="openProductCoverDialog({ product: rowData })">
+            <ImageUp />
+            更新封面
+          </DropdownMenuItem>
           <DropdownMenuItem @click="openAdjustProductStockDialog({ product: rowData })">
             <PackagePlus />
             调整库存
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            variant="destructive"
+            :disabled="isDeleting"
+            @click="deleteProduct(rowData.id)"
+          >
+            <Trash2 />
+            删除
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

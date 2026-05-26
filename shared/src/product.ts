@@ -72,14 +72,23 @@ const ProductDescriptionSchema = v.pipe(
 const ProductDetailSchema = v.pipe(v.string('请输入商品详情'), v.description('商品详情'));
 
 /**
- * 商品封面图 Schema。
+ * 商品封面图文件 Schema。
  */
-const ProductCoverSchema = v.pipe(
+const ProductCoverFileSchema = v.pipe(
   v.file('请选择商品封面图'),
   v.mimeType(['image/jpeg', 'image/png', 'image/webp'], '商品封面图仅支持 JPG、PNG、WebP 格式'),
   v.maxSize(1024 * 1024 * 20, '请选择一个小于 20MB 的文件'),
   v.description('商品封面图'),
 );
+
+/**
+ * 商品封面图上传 Body Schema。
+ */
+export const ProductCoverUploadSchema = v.object({
+  cover: ProductCoverFileSchema,
+});
+
+export type ProductCoverUploadBody = v.InferOutput<typeof ProductCoverUploadSchema>;
 
 /**
  * 商品关联积分类型 ID Schema。
@@ -155,7 +164,6 @@ export const CreateProductSchema = v.object({
   name: ProductNameSchema,
 
   description: v.optional(emptyable(ProductDescriptionSchema)),
-  cover: v.optional(ProductCoverSchema),
   detail: v.optional(emptyable(ProductDetailSchema)),
 
   pointTypeId: ProductPointTypeIdSchema,
@@ -179,7 +187,6 @@ export const UpdateProductSchema = v.object({
   name: v.optional(ProductNameSchema),
 
   description: v.nullish(emptyable(ProductDescriptionSchema)),
-  cover: v.optional(ProductCoverSchema),
   detail: v.nullish(emptyable(ProductDetailSchema)),
 
   pointTypeId: v.optional(ProductPointTypeIdSchema),

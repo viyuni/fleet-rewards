@@ -6,7 +6,6 @@ import { Loader2 } from 'lucide-vue-next';
 
 import PointTypeSelect from '../../point/components/PointTypeSelect.vue';
 import { useUpdateProduct } from '../mutations';
-import ProductCoverCropDialog from './ProductCoverCropDialog.vue';
 import type { Product } from './ProductListView.vue';
 
 const props = defineProps<{
@@ -17,39 +16,12 @@ const open = defineModel<boolean>('open', { default: false });
 
 const updateProductMutation = useUpdateProduct();
 
-const productCoverCropDialog = ref<InstanceType<typeof ProductCoverCropDialog>>();
-const coverCropPreviewSize = 320;
-const {
-  public: { apiBaseUrl },
-} = useRuntimeConfig();
-const imageBaseUrl = computed(() => apiBaseUrl.replace(/\/$/, ''));
-const currentCoverUrl = computed(() => getImageUrl(props.product.cover));
-
-function resetSelectedCover() {
-  productCoverCropDialog.value?.reset();
-}
-
-function getImageUrl(cover: Product['cover'] | undefined) {
-  if (!cover) {
-    return undefined;
-  }
-
-  if (/^https?:\/\//.test(cover)) {
-    return cover;
-  }
-
-  const imagePath = cover.startsWith('/images/') ? cover : `/images/${cover.replace(/^\/+/, '')}`;
-
-  return `${imageBaseUrl.value}${imagePath}`;
-}
-
-const { canSubmit, handleSubmit, isLoading, onSubmitSuccess } = usePopoverForm({
+const { canSubmit, handleSubmit, isLoading } = usePopoverForm({
   schema: UpdateProductSchema,
   open,
   initialValues: () => ({
     name: props.product?.name ?? '',
     description: props.product?.description ?? undefined,
-    cover: undefined,
     detail: props.product?.detail ?? undefined,
     pointTypeId: props.product?.pointTypeId ?? '',
     price: props.product?.price ?? 1,
@@ -69,16 +41,6 @@ const { canSubmit, handleSubmit, isLoading, onSubmitSuccess } = usePopoverForm({
       body,
     };
   },
-});
-
-onSubmitSuccess(() => {
-  resetSelectedCover();
-});
-
-watch(open, isOpen => {
-  if (!isOpen) {
-    resetSelectedCover();
-  }
 });
 </script>
 
@@ -148,20 +110,6 @@ watch(open, isOpen => {
 
         <FormFieldItem v-slot="{ componentField }" name="sort" label="排序" required>
           <Input v-bind="componentField" type="number" step="1" />
-        </FormFieldItem>
-
-        <FormFieldItem
-          v-slot="{ componentField }"
-          class="sm:col-span-2 lg:col-span-3"
-          name="cover"
-          label="封面"
-        >
-          <ProductCoverCropDialog
-            ref="productCoverCropDialog"
-            v-bind="componentField"
-            :current-cover-url="currentCoverUrl"
-            :preview-size="coverCropPreviewSize"
-          />
         </FormFieldItem>
 
         <FormFieldItem

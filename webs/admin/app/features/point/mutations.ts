@@ -167,6 +167,22 @@ export const useDisablePointConversionRule = defineMutation(() => {
   });
 });
 
+export const useDeletePointConversionRule = defineMutation(() => {
+  const { $api } = useNuxtApp();
+  const invalidatePoints = useInvalidatePoints();
+
+  return useMutation({
+    meta: {
+      showToast: true,
+      successMessage: '积分转换规则已删除',
+    },
+    mutation(pointConversionRuleId: string) {
+      return $api.points.conversions({ pointConversionRuleId }).delete();
+    },
+    onSettled: invalidatePoints,
+  });
+});
+
 export const useConvertPoint = defineMutation(() => {
   const { $api } = useNuxtApp();
   const invalidatePoints = useInvalidatePoints();

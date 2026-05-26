@@ -52,6 +52,21 @@ describeWithDatabase('奖励发放真实数据库', () => {
     );
   });
 
+  it('奖励规则更新会拒绝重复名称', async () => {
+    const prefix = newBatch('reward_update_name');
+    const pointType = await seedPointType(`${prefix}_point`);
+    const { rewardRuleUseCase } = createDeps();
+    const first = await createRewardRule(`${prefix}_first`, pointType.id);
+    const second = await createRewardRule(`${prefix}_second`, pointType.id);
+
+    await expectRejectsInstanceOf(
+      rewardRuleUseCase.update(second.id, {
+        name: first.name,
+      }),
+      RewardRuleNameExistsError,
+    );
+  });
+
   it('同一个大航海事件不会重复发放奖励', async () => {
     const prefix = newBatch('reward');
     const biliUid = createBiliUid();

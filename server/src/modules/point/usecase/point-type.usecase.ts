@@ -43,7 +43,19 @@ export class PointTypeUseCase {
 
     PointTypePolicy.assertExists(pointType);
 
-    return this.deps.pointTypeRepo.update(pointTypeId, data);
+    if (data.name && data.name !== pointType.name) {
+      const exists = await this.deps.pointTypeRepo.findByName(data.name);
+
+      if (exists) {
+        throw new PointTypeNameExistsError();
+      }
+    }
+
+    const updated = await this.deps.pointTypeRepo.update(pointTypeId, data);
+
+    PointTypePolicy.assertExists(updated);
+
+    return updated;
   }
 
   async enable(pointTypeId: string) {

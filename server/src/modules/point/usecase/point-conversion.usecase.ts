@@ -85,8 +85,17 @@ export class PointConversionUseCase {
 
     PointConversionRulePolicy.assertValidShape(next);
 
+    if (ruleData.name && ruleData.name !== current.name) {
+      const exists = await this.deps.pointConversionRuleRepo.findByName(ruleData.name);
+
+      if (exists) {
+        throw new PointConversionRuleNameExistsError();
+      }
+    }
+
     if (ruleData.fromPointTypeId || ruleData.toPointTypeId) {
       await this.assertPointTypesAvailable(next.fromPointTypeId, next.toPointTypeId);
+      await this.assertRulePairAvailable(next.fromPointTypeId, next.toPointTypeId, current.id);
     }
 
     const { endAt: _endAt, startAt: _startAt, ...data } = ruleData;
@@ -96,7 +105,13 @@ export class PointConversionUseCase {
       startAt,
     };
 
-    return this.deps.pointConversionRuleRepo.update(pointConversionRuleId, updateData);
+    const rule = await this.deps.pointConversionRuleRepo.update(pointConversionRuleId, updateData);
+
+    if (!rule) {
+      throw new PointConversionRuleNotFoundError();
+    }
+
+    return rule;
   }
 
   async enable(pointConversionRuleId: string) {
@@ -117,6 +132,16 @@ export class PointConversionUseCase {
     }
 
     return this.deps.pointConversionRuleRepo.disabled(pointConversionRuleId);
+  }
+
+  async remove(pointConversionRuleId: string) {
+    const rule = await this.deps.pointConversionRuleRepo.delete(pointConversionRuleId);
+
+    if (!rule) {
+      throw new PointConversionRuleNotFoundError();
+    }
+
+    return rule;
   }
 
   async convert(conversionData: ConvertPointBody) {
@@ -208,13 +233,17 @@ export class PointConversionUseCase {
     ]);
   }
 
-  private async assertRulePairAvailable(fromPointTypeId: string, toPointTypeId: string) {
+  private async assertRulePairAvailable(
+    fromPointTypeId: string,
+    toPointTypeId: string,
+    currentRuleId?: string,
+  ) {
     const exists = await this.deps.pointConversionRuleRepo.findByPointTypePair({
       fromPointTypeId,
       toPointTypeId,
     });
 
-    if (exists) {
+    if (exists && exists.id !== currentRuleId) {
       throw new PointConversionRulePairExistsError();
     }
   }

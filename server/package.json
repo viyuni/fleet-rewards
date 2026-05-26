@@ -6,14 +6,6 @@
   "exports": {
     ".": "./dist/eden.d.mts"
   },
-  "scripts": {
-    "dev:user": "bun --env-file=.env --no-clear-screen --watch ./src/apps/user/index.ts",
-    "dev:admin": "bun --env-file=.env --no-clear-screen --watch ./src/apps/admin/index.ts",
-    "dev:event": "bun --env-file=.env --no-clear-screen ./src/apps/event/index.ts",
-    "build:user": "bun build ./src/apps/user/index.ts --compile --outfile dist/user",
-    "build:admin": "bun build ./src/apps/admin/index.ts --compile --outfile dist/admin",
-    "build:event": "bun build ./src/apps/event/index.ts --compile --outfile dist/event"
-  },
   "dependencies": {
     "@elysia/cors": "^1.4.2",
     "@elysia/html": "^1.4.1",

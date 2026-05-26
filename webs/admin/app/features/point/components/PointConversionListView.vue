@@ -4,11 +4,15 @@ import type { ColumnDef } from '@tanstack/vue-table';
 import { Button } from '@web/ui/components/ui/button';
 import { useOverlay } from '@web/ui/components/ui/overlay';
 import { DataTable } from '@web/ui/components/ui/table';
-import { ArrowRightLeft, MoreHorizontal, Pencil, Play, Plus } from 'lucide-vue-next';
+import { ArrowRightLeft, MoreHorizontal, Pencil, Play, Plus, Trash2 } from 'lucide-vue-next';
 
 import type { AdminApi } from '~/plugins/api';
 
-import { useDisablePointConversionRule, useEnablePointConversionRule } from '../mutations';
+import {
+  useDeletePointConversionRule,
+  useDisablePointConversionRule,
+  useEnablePointConversionRule,
+} from '../mutations';
 import { pointConversionListQuery } from '../queries';
 import ConvertPointDialog from './ConvertPointDialog.vue';
 import PointConversionRuleDialog from './PointConversionRuleDialog.vue';
@@ -39,6 +43,7 @@ const columns = [
 const { data: conversions } = useQuery(pointConversionListQuery);
 const { mutate: enableConversionRule, isLoading: isEnabling } = useEnablePointConversionRule();
 const { mutate: disableConversionRule, isLoading: isDisabling } = useDisablePointConversionRule();
+const { mutate: deleteConversionRule, isLoading: isDeleting } = useDeletePointConversionRule();
 const [openConversionRuleDialog] = useOverlay(PointConversionRuleDialog);
 const [openConvertPointDialog] = useOverlay(ConvertPointDialog);
 
@@ -120,6 +125,15 @@ function toggleConversionRuleEnabled(conversion: PointConversion, enabled: boole
           >
             <Play />
             执行转换
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            variant="destructive"
+            :disabled="isDeleting"
+            @click="deleteConversionRule(rowData.id)"
+          >
+            <Trash2 />
+            删除
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
