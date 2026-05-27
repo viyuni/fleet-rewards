@@ -55,6 +55,7 @@
     "./components/ui/spinner": "./src/components/ui/spinner/index.ts",
     "./components/ui/switch": "./src/components/ui/switch/index.ts",
     "./components/ui/table": "./src/components/ui/table/index.ts",
+    "./components/ui/tabs": "./src/components/ui/tabs/index.ts",
     "./components/ui/textarea": "./src/components/ui/textarea/index.ts",
     "./components/ui/theme-toggle": "./src/components/ui/theme-toggle/index.ts",
     "./components/ui/tooltip": "./src/components/ui/tooltip/index.ts"
@@ -72,7 +73,7 @@
     "clsx": "^2.1.1",
     "leafer-ui": "^2.1.0",
     "lucide-vue-next": "^1.0.0",
-    "reka-ui": "^2.9.7",
+    "reka-ui": "^2.9.8",
     "shadcn-vue": "^2.6.2",
     "tailwind-merge": "^3.5.0",
     "tailwindcss": "^4.2.4",

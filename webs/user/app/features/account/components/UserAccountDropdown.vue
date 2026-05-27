@@ -17,7 +17,7 @@ const emit = defineEmits<{
 <template>
   <DropdownMenu>
     <DropdownMenuTrigger as-child>
-      <Button variant="outline" size="sm" class="max-w-44 bg-[#fffdf8] px-2">
+      <Button class="max-w-44">
         <UserRound class="size-4 shrink-0" />
         <span class="truncate">{{ user?.username ?? '用户' }}</span>
       </Button>
@@ -25,7 +25,7 @@ const emit = defineEmits<{
 
     <DropdownMenuContent align="end" class="w-52">
       <DropdownMenuLabel>
-        <div class="truncate">{{ user?.username ?? '用户' }}</div>
+        <div class="text-foreground truncate text-base">{{ user?.username ?? '用户' }}</div>
         <div class="text-muted-foreground truncate text-xs font-normal">
           UID {{ user?.biliUid ?? user?.uid ?? '-' }}
         </div>

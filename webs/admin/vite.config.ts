@@ -1,9 +1,6 @@
 import { defineConfig } from 'vite-plus';
 
 export default defineConfig({
-  vpp: {
-    typecheck: 'nuxt',
-  },
   run: {
     tasks: {
       build: {
@@ -24,11 +21,6 @@ export default defineConfig({
       typecheck: {
         command: 'nuxt typecheck',
       },
-    },
-  },
-  lint: {
-    options: {
-      typeCheck: true,
     },
   },
 });

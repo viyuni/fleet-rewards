@@ -24,11 +24,6 @@ export default defineConfig({
   vpp: {
     test: 'bun:test',
   },
-  lint: {
-    options: {
-      typeCheck: true,
-    },
-  },
   run: {
     tasks: {
       dev: {
@@ -57,7 +52,7 @@ export default defineConfig({
         command: 'tsgo --build',
       },
       check: {
-        command: 'vpr typecheck && vp lint && vp fmt',
+        command: 'vp check',
       },
       test: {
         command: bunTest('vpp test'),

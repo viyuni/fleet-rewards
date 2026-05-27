@@ -145,7 +145,7 @@ describe('QueryPageBuilder', () => {
     it('未调用 query 时抛出错误', async () => {
       const { db, query } = createMockRelationalDb([], 0);
 
-      await expect(new QueryPageBuilder(db, mockTable, query).paginate()).rejects.toThrow(
+      expect(new QueryPageBuilder(db, mockTable, query).paginate()).rejects.toThrow(
         'QueryPageBuilder requires query() before paginate().',
       );
     });

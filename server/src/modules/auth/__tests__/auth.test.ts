@@ -121,7 +121,7 @@ describe('AuthUseCase', () => {
       role: 'user',
     });
 
-    await expect(authUseCase.refreshAccessToken(accessToken)).rejects.toThrow();
+    expect(authUseCase.refreshAccessToken(accessToken)).rejects.toThrow();
   });
 
   it('并发刷新时复用 Redis 锁内生成的 AccessToken', async () => {

@@ -369,7 +369,7 @@ export class OrderUseCase {
       row.receiverAddress,
     ]);
 
-    return [headers, ...body].map(row => row.map(this.escapeCsvCell).join(',')).join('\n');
+    return [headers, ...body].map(row => row.map(v => this.escapeCsvCell(v)).join(',')).join('\n');
   }
 
   private escapeCsvCell(value: string) {

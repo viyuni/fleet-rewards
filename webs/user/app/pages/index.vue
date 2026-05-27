@@ -225,16 +225,17 @@ async function handlePointConverted() {
 </script>
 
 <template>
-  <main class="min-h-svh pb-10 text-[#1d120b]">
-    <header class="sticky top-0 z-20 border-b border-white/35 bg-[#fff]/90 backdrop-blur">
-      <div class="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3">
+  <main class="min-h-svh overflow-y-auto pb-10 text-[#1d120b]">
+    <header class="sticky top-0 z-20 border-b border-white/35 bg-white/90 backdrop-blur">
+      <div class="container mx-auto flex items-center justify-between gap-3 px-4 py-3">
         <div>
           <div class="text-lg font-bold text-[#4b210d]">积分商城</div>
           <div class="text-xs text-[#8a5a36]">弥生miku 大航海积分兑换</div>
         </div>
 
         <div class="flex items-center gap-2">
-          <Button v-if="!isAuthenticated" size="sm" @click="openAuthDialog('login')">
+          <ThemeToggle />
+          <Button v-if="!isAuthenticated" @click="openAuthDialog('login')">
             <LogIn class="size-4" />
             登录/注册
           </Button>
