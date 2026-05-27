@@ -3,9 +3,11 @@ import Elysia from 'elysia';
 import { userEnv } from '#apps/user/env';
 import { createAppContext } from '#context';
 import { db } from '#db';
+import { logger } from '#utils/logger';
 
 import { createMailer } from './modules/email/domain';
 import { EmailUseCase } from './modules/email/usecase';
+import { NotifyWorker } from './modules/email/worker';
 
 const { context } = createAppContext({
   db,
@@ -17,6 +19,8 @@ const emailUseCase = new EmailUseCase({
   notifyEmails: userEnv.NOTIFY_EMAILS,
 });
 
+const notifyWorker = new NotifyWorker({ emailUseCase });
+
 /**
  * 真实运行时上下文。
  *
@@ -24,6 +28,7 @@ const emailUseCase = new EmailUseCase({
  */
 export const appRuntimeContext = context.decorate({
   emailUseCase,
+  notifyWorker,
 });
 
 /**
@@ -37,3 +42,7 @@ export const appRuntimeContext = context.decorate({
 export const appContext = new Elysia({
   name: 'AdminAppContextTypeOnly',
 }) as unknown as typeof appRuntimeContext;
+
+appRuntimeContext.onStart(() => {
+  logger.info('Notify Worker started...');
+});

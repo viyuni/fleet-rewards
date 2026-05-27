@@ -20,7 +20,7 @@ export const pointConversionRoute = new Elysia({
   .get(
     '/',
     ({ pointConversionUseCase }) => {
-      return pointConversionUseCase.list();
+      return pointConversionUseCase.listManage();
     },
     {
       requiredAdminAuth: true,

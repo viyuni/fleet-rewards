@@ -14,7 +14,6 @@ export default defineNuxtPlugin(() => {
 
   const api = createApiClient<UserApp>({
     baseUrl: apiBaseUrl,
-    authRefresh: client => client.auth.refresh.post(),
   });
 
   return {

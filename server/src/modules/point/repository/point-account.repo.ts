@@ -1,6 +1,6 @@
 import { and, eq, gte, inArray, sql } from 'drizzle-orm';
 
-import type { DbTransaction } from '#db';
+import type { DbExecutor, DbTransaction } from '#db';
 import { pointAccounts } from '#db/schema';
 
 import {
@@ -12,6 +12,36 @@ import {
 } from '../domain';
 
 export class PointAccountRepository {
+  constructor(private readonly db?: DbExecutor) {}
+
+  listMine(userId: string, db: DbExecutor = this.requireDb()) {
+    return db.query.pointAccounts.findMany({
+      where: {
+        userId,
+      },
+      orderBy: {
+        updatedAt: 'desc',
+      },
+      columns: {
+        id: true,
+        pointTypeId: true,
+        balance: true,
+        status: true,
+        updatedAt: true,
+      },
+      with: {
+        pointType: {
+          columns: {
+            id: true,
+            name: true,
+            status: true,
+            sort: true,
+          },
+        },
+      },
+    });
+  }
+
   /**
    * 确保积分账户存在, 并行锁
    */
@@ -118,5 +148,13 @@ export class PointAccountRepository {
     }
 
     return updatedAccount;
+  }
+
+  private requireDb() {
+    if (!this.db) {
+      throw new Error('PointAccountRepository requires a database executor for read operations.');
+    }
+
+    return this.db;
   }
 }

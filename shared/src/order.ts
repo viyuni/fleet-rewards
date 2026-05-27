@@ -102,3 +102,44 @@ export const UpdateOrderExpressSchema = v.object({
 });
 
 export type UpdateOrderExpressBody = v.InferOutput<typeof UpdateOrderExpressSchema>;
+
+/**
+ * 更新订单收货信息 Schema
+ */
+export const UpdateOrderReceiverSchema = v.object({
+  phone: v.optional(
+    emptyable(
+      v.pipe(
+        v.string('请输入收货电话'),
+        v.trim(),
+        v.maxLength(100, '收货电话不能超过 100 个字符'),
+        v.description('收货电话'),
+      ),
+    ),
+  ),
+  address: v.optional(
+    emptyable(
+      v.pipe(
+        v.string('请输入收货地址'),
+        v.trim(),
+        v.maxLength(500, '收货地址不能超过 500 个字符'),
+        v.description('收货地址'),
+      ),
+    ),
+  ),
+});
+
+export type UpdateOrderReceiverBody = v.InferOutput<typeof UpdateOrderReceiverSchema>;
+
+/**
+ * 导出订单 Schema
+ */
+export const ExportOrdersSchema = v.object({
+  ids: v.pipe(
+    v.array(v.pipe(v.string('请输入订单ID'), v.uuid('请输入有效的订单ID'))),
+    v.minLength(1, '请选择要导出的订单'),
+    v.description('订单ID列表'),
+  ),
+});
+
+export type ExportOrdersBody = v.InferOutput<typeof ExportOrdersSchema>;

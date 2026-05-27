@@ -11,10 +11,25 @@ Docs are local at `node_modules/vite-plus/docs` or online at https://viteplus.de
 - [ ] Run `vp install` after pulling remote changes and before getting started.
 - [ ] Run `vp check` and `vp test` to format, lint, type check and test changes.
 - [ ] Check if there are `vite.config.ts` tasks or `package.json` scripts necessary for validation, run via `vp run <script>`.
+- [ ] If setup, runtime, or package-manager behavior looks wrong, run `vp env doctor` and include its output when asking for help.
 
 <!--VITE PLUS END-->
 
 <!-- PROJECT IMPORTS START -->
+
+<!--VPP START-->
+
+# Using vpp
+
+When this project already has `vpp` available, prefer it for test commands.
+
+- Use `vpp test` instead of `vp test`.
+- Use `vpp test <args...>` instead of `vp test <args...>`.
+- Keep using existing Vite+ commands for non-test tasks, such as `vp check`,
+  `vp pack`, and `vp run <script>`.
+- Fall back to `vp test` only if `vpp` is not available.
+
+<!--VPP END-->
 
 # Import Conventions
 

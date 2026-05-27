@@ -3,7 +3,12 @@ import Elysia from 'elysia';
 import type { AdminRole } from '#db/schema';
 import { UnauthorizedError } from '#utils';
 
-import { AUTH_COOKIE_NAME } from './constants';
+import {
+  ACCESS_TOKEN_COOKIE_NAME,
+  ACCESS_TOKEN_COOKIE_OPTIONS,
+  AUTH_COOKIE_NAME,
+  REFRESH_TOKEN_COOKIE_NAME,
+} from './constants';
 import type { AuthPayload } from './domain';
 import type { AuthUseCase } from './usecase';
 
@@ -38,12 +43,34 @@ export const createAuthGuard = (authUseCase: AuthUseCase) => {
       },
       async transform(ctx) {
         const token = ctx.cookie?.[AUTH_COOKIE_NAME]?.value;
+        const refreshToken = ctx.cookie?.[REFRESH_TOKEN_COOKIE_NAME]?.value;
 
-        if (!token || typeof token !== 'string') {
+        if (token && typeof token === 'string') {
+          try {
+            const payload = await authUseCase.verifyAccessToken(token);
+
+            setAuth(ctx, {
+              id: payload.id,
+              role: payload.role,
+              sid: payload.sid,
+            });
+
+            return;
+          } catch {
+            // Fall through to refresh-token based authentication.
+          }
+        }
+
+        if (!refreshToken || typeof refreshToken !== 'string') {
           throw new UnauthorizedError('未登录');
         }
 
-        const payload = await authUseCase.verifyAccessToken(token);
+        const { payload, accessToken } = await authUseCase.refreshAccessTokenWithLock(refreshToken);
+
+        ctx.cookie[ACCESS_TOKEN_COOKIE_NAME]!.set({
+          ...ACCESS_TOKEN_COOKIE_OPTIONS,
+          value: accessToken,
+        });
 
         setAuth(ctx, {
           id: payload.id,

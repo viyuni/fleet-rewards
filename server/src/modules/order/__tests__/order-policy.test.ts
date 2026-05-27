@@ -14,6 +14,7 @@ function order(input: Partial<Order> = {}): Order {
     pointTypeId: crypto.randomUUID(),
     price: 1,
     productNameSnapshot: '商品',
+    productDetailSnapshot: null,
     pointTypeNameSnapshot: '积分',
     deliveryTypeSnapshot: 'manual',
     consumeTransactionId: null,

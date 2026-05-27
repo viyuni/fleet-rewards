@@ -8,7 +8,6 @@ import {
   REFRESH_TOKEN_COOKIE_NAME,
   REFRESH_TOKEN_COOKIE_OPTIONS,
 } from '#modules/auth';
-import { UnauthorizedError } from '#utils';
 
 export * from './usecase';
 
@@ -23,8 +22,7 @@ export const auth = new Elysia({
   .post(
     '/login',
     async ({ body, cookie, adminAuthUseCase }) => {
-      const { user, accessToken, accessTokenExpiresAt, refreshToken, refreshTokenExpiresAt } =
-        await adminAuthUseCase.login(body);
+      const { user, accessToken, refreshToken } = await adminAuthUseCase.login(body);
 
       cookie[ACCESS_TOKEN_COOKIE_NAME]!.set({
         ...ACCESS_TOKEN_COOKIE_OPTIONS,
@@ -36,42 +34,12 @@ export const auth = new Elysia({
         value: refreshToken,
       });
 
-      return {
-        user,
-        accessTokenExpiresAt,
-        refreshTokenExpiresAt,
-      };
+      return user;
     },
     {
       body: AdminLoginSchema,
       detail: {
         description: '管理员登录',
-      },
-    },
-  )
-  .post(
-    '/refresh',
-    async ({ cookie, authUseCase }) => {
-      const refreshToken = cookie[REFRESH_TOKEN_COOKIE_NAME]?.value;
-
-      if (!refreshToken || typeof refreshToken !== 'string') {
-        throw new UnauthorizedError('未登录');
-      }
-
-      const accessToken = await authUseCase.refreshAccessToken(refreshToken);
-
-      cookie[ACCESS_TOKEN_COOKIE_NAME]!.set({
-        ...ACCESS_TOKEN_COOKIE_OPTIONS,
-        value: accessToken,
-      });
-
-      return {
-        success: true,
-      };
-    },
-    {
-      detail: {
-        description: '刷新 AccessToken',
       },
     },
   )

@@ -94,6 +94,13 @@ export const orders = pgTable(
     productNameSnapshot: text('product_name_snapshot').notNull(),
 
     /**
+     * 商品详情快照
+     *
+     * 用于虚拟商品兑换后展示下载链接、兑换码等购买时的商品详情。
+     */
+    productDetailSnapshot: text('product_detail_snapshot'),
+
+    /**
      * 积分类型名称快照
      */
     pointTypeNameSnapshot: text('point_type_name_snapshot').notNull(),

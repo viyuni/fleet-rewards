@@ -1,10 +1,12 @@
 import { createClient } from 'redis';
-import type { RedisClientOptions } from 'redis';
+import type { RedisClientOptions, RedisClientType } from 'redis';
 
 import { redisEnv, type RedisEnv } from '#env/redis';
 import { logger } from '#utils/logger';
 
-export function createRedisClient(env: RedisEnv = redisEnv) {
+export type RedisClient = RedisClientType<any, any, any, 2 | 3>;
+
+export function createRedisClient(env: RedisEnv = redisEnv): RedisClient {
   const options: RedisClientOptions = {
     url: env.REDIS_URL,
     socket: {

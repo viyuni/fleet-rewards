@@ -91,12 +91,40 @@ export class PointConversionRuleRepository {
     return this.update(pointConversionRuleId, { deletedAt: new Date() }, db);
   }
 
-  list(db: DbExecutor = this.db) {
+  listManage(db: DbExecutor = this.db) {
     return db.query.pointConversionRules.findMany({
       where: {
         deletedAt: {
           isNull: true,
         },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      with: {
+        fromPointType: true,
+        toPointType: true,
+      },
+    });
+  }
+
+  listVisible(db: DbExecutor = this.db) {
+    const now = new Date();
+
+    return db.query.pointConversionRules.findMany({
+      where: {
+        deletedAt: {
+          isNull: true,
+        },
+        enabled: true,
+        AND: [
+          {
+            OR: [{ startAt: { isNull: true } }, { startAt: { lte: now } }],
+          },
+          {
+            OR: [{ endAt: { isNull: true } }, { endAt: { gt: now } }],
+          },
+        ],
       },
       orderBy: {
         createdAt: 'desc',

@@ -126,7 +126,7 @@ describeWithDatabase('订单真实数据库并发保护', () => {
       .where(
         eq(
           pointTransactions.idempotencyKey,
-          PointIdempotencyKey.orderConsume({ orderId: fulfilledOrder.id }),
+          PointIdempotencyKey.orderConsume({ orderId: fulfilledOrder.order.id }),
         ),
       );
     const [stockRows] = await db
@@ -135,7 +135,7 @@ describeWithDatabase('订单真实数据库并发保护', () => {
       .where(
         eq(
           productStockMovements.idempotencyKey,
-          StockIdempotencyKey.orderConsume({ orderId: fulfilledOrder.id }),
+          StockIdempotencyKey.orderConsume({ orderId: fulfilledOrder.order.id }),
         ),
       );
 

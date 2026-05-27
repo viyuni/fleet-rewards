@@ -1,7 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
 import { createHash } from 'node:crypto';
 
-import { createClient, type RedisClientType } from 'redis';
+import { createClient } from 'redis';
+
+import type { RedisClient } from '#redis';
 
 import { BiliLoginRedisRepository } from '../repository';
 import { BiliLoginUseCase } from '../usecase/bili-login.usecase';
@@ -10,7 +12,7 @@ const testRedisUrl = Bun.env.TEST_REDIS_URL;
 const describeWithRedis = testRedisUrl ? describe : describe.skip;
 const ttlSeconds = 60;
 
-let redis: RedisClientType;
+let redis: RedisClient;
 let repo: BiliLoginRedisRepository;
 let useCase: BiliLoginUseCase;
 const createdCodes = new Set<string>();
@@ -40,7 +42,7 @@ async function createMatchedChallenge() {
 beforeEach(async () => {
   if (!testRedisUrl) return;
 
-  redis = createClient({ url: testRedisUrl }) as RedisClientType;
+  redis = createClient({ url: testRedisUrl });
   await redis.connect();
 
   repo = new BiliLoginRedisRepository(redis, ttlSeconds);

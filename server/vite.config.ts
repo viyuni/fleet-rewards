@@ -1,25 +1,5 @@
+import { createCommand } from '@viyuni/vpp';
 import { defineConfig } from 'vite-plus';
-
-type CommandBuilder = {
-  (...commands: string[]): string;
-  with(command: string): CommandBuilder;
-};
-
-function createCommand(base: string, prevCommand = ''): CommandBuilder {
-  const current = prevCommand.trim();
-
-  const builder = ((...commands: string[]) => {
-    return [base.trim(), current, ...commands.map(command => command.trim())]
-      .filter(Boolean)
-      .join(' ');
-  }) as CommandBuilder;
-
-  builder.with = (command: string) => {
-    return createCommand(base, [current, command.trim()].filter(Boolean).join(' '));
-  };
-
-  return builder;
-}
 
 const bun = createCommand('bun');
 const bunEnv = bun.with('--env-file=.env');
@@ -39,6 +19,14 @@ export default defineConfig({
     },
     dts: {
       emitDtsOnly: true,
+    },
+  },
+  vpp: {
+    test: 'bun:test',
+  },
+  lint: {
+    options: {
+      typeCheck: true,
     },
   },
   run: {
@@ -72,7 +60,7 @@ export default defineConfig({
         command: 'vpr typecheck && vp lint && vp fmt',
       },
       test: {
-        command: bunTest('test --pass-with-no-tests'),
+        command: bunTest('vpp test'),
       },
       'db:generate': {
         command: bunEnv('drizzle-kit generate'),

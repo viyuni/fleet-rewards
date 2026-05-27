@@ -11,6 +11,8 @@ import { appRuntimeContext } from './context';
 import { userEnv } from './env';
 import { auth } from './modules/auth';
 import { order } from './modules/order';
+import { pointAccount } from './modules/point-account';
+import { pointConversion } from './modules/point-conversion';
 import { pointTransaction } from './modules/point-transaction';
 import { product } from './modules/product';
 import { user } from './modules/user';
@@ -35,6 +37,8 @@ export const app = new Elysia({
   .use(auth)
   .use(user)
   .use(product)
+  .use(pointAccount)
+  .use(pointConversion)
   .use(pointTransaction)
   .use(order)
   .get('/', () => 'Viyuni Guard plus server running... :)');

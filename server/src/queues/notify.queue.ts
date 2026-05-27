@@ -7,6 +7,7 @@ export interface NewOrderEmailInput {
   username: string;
   biliUid: string;
   productName: string;
+  productDetail?: string | null;
   pointTypeName: string;
   price: number;
   deliveryType: string;

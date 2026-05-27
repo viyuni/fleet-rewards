@@ -150,3 +150,22 @@ export const ConvertPointSchema = v.object({
 });
 
 export type ConvertPointBody = v.InferOutput<typeof ConvertPointSchema>;
+
+/**
+ * 用户积分转换 Body Schema。
+ *
+ * 用户 ID 从登录态中获取，不由前端提交。
+ */
+export const UserConvertPointSchema = v.object({
+  nonce: nonce,
+  ruleId: v.pipe(v.string('请输入积分转换规则 ID'), v.description('积分转换规则 ID')),
+  fromAmount: v.pipe(
+    v.number('请输入来源积分数量'),
+    v.integer('来源积分数量必须是整数'),
+    v.minValue(1, '来源积分数量必须大于 0'),
+    v.description('来源积分数量'),
+  ),
+  remark: v.optional(emptyable(ConversionRuleRemarkSchema)),
+});
+
+export type UserConvertPointBody = v.InferOutput<typeof UserConvertPointSchema>;

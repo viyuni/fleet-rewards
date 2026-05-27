@@ -1,0 +1,1 @@
+ALTER TABLE "orders" ADD COLUMN "product_detail_snapshot" text;

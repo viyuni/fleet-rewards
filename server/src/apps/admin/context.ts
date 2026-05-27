@@ -3,6 +3,8 @@ import Elysia from 'elysia';
 import { adminEnv } from '#apps/admin/utils';
 import { createAppContext } from '#context';
 import { db } from '#db';
+import { BilibiliEventWorker } from '#modules/reward';
+import { logger } from '#utils/logger';
 
 import { AdminRepository } from './modules/admin/repository';
 import { AdminUseCase } from './modules/admin/usecase';
@@ -11,7 +13,7 @@ import { AdminAuthUseCase } from './modules/auth/usecase';
 export const { context, container: adminContainer } = createAppContext({ db, env: adminEnv });
 
 const {
-  useCases: { authUseCase },
+  useCases: { authUseCase, rewardUseCase },
 } = adminContainer;
 
 const adminRepo = new AdminRepository(db);
@@ -31,6 +33,8 @@ const adminAuthUseCase = new AdminAuthUseCase({
   authUseCase,
 });
 
+const bilibiliEventWorker = new BilibiliEventWorker({ rewardUseCase });
+
 /**
  * 真实运行时上下文。
  *
@@ -39,6 +43,7 @@ const adminAuthUseCase = new AdminAuthUseCase({
 export const appRuntimeContext = context.decorate({
   adminAuthUseCase,
   adminUseCase,
+  bilibiliEventWorker,
 });
 
 /**
@@ -56,4 +61,5 @@ export const appContext = new Elysia({
 // 初始化默认管理员
 appRuntimeContext.onStart(() => {
   adminUseCase.initDefaultAdmin();
+  logger.info('Bilibili Event Worker started...');
 });

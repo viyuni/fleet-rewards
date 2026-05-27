@@ -31,8 +31,12 @@ export interface PointConversionUseCaseDeps {
 export class PointConversionUseCase {
   constructor(private readonly deps: PointConversionUseCaseDeps) {}
 
-  list() {
-    return this.deps.pointConversionRuleRepo.list();
+  listManage() {
+    return this.deps.pointConversionRuleRepo.listManage();
+  }
+
+  listVisible() {
+    return this.deps.pointConversionRuleRepo.listVisible();
   }
 
   async get(pointConversionRuleId: string) {

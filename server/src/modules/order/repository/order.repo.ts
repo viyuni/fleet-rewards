@@ -1,12 +1,37 @@
 import type { OrderPageQuery } from '@internal/shared/order';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, inArray } from 'drizzle-orm';
 
 import type { DbExecutor, DbTransaction } from '#db';
 import { QueryPageBuilder } from '#db/helper';
-import { orders, type InsertOrder, type UpdateOrder } from '#db/schema';
+import { orders, users, type InsertOrder, type UpdateOrder } from '#db/schema';
 
 export class OrderRepository {
   constructor(protected readonly db: DbExecutor) {}
+
+  private buildManageWhere(query: OrderPageQuery) {
+    return {
+      status: query.status,
+      userId: query.userId,
+      createdAt: {
+        gte: query.startAt ?? undefined,
+        lte: query.endAt ?? undefined,
+      },
+      OR: query.keyword
+        ? [
+            {
+              productNameSnapshot: {
+                ilike: `%${query.keyword}%`,
+              },
+            },
+            {
+              pointTypeNameSnapshot: {
+                ilike: `%${query.keyword}%`,
+              },
+            },
+          ]
+        : [],
+    };
+  }
 
   /**
    * 管理员 - 订单列表
@@ -15,28 +40,7 @@ export class OrderRepository {
     return new QueryPageBuilder(this.db, orders, this.db.query.orders)
       .page(query.page)
       .pageSize(query.pageSize)
-      .where({
-        status: query.status,
-        userId: query.userId,
-        createdAt: {
-          gte: query.startAt ?? undefined,
-          lte: query.endAt ?? undefined,
-        },
-        OR: query.keyword
-          ? [
-              {
-                productNameSnapshot: {
-                  ilike: `%${query.keyword}%`,
-                },
-              },
-              {
-                pointTypeNameSnapshot: {
-                  ilike: `%${query.keyword}%`,
-                },
-              },
-            ]
-          : [],
-      })
+      .where(this.buildManageWhere(query))
       .query((findMany, { where, limit, offset }) =>
         findMany({
           where,
@@ -72,6 +76,7 @@ export class OrderRepository {
             productId: true,
             price: true,
             productNameSnapshot: true,
+            productDetailSnapshot: true,
             pointTypeNameSnapshot: true,
             deliveryTypeSnapshot: true,
             status: true,
@@ -98,6 +103,27 @@ export class OrderRepository {
         id: orderId,
       },
     });
+  }
+
+  async findExportRowsByIds(orderIds: string[], db: DbExecutor = this.db) {
+    if (!orderIds.length) {
+      return [];
+    }
+
+    return await db
+      .select({
+        id: orders.id,
+        orderNo: orders.orderNo,
+        username: users.username,
+        productName: orders.productNameSnapshot,
+        createdAt: orders.createdAt,
+        receiverPhoneEncrypted: orders.receiverPhoneEncrypted,
+        receiverAddressEncrypted: orders.receiverAddressEncrypted,
+      })
+      .from(orders)
+      .leftJoin(users, eq(orders.userId, users.id))
+      .where(inArray(orders.id, orderIds))
+      .orderBy(orders.createdAt);
   }
 
   async create(tx: DbTransaction, input: InsertOrder) {

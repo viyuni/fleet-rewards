@@ -267,11 +267,80 @@ describeWithDatabase('积分转换真实数据库并发保护', () => {
       toPointTypeId: toPointType.id,
       toAmount: 1,
     });
-    const rules = await pointConversionUseCase.list();
+    const rules = await pointConversionUseCase.listManage();
 
     expect(recreated?.id).toBeDefined();
     expect(rules.some(rule => rule.id === removed.id)).toBe(false);
     expect(rules.some(rule => rule.id === recreated?.id)).toBe(true);
+  });
+
+  it('积分转换规则用户列表只返回当前可用规则', async () => {
+    const prefix = newBatch();
+    const now = new Date();
+    const past = new Date(now.getTime() - 60_000);
+    const future = new Date(now.getTime() + 60_000);
+    const { pointConversionUseCase } = createDeps();
+    const pointTypes = await Promise.all(
+      Array.from({ length: 8 }, (_, index) => seedPointType(`${prefix}_visible_point_${index}`)),
+    );
+    const [
+      visibleFromPointType,
+      visibleToPointType,
+      disabledFromPointType,
+      disabledToPointType,
+      notStartedFromPointType,
+      notStartedToPointType,
+      expiredFromPointType,
+      expiredToPointType,
+    ] = pointTypes;
+
+    const visible = await createConversionRule(
+      `${prefix}_visible`,
+      visibleFromPointType!.id,
+      visibleToPointType!.id,
+      {
+        endAt: future,
+        startAt: past,
+      },
+    );
+    const disabled = await createConversionRule(
+      `${prefix}_disabled`,
+      disabledFromPointType!.id,
+      disabledToPointType!.id,
+      {
+        enabled: false,
+      },
+    );
+    const notStarted = await createConversionRule(
+      `${prefix}_not_started`,
+      notStartedFromPointType!.id,
+      notStartedToPointType!.id,
+      {
+        endAt: new Date(future.getTime() + 60_000),
+        startAt: future,
+      },
+    );
+    const expired = await createConversionRule(
+      `${prefix}_expired`,
+      expiredFromPointType!.id,
+      expiredToPointType!.id,
+      {
+        endAt: past,
+        startAt: new Date(past.getTime() - 60_000),
+      },
+    );
+
+    const manageRules = await pointConversionUseCase.listManage();
+    const visibleRules = await pointConversionUseCase.listVisible();
+
+    expect(manageRules.some(rule => rule.id === visible.id)).toBe(true);
+    expect(manageRules.some(rule => rule.id === disabled.id)).toBe(true);
+    expect(manageRules.some(rule => rule.id === notStarted.id)).toBe(true);
+    expect(manageRules.some(rule => rule.id === expired.id)).toBe(true);
+    expect(visibleRules.some(rule => rule.id === visible.id)).toBe(true);
+    expect(visibleRules.some(rule => rule.id === disabled.id)).toBe(false);
+    expect(visibleRules.some(rule => rule.id === notStarted.id)).toBe(false);
+    expect(visibleRules.some(rule => rule.id === expired.id)).toBe(false);
   });
 
   it('积分转换会拒绝非正数转换数量', async () => {

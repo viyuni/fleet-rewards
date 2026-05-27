@@ -64,7 +64,7 @@ export function createContainer({ db, env }: CreateSharedContextOptions) {
 
   const userRepo = new UserRepository(db);
 
-  const pointAccountRepo = new PointAccountRepository();
+  const pointAccountRepo = new PointAccountRepository(db);
   const pointConversionRuleRepo = new PointConversionRuleRepository(db);
   const pointTransactionRepo = new PointTransactionRepository(db);
   const pointTypeRepo = new PointTypeRepository(db);
@@ -136,6 +136,7 @@ export function createContainer({ db, env }: CreateSharedContextOptions) {
     pointBalanceUseCase,
     pointTypeUseCase,
     productUseCase,
+    userBasicInfoCrypto,
     userUseCase,
   });
 
@@ -212,7 +213,7 @@ export function createEventContainer({ db, env }: CreateEventContainerOptions) {
   const userBasicInfoCrypto = new UserBasicInfoCrypto(env.DATA_SECRET);
 
   const userRepo = new UserRepository(db);
-  const pointAccountRepo = new PointAccountRepository();
+  const pointAccountRepo = new PointAccountRepository(db);
   const pointTransactionRepo = new PointTransactionRepository(db);
   const pointTypeRepo = new PointTypeRepository(db);
   const biliEventRepo = new BiliEventRepository(db);

@@ -1,4 +1,6 @@
 @import 'tailwindcss';
+@import '@web/ui/style.css';
+@source '../../../ui/src';
 
 .page-enter-active,
 .page-leave-active {

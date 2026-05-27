@@ -1,4 +1,5 @@
 import { SignJWT, jwtVerify } from 'jose';
+import { nanoid } from 'nanoid';
 
 import { UnauthorizedError } from '#utils';
 
@@ -8,6 +9,11 @@ import type { AuthSessionRedisRepository } from '../repository';
 
 type AuthTokenType = 'access' | 'refresh';
 type AuthIdentity = Omit<AuthPayload, 'sid'>;
+
+const REFRESH_LOCK_TTL_MS = 5000;
+const REFRESH_RESULT_TTL_SECONDS = 5;
+const REFRESH_RESULT_POLL_INTERVAL_MS = 50;
+const REFRESH_RESULT_POLL_ATTEMPTS = 20;
 
 function getTokenExpiresInSeconds(type: AuthTokenType) {
   return type === 'access' ? ACCESS_TOKEN_EXPIRES_IN_SECONDS : REFRESH_TOKEN_EXPIRES_IN_SECONDS;
@@ -36,10 +42,6 @@ export class AuthUseCase {
       .setIssuedAt()
       .setExpirationTime(`${expiresInSeconds}s`)
       .sign(this.encodedSecret);
-  }
-
-  async sign(payload: AuthPayload) {
-    return this.signAccessToken(payload);
   }
 
   async signAccessToken(payload: AuthPayload) {
@@ -133,6 +135,66 @@ export class AuthUseCase {
     const payload = await this.verifyRefreshToken(refreshToken);
 
     return this.signAccessToken(payload);
+  }
+
+  async refreshAccessTokenWithLock(refreshToken: string) {
+    const payload = await this.verifyRefreshToken(refreshToken);
+    const cached = await this.authSessionRepo.getRefreshResult(payload.role, payload.sid);
+
+    if (cached) {
+      return {
+        payload,
+        accessToken: cached,
+      };
+    }
+
+    const lockValue = nanoid();
+    const locked = await this.authSessionRepo.acquireRefreshLock(
+      payload.role,
+      payload.sid,
+      lockValue,
+      REFRESH_LOCK_TTL_MS,
+    );
+
+    if (!locked) {
+      const accessToken = await this.waitForRefreshResult(payload.role, payload.sid);
+
+      return {
+        payload,
+        accessToken,
+      };
+    }
+
+    try {
+      const accessToken = await this.signAccessToken(payload);
+      await this.authSessionRepo.saveRefreshResult(
+        payload.role,
+        payload.sid,
+        accessToken,
+        REFRESH_RESULT_TTL_SECONDS,
+      );
+
+      return {
+        payload,
+        accessToken,
+      };
+    } finally {
+      await this.authSessionRepo.releaseRefreshLock(payload.role, payload.sid, lockValue);
+    }
+  }
+
+  private async waitForRefreshResult(role: AuthRole, sessionId: string) {
+    for (let i = 0; i < REFRESH_RESULT_POLL_ATTEMPTS; i++) {
+      await Bun.sleep(REFRESH_RESULT_POLL_INTERVAL_MS);
+
+      const accessToken = await this.authSessionRepo.getRefreshResult(role, sessionId);
+
+      if (accessToken) {
+        return accessToken;
+      }
+    }
+
+    throw new UnauthorizedError('登录状态正在刷新，请重试');
   }
 
   async revoke(payload: AuthPayload) {

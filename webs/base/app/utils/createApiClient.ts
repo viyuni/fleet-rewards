@@ -1,82 +1,15 @@
-import { EdenFetchError, treaty, type Treaty } from '@elysia/eden';
+import { treaty } from '@elysia/eden';
 import type { Elysia } from '@server/app';
-import ky from 'ky';
 
 type AnyElysia = Elysia<any, any, any, any, any, any, any>;
 
-type AuthRefresh<App extends AnyElysia> = (client: Treaty.Create<App>) => Promise<unknown>;
-
-interface CreateApiClientOptions<App extends AnyElysia> {
-  baseUrl: string;
-  authRefresh: AuthRefresh<App>;
-  onAuthRefreshError?: (error: EdenFetchError) => unknown;
-}
-
-export function createApiClient<const App extends AnyElysia>(options: CreateApiClientOptions<App>) {
-  const { baseUrl, authRefresh, onAuthRefreshError } = options;
-
-  const refreshClient = treaty<App>(baseUrl, {
-    throwHttpError: true,
-
-    fetch: {
-      credentials: 'include',
-    },
-  });
-
-  let refreshPromise: Promise<boolean> | null = null;
-
-  async function refreshOnce() {
-    refreshPromise ??= Promise.resolve()
-      .then(() => authRefresh(refreshClient))
-      .then(() => true)
-      .catch(async error => {
-        if (error instanceof EdenFetchError) {
-          await onAuthRefreshError?.(error);
-        }
-
-        return false;
-      })
-      .finally(() => {
-        refreshPromise = null;
-      });
-
-    return refreshPromise;
-  }
-
-  async function refreshWithLock() {
-    if (!import.meta.client || !('locks' in navigator)) {
-      return refreshOnce();
-    }
-
-    return navigator.locks.request('guard-plus:auth-refresh', refreshOnce);
-  }
-
-  const fetcher = ky.create({
-    credentials: 'include',
-    retry: {
-      limit: 0,
-    },
-    hooks: {
-      afterResponse: [
-        async ({ request, response }) => {
-          if (response.status !== 401) {
-            return response;
-          }
-
-          const refreshed = await refreshWithLock();
-
-          if (!refreshed) {
-            return response;
-          }
-
-          return fetcher(request);
-        },
-      ],
-    },
-  });
+export function createApiClient<const App extends AnyElysia>(options: { baseUrl: string }) {
+  const { baseUrl } = options;
 
   return treaty<App>(baseUrl, {
     throwHttpError: true,
-    fetcher: fetcher as unknown as typeof fetch,
+    fetch: {
+      credentials: 'include',
+    },
   });
 }

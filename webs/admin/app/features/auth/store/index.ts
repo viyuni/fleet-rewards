@@ -4,7 +4,7 @@ import { useLocalStorage } from '@vueuse/core';
 import type { AdminApi } from '~/plugins/api';
 
 export type AuthSessionData = Treaty.Data<AdminApi['auth']['login']['post']>;
-export type AuthUserData = NonNullable<AuthSessionData>['user'];
+export type AuthUserData = NonNullable<AuthSessionData>;
 
 export const useAuthStore = defineStore('auth', () => {
   const session = useLocalStorage<AuthSessionData | null>('user', null, {
@@ -15,7 +15,7 @@ export const useAuthStore = defineStore('auth', () => {
   });
 
   const isAuthenticated = computed(() => {
-    return Boolean(session.value && session.value.refreshTokenExpiresAt > Date.now());
+    return Boolean(session.value);
   });
 
   const user = computed(() => {
@@ -23,7 +23,7 @@ export const useAuthStore = defineStore('auth', () => {
       return null;
     }
 
-    return session.value?.user ?? null;
+    return session.value;
   });
 
   function updateSession(data: AuthSessionData) {
@@ -35,10 +35,7 @@ export const useAuthStore = defineStore('auth', () => {
       return;
     }
 
-    session.value = {
-      ...session.value,
-      user: data,
-    };
+    session.value = data;
   }
 
   function clearSession() {
@@ -46,13 +43,7 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   function clearExpiredSession() {
-    if (
-      session.value &&
-      (typeof session.value.refreshTokenExpiresAt !== 'number' ||
-        session.value.refreshTokenExpiresAt <= Date.now())
-    ) {
-      clearSession();
-    }
+    if (!session.value) clearSession();
   }
 
   return {

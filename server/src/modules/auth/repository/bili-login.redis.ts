@@ -1,29 +1,11 @@
+import type { RedisClient } from '#redis';
+
 import type { BiliLoginChallenge } from '../domain';
 import consumeMatchedBiliLoginScript from './consume-matched-bili-login.lua' with { type: 'text' };
 
-interface RedisLike {
-  get(key: string): Promise<string | null>;
-  ttl(key: string): Promise<number>;
-  set(
-    key: string,
-    value: string,
-    options?: {
-      expiration?: { type: 'EX'; value: number };
-      condition?: 'NX';
-    },
-  ): Promise<string | null>;
-  eval(
-    script: string,
-    options: {
-      keys: string[];
-      arguments: string[];
-    },
-  ): Promise<unknown>;
-}
-
 export class BiliLoginRedisRepository {
   constructor(
-    private readonly redis: RedisLike,
+    private readonly redis: RedisClient,
     private readonly ttlSeconds: number,
   ) {}
 

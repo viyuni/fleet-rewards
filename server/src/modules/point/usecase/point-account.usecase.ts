@@ -15,6 +15,10 @@ export interface PointAccountUseCaseDeps {
 export class PointAccountUseCase {
   constructor(private readonly deps: PointAccountUseCaseDeps) {}
 
+  listMine(userId: string) {
+    return this.deps.pointAccountRepo.listMine(userId);
+  }
+
   async adjustBalance(adminId: string, data: AdjustBalanceBody) {
     return this.deps.db.transaction(async tx => {
       // 确保账户存在并锁行

@@ -1,3 +1,4 @@
+import { useQuery } from '@pinia/colada';
 import type { ComputedRef } from 'vue';
 import { computed } from 'vue';
 

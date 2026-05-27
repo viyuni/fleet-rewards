@@ -5,7 +5,7 @@ import { appContext } from '#apps/user/context';
 
 export const pointTransaction = new Elysia({
   name: 'PointTransactionRoute',
-  prefix: '/point-transactions',
+  prefix: '/pointTransactions',
   detail: {
     tags: ['PointTransaction'],
   },

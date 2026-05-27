@@ -1,8 +1,10 @@
 import {
+  ExportOrdersSchema,
   OrderIdParamsSchema,
   OrderPageQuerySchema,
   RefundOrderSchema,
   UpdateOrderExpressSchema,
+  UpdateOrderReceiverSchema,
 } from '@internal/shared/order';
 import Elysia from 'elysia';
 
@@ -27,6 +29,19 @@ export const order = new Elysia({
       requiredAdminAuth: true,
       detail: {
         description: '订单列表',
+      },
+    },
+  )
+  .post(
+    '/export',
+    async ({ body, orderUseCase }) => {
+      return orderUseCase.exportOrders(body);
+    },
+    {
+      body: ExportOrdersSchema,
+      requiredAdminAuth: true,
+      detail: {
+        description: '导出订单',
       },
     },
   )
@@ -81,6 +96,27 @@ export const order = new Elysia({
       requiredAdminAuth: true,
       detail: {
         description: '修改订单快递信息',
+      },
+    },
+  )
+  .patch(
+    '/:orderId/receiver',
+    async ({ body, params, orderUseCase }) => {
+      const { id, receiverAddressEncrypted, receiverPhoneEncrypted } =
+        await orderUseCase.updateReceiver(params.orderId, body);
+
+      return {
+        id,
+        receiverPhoneEncrypted,
+        receiverAddressEncrypted,
+      };
+    },
+    {
+      body: UpdateOrderReceiverSchema,
+      params: OrderIdParamsSchema,
+      requiredAdminAuth: true,
+      detail: {
+        description: '修改订单收货信息',
       },
     },
   )
