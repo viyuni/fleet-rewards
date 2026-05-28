@@ -81,6 +81,7 @@ export default defineConfig({
         command: bunTest('drizzle-kit studio'),
       },
       'docker-compose': {
+        cache: false,
         command: 'docker compose up -d',
       },
     },

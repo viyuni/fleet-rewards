@@ -15,10 +15,6 @@ import UserProductGrid from '../features/product/components/UserProductGrid.vue'
 
 const { $api } = useNuxtApp();
 
-const {
-  public: { apiBaseUrl },
-} = useRuntimeConfig();
-
 const page = ref(1);
 const buyingProductId = ref<string>();
 const authDialogOpen = ref(false);
@@ -34,6 +30,7 @@ const purchasedOrderNo = ref<string>();
 const purchasedOrderDetail = ref<string>();
 
 const isAuthenticated = computed(() => Boolean(currentUser.value));
+const { getImageUrl } = useImage();
 
 const { data: products, refetch: refetchProducts } = useQuery({
   key: () => ['products', page.value],
@@ -189,22 +186,6 @@ function formatDate(value?: string | Date | null) {
   });
 }
 
-const imageBaseUrl = computed(() => apiBaseUrl.replace(/\/$/, ''));
-
-function getCoverUrl(cover: string) {
-  if (!cover) {
-    return undefined;
-  }
-
-  if (/^https?:\/\//.test(cover)) {
-    return cover;
-  }
-
-  const imagePath = cover.startsWith('/images/') ? cover : `/images/${cover.replace(/^\/+/, '')}`;
-
-  return `${imageBaseUrl.value}${imagePath}`;
-}
-
 async function handleAuthenticated(user: any) {
   currentUser.value = user;
   await Promise.all([
@@ -225,17 +206,21 @@ async function handlePointConverted() {
 </script>
 
 <template>
-  <main class="min-h-svh overflow-y-auto pb-10 text-[#1d120b]">
-    <header class="sticky top-0 z-20 border-b border-white/35 bg-white/90 backdrop-blur">
-      <div class="container mx-auto flex items-center justify-between gap-3 px-4 py-3">
+  <main class="relative h-svh overflow-y-auto px-5 pb-10">
+    <header class="sticky top-0 z-20 container mx-auto bg-white">
+      <div class="mx-auto flex items-center justify-between gap-3 px-4 py-3">
         <div>
-          <div class="text-lg font-bold text-[#4b210d]">积分商城</div>
-          <div class="text-xs text-[#8a5a36]">弥生miku 大航海积分兑换</div>
+          <div class="text-lg font-bold">积分商城</div>
+          <div class="text-xs">弥生miku 大航海积分兑换</div>
         </div>
 
         <div class="flex items-center gap-2">
-          <ThemeToggle />
-          <Button v-if="!isAuthenticated" @click="openAuthDialog('login')">
+          <Button
+            v-if="!isAuthenticated"
+            @click="openAuthDialog('login')"
+            variant="ghost"
+            class="rounded-full"
+          >
             <LogIn class="size-4" />
             登录/注册
           </Button>
@@ -252,7 +237,7 @@ async function handlePointConverted() {
       </div>
     </header>
 
-    <section class="mx-auto max-w-7xl px-4 py-5">
+    <section class="container mx-auto px-4 py-5">
       <div class="grid gap-3 md:grid-cols-[1fr_auto] md:items-end">
         <UserPointActions
           :is-authenticated="isAuthenticated"
@@ -267,7 +252,7 @@ async function handlePointConverted() {
     <UserProductGrid
       :products="products"
       :buying-product-id="buyingProductId"
-      :get-cover-url="getCoverUrl"
+      :get-cover-url="getImageUrl"
       @buy="buyProduct"
     />
 
@@ -303,5 +288,7 @@ async function handlePointConverted() {
       :order-no="purchasedOrderNo"
       :detail="purchasedOrderDetail"
     />
+
+    <AppBackground />
   </main>
 </template>

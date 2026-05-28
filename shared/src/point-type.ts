@@ -1,6 +1,6 @@
 import * as v from 'valibot';
 
-import { emptyable } from './common';
+import { emptyable, numeric } from './common';
 
 /**
  * 积分类型 ID Params Schema。
@@ -49,11 +49,49 @@ const PointTypeDescriptionSchema = v.pipe(
 );
 
 /**
+ * 积分类型排序值 Schema。
+ */
+const PointTypeSortSchema = v.pipe(
+  numeric('请输入排序值'),
+  v.integer('排序值必须是整数'),
+  v.description('排序值'),
+);
+
+/**
+ * 可空积分类型排序值 Schema。
+ */
+const NullablePointTypeSortSchema = v.pipe(
+  v.union([PointTypeSortSchema, v.literal(''), v.null()]),
+  v.transform(value => (value === '' ? null : value)),
+  v.description('排序值'),
+);
+
+/**
+ * 积分类型图标文件 Schema。
+ */
+const PointTypeIconFileSchema = v.pipe(
+  v.file('请选择积分类型图标'),
+  v.mimeType(['image/jpeg', 'image/png', 'image/webp'], '积分类型图标仅支持 JPG、PNG、WebP 格式'),
+  v.maxSize(1024 * 1024 * 20, '请选择一个小于 20MB 的文件'),
+  v.description('积分类型图标'),
+);
+
+/**
+ * 积分类型图标上传 Body Schema。
+ */
+export const PointTypeIconUploadSchema = v.object({
+  icon: PointTypeIconFileSchema,
+});
+
+export type PointTypeIconUploadBody = v.InferOutput<typeof PointTypeIconUploadSchema>;
+
+/**
  * 创建积分类型 Body Schema。
  */
 export const CreatePointTypeSchema = v.object({
   name: PointTypeNameSchema,
   description: v.optional(emptyable(PointTypeDescriptionSchema)),
+  sort: v.optional(NullablePointTypeSortSchema),
 });
 
 export type CreatePointTypeBody = v.InferOutput<typeof CreatePointTypeSchema>;
@@ -64,6 +102,7 @@ export type CreatePointTypeBody = v.InferOutput<typeof CreatePointTypeSchema>;
 export const UpdatePointTypeSchema = v.object({
   name: v.optional(PointTypeNameSchema),
   description: v.nullish(emptyable(PointTypeDescriptionSchema)),
+  sort: v.optional(NullablePointTypeSortSchema),
 });
 
 export type UpdatePointTypeBody = v.InferOutput<typeof UpdatePointTypeSchema>;

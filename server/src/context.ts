@@ -83,7 +83,10 @@ export function createContainer({ db, env }: CreateSharedContextOptions) {
     userRepo,
   });
 
+  const imageUseCase = new ImageUseCase(env.IMAGE_SAVE_PATH);
+
   const pointTypeUseCase = new PointTypeUseCase({
+    imageUseCase,
     pointTypeRepo,
   });
 
@@ -114,8 +117,6 @@ export function createContainer({ db, env }: CreateSharedContextOptions) {
     pointConversionRuleRepo,
     pointTypeUseCase,
   });
-
-  const imageUseCase = new ImageUseCase(env.IMAGE_SAVE_PATH);
 
   const productUseCase = new ProductUseCase({
     db,

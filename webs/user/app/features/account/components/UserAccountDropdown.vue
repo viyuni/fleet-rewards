@@ -17,8 +17,7 @@ const emit = defineEmits<{
 <template>
   <DropdownMenu>
     <DropdownMenuTrigger as-child>
-      <Button class="max-w-44">
-        <UserRound class="size-4 shrink-0" />
+      <Button class="max-w-44 rounded-full" variant="ghost">
         <span class="truncate">{{ user?.username ?? '用户' }}</span>
       </Button>
     </DropdownMenuTrigger>

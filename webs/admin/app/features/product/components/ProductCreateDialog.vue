@@ -26,7 +26,7 @@ const { canSubmit, handleSubmit, isLoading } = usePopoverForm({
     startAt: undefined,
     endAt: undefined,
     allowCancel: false,
-    sort: 0,
+    sort: null,
     metadata: undefined,
   }),
   mutation: createProductMutation,
@@ -87,8 +87,8 @@ const { canSubmit, handleSubmit, isLoading } = usePopoverForm({
           </NativeSelect>
         </FormFieldItem>
 
-        <FormFieldItem v-slot="{ componentField }" name="sort" label="排序" required>
-          <Input v-bind="componentField" type="number" step="1" />
+        <FormFieldItem v-slot="{ componentField }" name="sort" label="排序">
+          <Input v-bind="componentField" type="number" step="1" placeholder="留空优先展示" />
         </FormFieldItem>
 
         <FormFieldItem

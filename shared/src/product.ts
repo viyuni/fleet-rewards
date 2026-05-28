@@ -128,6 +128,15 @@ const ProductSortSchema = v.pipe(
 );
 
 /**
+ * 可空商品排序值 Schema。
+ */
+const NullableProductSortSchema = v.pipe(
+  v.union([ProductSortSchema, v.literal(''), v.null()]),
+  v.transform(value => (value === '' ? null : value)),
+  v.description('排序值'),
+);
+
+/**
  * 商品是否允许用户取消订单 Schema。
  */
 const ProductAllowCancelSchema = v.pipe(
@@ -173,7 +182,7 @@ export const CreateProductSchema = v.object({
   stock: v.optional(ProductStockSchema),
   deliveryType: v.optional(ProductDeliveryTypeSchema),
   allowCancel: v.optional(ProductAllowCancelSchema),
-  sort: v.optional(ProductSortSchema),
+  sort: v.optional(NullableProductSortSchema),
   metadata: v.optional(emptyable(ProductMetadataSchema)),
   ...dateRange.entries,
 });
@@ -196,7 +205,7 @@ export const UpdateProductSchema = v.object({
   stock: v.optional(ProductStockSchema),
   deliveryType: v.optional(ProductDeliveryTypeSchema),
   allowCancel: v.optional(ProductAllowCancelSchema),
-  sort: v.optional(ProductSortSchema),
+  sort: v.optional(NullableProductSortSchema),
   metadata: v.nullish(emptyable(ProductMetadataSchema)),
   ...dateRange.entries,
 });

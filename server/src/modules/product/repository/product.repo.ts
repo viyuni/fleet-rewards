@@ -179,10 +179,7 @@ export class ProductRepository {
               },
             },
           },
-          orderBy: {
-            createdAt: 'desc',
-            sort: 'desc',
-          },
+          orderBy: t => [sql`${t.sort} DESC NULLS FIRST`, sql`${t.createdAt} DESC`],
         }),
       )
       .page(query.page)
@@ -235,10 +232,7 @@ export class ProductRepository {
               },
             },
           },
-          orderBy: {
-            createdAt: 'desc',
-            sort: 'desc',
-          },
+          orderBy: t => [sql`${t.sort} DESC NULLS FIRST`, sql`${t.createdAt} DESC`],
         }),
       )
       .page(query.page)

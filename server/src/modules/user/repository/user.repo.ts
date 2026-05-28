@@ -67,6 +67,7 @@ export class UserRepository {
               columns: {
                 id: true,
                 name: true,
+                icon: true,
               },
             },
           },

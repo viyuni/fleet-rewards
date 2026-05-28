@@ -7,9 +7,6 @@ export default defineNuxtConfig({
   app: {
     head: {
       title: 'Viyuni - Guard+',
-      htmlAttrs: {
-        class: 'dark',
-      },
       meta: [
         { charset: 'UTF-8' },
         { name: 'color-scheme', content: 'light dark' },

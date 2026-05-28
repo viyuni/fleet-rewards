@@ -16,16 +16,20 @@ const emit = defineEmits<{
 
 <template>
   <section
-    class="container mx-auto grid grid-cols-2 gap-5 px-4 md:grid-cols-2 md:gap-13 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
+    class="container mx-auto grid grid-cols-2 gap-5 px-3 md:grid-cols-3 md:gap-6 lg:grid-cols-3 lg:gap-16 xl:grid-cols-4 2xl:grid-cols-5"
   >
-    <ShapeCard v-for="item in products?.items" :key="item.id" class="text-[#eabc83]">
+    <ShapeCard
+      v-for="item in products?.items"
+      :key="item.id"
+      class="transition-[scale] hover:scale-105"
+    >
       <ProductCover
         class="w-full"
         :src="item.cover ? getCoverUrl(item.cover) : undefined"
         :placeholder="item.coverPlaceholderUrl"
       />
 
-      <div class="px-3 pt-4">
+      <div class="px-1 pt-2 pb-1">
         <div class="truncate text-[#070402]">
           {{ item.name }}
         </div>

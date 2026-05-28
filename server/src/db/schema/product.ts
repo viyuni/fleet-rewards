@@ -125,9 +125,9 @@ export const products = pgTable(
 
     /**
      * 排序
-     * 值越大越靠前
+     * 空值排在最前，非空时值越大越靠前
      */
-    sort: integer('sort').notNull().default(0),
+    sort: integer('sort'),
 
     metadata: jsonb('metadata'),
 

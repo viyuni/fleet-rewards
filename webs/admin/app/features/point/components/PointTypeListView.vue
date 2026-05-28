@@ -4,13 +4,14 @@ import type { ColumnDef } from '@tanstack/vue-table';
 import { Button } from '@web/ui/components/ui/button';
 import { useOverlay } from '@web/ui/components/ui/overlay';
 import { DataTable } from '@web/ui/components/ui/table';
-import { MoreHorizontal, Plus, Pencil } from 'lucide-vue-next';
+import { ImageIcon, MoreHorizontal, Pencil, Plus } from 'lucide-vue-next';
 
 import type { AdminApi } from '~/plugins/api';
 
 import { useDisablePointType, useEnablePointType } from '../mutations';
 import { pointTypeListQuery } from '../queries';
 import PointTypeDialog from './PointTypeDialog.vue';
+import PointTypeIconDialog from './PointTypeIconDialog.vue';
 
 export type PointTypeList = Treaty.Data<AdminApi['points']['types']['get']>;
 export type PointType = NonNullable<PointTypeList>[number];
@@ -18,6 +19,7 @@ export type PointType = NonNullable<PointTypeList>[number];
 
 <script setup lang="ts">
 const columns = [
+  { accessorKey: 'icon', header: '图标' },
   { accessorKey: 'name', header: '名称' },
   { accessorKey: 'description', header: '描述' },
   { accessorKey: 'sort', header: '排序' },
@@ -30,6 +32,8 @@ const { data: pointTypes } = useQuery(pointTypeListQuery);
 const { mutate: enablePointType, isLoading: isEnabling } = useEnablePointType();
 const { mutate: disablePointType, isLoading: isDisabling } = useDisablePointType();
 const [openPointTypeDialog] = useOverlay(PointTypeDialog);
+const [openPointTypeIconDialog] = useOverlay(PointTypeIconDialog);
+const { getImageUrl } = useImage();
 
 const isUpdatingStatus = computed(() => isEnabling.value || isDisabling.value);
 
@@ -55,6 +59,19 @@ function togglePointTypeStatus(pointType: PointType, enabled: boolean) {
 
     <template #description="{ value }">
       {{ value ?? '-' }}
+    </template>
+
+    <template #icon="{ value }">
+      <div
+        class="bg-muted/40 flex size-10 items-center justify-center overflow-hidden rounded-md border"
+      >
+        <img
+          v-if="value"
+          class="h-full w-full object-contain"
+          :src="getImageUrl(value)"
+          alt="Point type icon"
+        />
+      </div>
     </template>
 
     <template #status="{ value, rowData }">
@@ -83,6 +100,10 @@ function togglePointTypeStatus(pointType: PointType, enabled: boolean) {
           <DropdownMenuItem @click="openPointTypeDialog({ pointType: rowData })">
             <Pencil />
             编辑
+          </DropdownMenuItem>
+          <DropdownMenuItem @click="openPointTypeIconDialog({ pointType: rowData })">
+            <ImageIcon />
+            更新图标
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

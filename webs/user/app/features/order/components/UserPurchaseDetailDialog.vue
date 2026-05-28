@@ -43,7 +43,7 @@ const detailParts = computed(() => {
       </DialogHeader>
 
       <div class="bg-muted max-h-[55vh] overflow-auto rounded-lg border p-4 text-sm">
-        <p class="leading-6 break-words whitespace-pre-wrap">
+        <p class="leading-6 wrap-break-word whitespace-pre-wrap">
           <template v-for="(part, index) in detailParts" :key="index">
             <a
               v-if="part.type === 'link'"

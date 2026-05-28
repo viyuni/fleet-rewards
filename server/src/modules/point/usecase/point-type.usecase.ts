@@ -1,12 +1,18 @@
-import type { CreatePointTypeBody, UpdatePointTypeBody } from '@internal/shared/point-type';
+import type {
+  CreatePointTypeBody,
+  PointTypeIconUploadBody,
+  UpdatePointTypeBody,
+} from '@internal/shared/point-type';
 
 import type { DbExecutor } from '#db';
+import type { ImageUseCase } from '#modules/image';
 
 import { PointTypeNameExistsError, PointTypePolicy } from '../domain';
 import { PointTypeRepository } from '../repository';
 
 export interface PointTypeUseCaseDeps {
   pointTypeRepo: PointTypeRepository;
+  imageUseCase?: ImageUseCase;
 }
 
 export class PointTypeUseCase {
@@ -52,6 +58,25 @@ export class PointTypeUseCase {
     }
 
     const updated = await this.deps.pointTypeRepo.update(pointTypeId, data);
+
+    PointTypePolicy.assertExists(updated);
+
+    return updated;
+  }
+
+  async updateIcon(pointTypeId: string, body: PointTypeIconUploadBody) {
+    const pointType = await this.deps.pointTypeRepo.findById(pointTypeId);
+
+    PointTypePolicy.assertExists(pointType);
+
+    if (!this.deps.imageUseCase) {
+      throw new Error('ImageUseCase is required to update point type icon');
+    }
+
+    const { filename } = await this.deps.imageUseCase.save(body.icon);
+    const updated = await this.deps.pointTypeRepo.update(pointTypeId, {
+      icon: filename,
+    });
 
     PointTypePolicy.assertExists(updated);
 

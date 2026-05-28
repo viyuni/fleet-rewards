@@ -16,12 +16,10 @@ const open = defineModel<boolean>('open', { default: false });
 
 const productCoverCropInput = ref<InstanceType<typeof ProductCoverCropInput>>();
 const updateProductCoverMutation = useUpdateProductCover();
-const {
-  public: { apiBaseUrl },
-} = useRuntimeConfig();
-
-const imageBaseUrl = computed(() => apiBaseUrl.replace(/\/$/, ''));
-const currentCoverUrl = computed(() => getImageUrl(props.product.cover));
+const { getImageUrl } = useImage();
+const currentCoverUrl = computed(() =>
+  props.product.cover ? getImageUrl(props.product.cover) : undefined,
+);
 
 const { canSubmit, handleSubmit, isLoading, onSubmitSuccess } = usePopoverForm({
   schema: ProductCoverUploadSchema,
@@ -43,20 +41,6 @@ const { canSubmit, handleSubmit, isLoading, onSubmitSuccess } = usePopoverForm({
     };
   },
 });
-
-function getImageUrl(cover: Product['cover'] | undefined) {
-  if (!cover) {
-    return undefined;
-  }
-
-  if (/^https?:\/\//.test(cover)) {
-    return cover;
-  }
-
-  const imagePath = cover.startsWith('/images/') ? cover : `/images/${cover.replace(/^\/+/, '')}`;
-
-  return `${imageBaseUrl.value}${imagePath}`;
-}
 
 function resetSelectedCover() {
   productCoverCropInput.value?.reset();

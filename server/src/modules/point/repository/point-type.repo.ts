@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 
 import type { DbExecutor } from '#db';
 import { pointTypes, type InsertPointType, type PointType, type UpdatePointType } from '#db/schema';
@@ -55,9 +55,7 @@ export class PointTypeRepository {
 
   list() {
     return this.db.query.pointTypes.findMany({
-      orderBy: {
-        sort: 'desc',
-      },
+      orderBy: t => [sql`${t.sort} DESC NULLS FIRST`],
     });
   }
 }

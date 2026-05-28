@@ -1,5 +1,6 @@
 import {
   CreatePointTypeSchema,
+  PointTypeIconUploadSchema,
   PointTypeIdParamsSchema,
   UpdatePointTypeSchema,
 } from '@internal/shared/point-type';
@@ -65,6 +66,25 @@ export const pointTypeRoute = new Elysia({
       requiredAdminAuth: true,
       detail: {
         description: '更新积分类型',
+      },
+    },
+  )
+  .put(
+    '/:pointTypeId/icon',
+    ({ body, params, pointTypeUseCase }) => {
+      return pointTypeUseCase.updateIcon(params.pointTypeId, body);
+    },
+    {
+      body: PointTypeIconUploadSchema,
+      params: PointTypeIdParamsSchema,
+      requiredAdminAuth: true,
+      detail: {
+        description: '更新积分类型图标',
+        requestBody: {
+          content: {
+            'multipart/form-data': {},
+          },
+        },
       },
     },
   )

@@ -9,6 +9,7 @@ import { openapi } from '#modules/openapi';
 import { version } from '~/package.json' with { type: 'json' };
 
 import { appRuntimeContext } from './context';
+import { adminEnv } from './env';
 import { admin } from './modules/admin';
 import { auth } from './modules/auth';
 import { dashboard } from './modules/dashboard';
@@ -17,7 +18,6 @@ import { point } from './modules/point';
 import { product } from './modules/product';
 import { reward } from './modules/reward';
 import { user } from './modules/user';
-import { adminEnv } from './utils';
 
 export const app = new Elysia({
   name: 'AdminServer',

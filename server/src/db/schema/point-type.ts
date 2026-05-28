@@ -52,9 +52,9 @@ export const pointTypes = pgTable(
     status: pointTypeStatusEnum('status').notNull().default('active'),
 
     /**
-     * 排序值，越大越靠前
+     * 排序值，空值排在最前，非空时值越大越靠前
      */
-    sort: integer('sort').notNull().default(0),
+    sort: integer('sort'),
 
     ...timestamps,
   },

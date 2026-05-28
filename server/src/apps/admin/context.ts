@@ -1,6 +1,6 @@
 import Elysia from 'elysia';
 
-import { adminEnv } from '#apps/admin/utils';
+import { adminEnv } from '#apps/admin/env';
 import { createAppContext } from '#context';
 import { db } from '#db';
 import { BilibiliEventWorker } from '#modules/reward';

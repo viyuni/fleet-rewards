@@ -11,7 +11,7 @@ const toggleDark = useToggle(isDark);
 </script>
 
 <template>
-  <Button @click="toggleDark()" variant="ghost" size="icon-sm">
+  <Button @click="toggleDark()" variant="ghost" size="icon-sm" class="rounded-full">
     <Sun v-if="isDark"></Sun>
     <Moon v-else></Moon>
   </Button>

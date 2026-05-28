@@ -149,7 +149,7 @@ describeWithDatabase('QueryPageBuilder 真实数据库', () => {
       )
       .paginate();
 
-    const sorts = result.items.map(item => item.sort);
+    const sorts = result.items.map(item => item.sort).filter(sort => sort !== null);
     const sorted = [...sorts].sort((a, b) => a - b);
     expect(sorts).toEqual(sorted);
   });

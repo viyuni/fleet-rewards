@@ -4,7 +4,11 @@ import type {
   CreatePointConversionRuleBody,
   UpdatePointConversionRuleBody,
 } from '@internal/shared/point-conversion';
-import type { CreatePointTypeBody, UpdatePointTypeBody } from '@internal/shared/point-type';
+import type {
+  CreatePointTypeBody,
+  PointTypeIconUploadBody,
+  UpdatePointTypeBody,
+} from '@internal/shared/point-type';
 import { defineMutation, useMutation, useQueryCache } from '@pinia/colada';
 
 import { POINT_QUERY_KEYS } from './queries';
@@ -64,6 +68,22 @@ export const useUpdatePointType = defineMutation(() => {
     },
     mutation(input: { pointTypeId: string; body: UpdatePointTypeBody }) {
       return $api.points.types({ pointTypeId: input.pointTypeId }).put(input.body);
+    },
+    onSettled: invalidatePoints,
+  });
+});
+
+export const useUpdatePointTypeIcon = defineMutation(() => {
+  const { $api } = useNuxtApp();
+  const invalidatePoints = useInvalidatePoints();
+
+  return useMutation({
+    meta: {
+      showToast: true,
+      successMessage: '积分类型图标已更新',
+    },
+    mutation(input: { pointTypeId: string; body: PointTypeIconUploadBody }) {
+      return $api.points.types({ pointTypeId: input.pointTypeId }).icon.put(input.body);
     },
     onSettled: invalidatePoints,
   });

@@ -16,6 +16,7 @@ const { canSubmit, handleSubmit, isLoading } = usePopoverForm({
   initialValues: () => ({
     name: '',
     description: undefined,
+    sort: undefined,
   }),
   mutation: createPointTypeMutation,
 });
@@ -36,6 +37,10 @@ const { canSubmit, handleSubmit, isLoading } = usePopoverForm({
 
         <FormFieldItem v-slot="{ componentField }" name="description" label="描述">
           <Textarea v-bind="componentField" placeholder="可选" />
+        </FormFieldItem>
+
+        <FormFieldItem v-slot="{ componentField }" name="sort" label="排序">
+          <Input v-bind="componentField" type="number" step="1" placeholder="留空优先展示" />
         </FormFieldItem>
 
         <DialogFooter>
