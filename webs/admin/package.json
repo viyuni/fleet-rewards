@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "nuxt build"
+    "build": "bun run --filter @web/base build && nuxt build"
   },
   "dependencies": {
     "@elysia/eden": "^1.4.10",

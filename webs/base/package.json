@@ -1,7 +1,10 @@
 {
-  "name": "base",
+  "name": "@web/base",
   "private": true,
   "type": "module",
+  "scripts": {
+    "build": "nuxt build"
+  },
   "dependencies": {
     "@elysia/eden": "^1.4.10",
     "@pinia/colada": "^1.3.1",
