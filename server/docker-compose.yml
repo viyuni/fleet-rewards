@@ -65,7 +65,6 @@ services:
       - .env
     environment:
       NODE_ENV: production
-      BILI_ROOM: 8315781
       DATABASE_URL: postgresql://admin:guard_plus@guard-plus-db:5432/guard-plus
       REDIS_URL: redis://guard-plus-redis:6379
       IMAGE_SAVE_PATH: /app/server/public/images
@@ -93,6 +92,7 @@ services:
       - .env
     environment:
       NODE_ENV: production
+      BILI_ROOM: 8315781
       DATABASE_URL: postgresql://admin:guard_plus@guard-plus-db:5432/guard-plus
       REDIS_URL: redis://guard-plus-redis:6379
       IMAGE_SAVE_PATH: /app/server/public/images

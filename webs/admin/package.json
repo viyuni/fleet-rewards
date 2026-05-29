@@ -3,6 +3,9 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "scripts": {
+    "build": "nuxt build"
+  },
   "dependencies": {
     "@elysia/eden": "^1.4.10",
     "@internal/shared": "workspace:*",
