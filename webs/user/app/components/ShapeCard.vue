@@ -25,7 +25,7 @@ type Props = {
 
 const props = withDefaults(defineProps<Props>(), {
   slice: 1,
-  strokeWidth: 1,
+  strokeWidth: 0.8,
   padding: 8,
   square: false,
 });

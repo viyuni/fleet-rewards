@@ -29,7 +29,12 @@ const emit = defineEmits<{
         <span class="text-xl font-bold text-[#b22f0f]">{{ account.balance }}</span>
       </div>
 
-      <Button class="text-primary rounded-full" variant="ghost" size="sm">
+      <Button
+        class="text-primary rounded-full"
+        variant="ghost"
+        size="sm"
+        @click.stop="emit('openConversion')"
+      >
         <Repeat2 class="size-4" />
         积分转换
       </Button>

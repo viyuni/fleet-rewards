@@ -11,6 +11,11 @@ services:
       POSTGRES_DB: guard-plus
     ports:
       - '5433:5432'
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U admin -d guard-plus']
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   guard-plus-db-test:
     image: postgres:18-alpine
@@ -49,5 +54,80 @@ services:
       timeout: 3s
       retries: 5
 
+  guard-plus-admin-server:
+    build:
+      context: ..
+      dockerfile: server/Dockerfile
+      target: admin-server
+    container_name: gp-admin-server
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      BILI_ROOM: 8315781
+      DATABASE_URL: postgresql://admin:guard_plus@guard-plus-db:5432/guard-plus
+      REDIS_URL: redis://guard-plus-redis:6379
+      IMAGE_SAVE_PATH: /app/server/public/images
+    ports:
+      - target: 3600
+        published: 3990
+        protocol: tcp
+        host_ip: 0.0.0.0
+    volumes:
+      - guard-plus-public:/app/server/public
+    depends_on:
+      guard-plus-db:
+        condition: service_healthy
+      guard-plus-redis:
+        condition: service_healthy
+
+  guard-plus-user-server:
+    build:
+      context: ..
+      dockerfile: server/Dockerfile
+      target: user-server
+    container_name: gp-user-server
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://admin:guard_plus@guard-plus-db:5432/guard-plus
+      REDIS_URL: redis://guard-plus-redis:6379
+      IMAGE_SAVE_PATH: /app/server/public/images
+    ports:
+      - target: 3999
+        published: 3999
+        protocol: tcp
+        host_ip: 0.0.0.0
+    volumes:
+      - guard-plus-public:/app/server/public
+    depends_on:
+      guard-plus-db:
+        condition: service_healthy
+      guard-plus-redis:
+        condition: service_healthy
+
+  guard-plus-event-server:
+    build:
+      context: ..
+      dockerfile: server/Dockerfile
+      target: event-server
+    container_name: gp-event-server
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://admin:guard_plus@guard-plus-db:5432/guard-plus
+      REDIS_URL: redis://guard-plus-redis:6379
+    depends_on:
+      guard-plus-db:
+        condition: service_healthy
+      guard-plus-redis:
+        condition: service_healthy
+
 volumes:
   guard-plus-redis-data:
+  guard-plus-public:

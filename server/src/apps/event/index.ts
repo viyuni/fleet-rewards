@@ -34,7 +34,7 @@ listener.on('event', event => {
       break;
     }
     case 'message': {
-      logger.info(event, 'Bilibili Message');
+      // logger.info(event, 'Bilibili Message');
 
       biliLoginUseCase
         .matchMessage({

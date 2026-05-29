@@ -112,6 +112,16 @@ export class PointConversionRuleRepository {
     const now = new Date();
 
     return db.query.pointConversionRules.findMany({
+      columns: {
+        id: true,
+        name: true,
+        description: true,
+        // fromPointTypeId: true,
+        // toPointTypeId: true,
+        toAmount: true,
+        minConvertAmount: true,
+        maxConvertAmount: true,
+      },
       where: {
         deletedAt: {
           isNull: true,
@@ -130,8 +140,20 @@ export class PointConversionRuleRepository {
         createdAt: 'desc',
       },
       with: {
-        fromPointType: true,
-        toPointType: true,
+        fromPointType: {
+          columns: {
+            id: true,
+            name: true,
+            icon: true,
+          },
+        },
+        toPointType: {
+          columns: {
+            id: true,
+            name: true,
+            icon: true,
+          },
+        },
       },
     });
   }

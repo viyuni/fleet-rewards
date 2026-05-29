@@ -1,3 +1,8 @@
+<script lang="ts">
+const tabs = ['login', 'register'] as const;
+type Tabs = (typeof tabs)[number];
+</script>
+
 <script setup lang="ts">
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@web/ui/components/ui/tabs';
 
@@ -5,13 +10,13 @@ import UserLoginForm from './UserLoginForm.vue';
 import UserRegisterForm from './UserRegisterForm.vue';
 
 const props = defineProps<{
-  authMode: 'login' | 'register';
+  authMode: Tabs;
 }>();
 
 const open = defineModel<boolean>('open', { required: true });
 
 const emit = defineEmits<{
-  'update:authMode': [mode: 'login' | 'register'];
+  'update:authMode': [mode: Tabs];
   authenticated: [user: any];
 }>();
 
@@ -42,9 +47,19 @@ watch(open, isOpen => {
       <Tabs v-model="selectedAuthMode" class="grid gap-4">
         <DialogHeader>
           <DialogTitle>
-            <TabsList class="bg-transparent">
-              <TabsTrigger class="p-0 text-base" value="login">登录</TabsTrigger>
-              <TabsTrigger class="p-0 text-base" value="register">注册</TabsTrigger>
+            <TabsList variant="line" class="gap-2 p-0">
+              <TabsTrigger
+                class="after:bg-primary data-active:text-primary hover:text-primary h-5 px-0 text-base"
+                value="login"
+              >
+                登录
+              </TabsTrigger>
+              <TabsTrigger
+                class="after:bg-primary data-active:text-primary hover:text-primary h-5 px-0 text-base"
+                value="register"
+              >
+                注册
+              </TabsTrigger>
             </TabsList>
           </DialogTitle>
         </DialogHeader>

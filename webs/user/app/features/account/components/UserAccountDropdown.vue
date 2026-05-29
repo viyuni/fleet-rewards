@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { LogOut, ReceiptText, ShoppingBag, UserRound } from 'lucide-vue-next';
+import { LogOut, ReceiptText, ShoppingBag, UserRound, ChevronDown } from 'lucide-vue-next';
 
 defineProps<{
   user: any;
@@ -17,8 +17,9 @@ const emit = defineEmits<{
 <template>
   <DropdownMenu>
     <DropdownMenuTrigger as-child>
-      <Button class="max-w-44 rounded-full" variant="ghost">
+      <Button class="max-w-44 rounded-full" variant="quaternary">
         <span class="truncate">{{ user?.username ?? '用户' }}</span>
+        <ChevronDown />
       </Button>
     </DropdownMenuTrigger>
 

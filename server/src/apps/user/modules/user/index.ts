@@ -7,13 +7,27 @@ export const user = new Elysia({
   name: 'UserRoute',
 })
   .use(appContext)
-  .get('/me', ({ auth: { id: userId }, userUseCase }) => userUseCase.getDetail(userId), {
-    requiredAuth: true,
-    detail: {
-      tags: ['User'],
-      summary: '当前用户信息',
+  .get(
+    '/me',
+    async ({ auth: { id: userId }, pointConversionUseCase, userUseCase }) => {
+      const [user, pointConversionRules] = await Promise.all([
+        userUseCase.getDetail(userId),
+        pointConversionUseCase.listVisible(),
+      ]);
+
+      return {
+        ...user,
+        pointConversionRules,
+      };
     },
-  })
+    {
+      requiredAuth: true,
+      detail: {
+        tags: ['User'],
+        summary: '当前用户信息',
+      },
+    },
+  )
   .put('/me', ({ auth: { id: userId }, body, userUseCase }) => userUseCase.update(userId, body), {
     body: UserUpdateSchema,
     requiredAuth: true,
