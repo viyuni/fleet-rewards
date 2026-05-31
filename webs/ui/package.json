@@ -83,8 +83,7 @@
     "vee-validate": "^4.15.1",
     "vue": "^3.5.34",
     "vue-component-type-helpers": "^3.2.9",
-    "vue-sonner": "^2.0.9",
-    "zod": "3.25.76"
+    "vue-sonner": "^2.0.9"
   },
   "devDependencies": {
     "@nuxt/kit": "^4.4.5",
