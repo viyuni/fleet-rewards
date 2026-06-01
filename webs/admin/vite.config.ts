@@ -3,6 +3,10 @@ import { defineConfig } from 'vite-plus';
 export default defineConfig({
   run: {
     tasks: {
+      build: {
+        command: 'nuxt build',
+        dependsOn: ['@web/base#prepare'],
+      },
       dev: {
         command: 'nuxt dev',
       },

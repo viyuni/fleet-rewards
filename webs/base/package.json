@@ -3,27 +3,27 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "nuxt build"
+    "prepare": "nuxt prepare"
   },
   "dependencies": {
-    "@elysia/eden": "^1.4.10",
-    "@pinia/colada": "^1.3.1",
-    "@pinia/colada-nuxt": "^1.0.1",
-    "@pinia/nuxt": "^0.11.3",
+    "@elysia/eden": "catalog:",
+    "@pinia/colada": "catalog:",
+    "@pinia/colada-nuxt": "catalog:",
+    "@pinia/nuxt": "catalog:",
     "@server/app": "workspace:*",
-    "@vueuse/core": "^14.3.0",
-    "@vueuse/router": "^14.3.0",
+    "@vueuse/core": "catalog:",
+    "@vueuse/router": "catalog:",
     "@web/ui": "workspace:*",
-    "ky": "^2.0.2",
-    "nuxt": "^4.4.6",
-    "pinia": "^3.0.4",
-    "tailwindcss": "^4.3.0",
-    "vee-validate": "^4.15.1",
-    "vue": "^3.5.34",
-    "vue-router": "^5.0.7",
-    "vue-sonner": "^2.0.9"
+    "ky": "catalog:",
+    "nuxt": "catalog:",
+    "pinia": "catalog:",
+    "tailwindcss": "catalog:",
+    "vee-validate": "catalog:",
+    "vue": "catalog:",
+    "vue-router": "catalog:",
+    "vue-sonner": "catalog:"
   },
   "devDependencies": {
-    "@tailwindcss/vite": "^4.3.0"
+    "@tailwindcss/vite": "catalog:"
   }
 }
