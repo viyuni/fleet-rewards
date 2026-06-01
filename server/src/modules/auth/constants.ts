@@ -3,7 +3,7 @@ import type { CookieOptions } from 'elysia';
 export const ACCESS_TOKEN_COOKIE_NAME = 'accessToken';
 export const REFRESH_TOKEN_COOKIE_NAME = 'refreshToken';
 export const AUTH_COOKIE_NAME = ACCESS_TOKEN_COOKIE_NAME;
-export const BILI_LOGIN_VERIFIER_COOKIE_NAME = 'biliLoginVerifier';
+export const BILI_REGISTER_VERIFIER_COOKIE_NAME = 'biliRegisterVerifier';
 
 export const ACCESS_TOKEN_EXPIRES_IN_SECONDS = 60 * 15;
 export const REFRESH_TOKEN_EXPIRES_IN_SECONDS = 60 * 60 * 24 * 30;
@@ -24,11 +24,11 @@ export const REFRESH_TOKEN_COOKIE_OPTIONS = {
   maxAge: REFRESH_TOKEN_EXPIRES_IN_SECONDS,
 } satisfies CookieOptions;
 
-export const BILI_LOGIN_VERIFIER_COOKIE_OPTIONS = {
+export const BILI_REGISTER_VERIFIER_COOKIE_OPTIONS = {
   httpOnly: true,
   sameSite: 'lax',
   secure: process.env.NODE_ENV === 'production',
-  path: '/auth/biliLoginCode',
+  path: '/auth',
 } satisfies CookieOptions;
 
 export const AUTH_COOKIE_OPTIONS = ACCESS_TOKEN_COOKIE_OPTIONS;

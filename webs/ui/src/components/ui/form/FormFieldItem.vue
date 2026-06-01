@@ -61,7 +61,7 @@ function hasError(props: { errors: any[] }) {
         }"
       />
 
-      <FieldDescription v-if="description">
+      <FieldDescription v-if="description" class="text-xs">
         {{ description }}
       </FieldDescription>
 

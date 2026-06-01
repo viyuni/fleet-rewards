@@ -1,2 +1,2 @@
 export * from './auth.usecase';
-export * from './bili-login.usecase';
+export * from './bili-register.usecase';

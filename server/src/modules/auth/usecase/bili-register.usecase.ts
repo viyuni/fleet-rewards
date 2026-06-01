@@ -2,8 +2,8 @@ import { createHash } from 'node:crypto';
 
 import { customAlphabet } from 'nanoid';
 
-import type { BiliLoginChallenge } from '../domain';
-import type { BiliLoginRedisRepository } from '../repository';
+import type { BiliRegisterChallenge } from '../domain';
+import type { BiliRegisterRedisRepository } from '../repository';
 
 const createCodeSuffix = customAlphabet('23456789ABCDEFGHJKLMNPQRSTUVWXYZ', 6);
 const createVerifier = customAlphabet(
@@ -11,16 +11,16 @@ const createVerifier = customAlphabet(
   48,
 );
 
-export interface BiliLoginMatchInput {
+export interface BiliRegisterMatchInput {
   code: string;
   biliUid: string;
   biliName?: string;
 }
 
-export class BiliLoginUseCase {
+export class BiliRegisterUseCase {
   constructor(
     private readonly deps: {
-      biliLoginRepo: BiliLoginRedisRepository;
+      biliRegisterRepo: BiliRegisterRedisRepository;
       ttlSeconds: number;
     },
   ) {}
@@ -30,7 +30,7 @@ export class BiliLoginUseCase {
       const code = `U-${createCodeSuffix()}`;
       const verifier = createVerifier();
       const now = Date.now();
-      const challenge: BiliLoginChallenge = {
+      const challenge: BiliRegisterChallenge = {
         status: 'pending',
         code,
         verifierHash: this.hashVerifier(verifier),
@@ -38,7 +38,7 @@ export class BiliLoginUseCase {
         expiresAt: new Date(now + this.deps.ttlSeconds * 1000).toISOString(),
       };
 
-      if (await this.deps.biliLoginRepo.create(challenge)) {
+      if (await this.deps.biliRegisterRepo.create(challenge)) {
         return {
           challenge,
           verifier,
@@ -46,11 +46,11 @@ export class BiliLoginUseCase {
       }
     }
 
-    throw new Error('生成登录码失败，请稍后再试');
+    throw new Error('生成注册码失败，请稍后再试');
   }
 
   async getChallenge(code: string) {
-    return this.deps.biliLoginRepo.find(this.normalizeCode(code));
+    return this.deps.biliRegisterRepo.find(this.normalizeCode(code));
   }
 
   async getOwnedChallenge(code: string, verifier: string | undefined) {
@@ -65,20 +65,20 @@ export class BiliLoginUseCase {
     return challenge;
   }
 
-  async matchMessage(input: BiliLoginMatchInput) {
+  async matchMessage(input: BiliRegisterMatchInput) {
     const code = this.normalizeCode(input.code);
 
     if (!code.startsWith('U-')) {
       return null;
     }
 
-    const challenge = await this.deps.biliLoginRepo.find(code);
+    const challenge = await this.deps.biliRegisterRepo.find(code);
 
     if (!challenge || challenge.status !== 'pending') {
       return null;
     }
 
-    const matched: BiliLoginChallenge = {
+    const matched: BiliRegisterChallenge = {
       ...challenge,
       status: 'matched',
       biliUid: input.biliUid,
@@ -86,7 +86,7 @@ export class BiliLoginUseCase {
       matchedAt: new Date().toISOString(),
     };
 
-    await this.deps.biliLoginRepo.save(matched);
+    await this.deps.biliRegisterRepo.save(matched);
 
     return matched;
   }
@@ -94,7 +94,7 @@ export class BiliLoginUseCase {
   async consumeChallenge(code: string, verifier: string | undefined) {
     if (!verifier) return null;
 
-    return this.deps.biliLoginRepo.consumeMatched(
+    return this.deps.biliRegisterRepo.consumeMatched(
       this.normalizeCode(code),
       this.hashVerifier(verifier),
     );

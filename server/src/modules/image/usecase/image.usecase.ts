@@ -38,6 +38,10 @@ export class ImageUseCase {
 
     const filename = `${hashPrefix}.webp`;
     const filePath = path.join(this.imageSavePath, filename);
+    const resizeImage = image.resize(512, 512, {
+      fit: 'inside',
+    });
+    const placeholder = await resizeImage.placeholder();
 
     const isExists = await this.exists(filePath);
 
@@ -45,20 +49,15 @@ export class ImageUseCase {
     if (isExists) {
       return {
         filename,
+        placeholder,
       };
     }
-
-    const resizeImage = image.resize(512, 512, {
-      fit: 'inside',
-    });
 
     await resizeImage
       .webp({
         quality: 80,
       })
       .write(filePath);
-
-    const placeholder = await resizeImage.placeholder();
 
     return {
       filename,

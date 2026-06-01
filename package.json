@@ -72,7 +72,6 @@
     "vue-router": "^5.0.7",
     "vue-sonner": "^2.0.9",
     "vue-tsc": "^3.3.0",
-    "zod": "3.25.76",
     "rolldown": "^1.0.3"
   }
 }

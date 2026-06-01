@@ -1,19 +1,19 @@
 import type { RedisClient } from '#redis';
 
-import type { BiliLoginChallenge } from '../domain';
-import consumeMatchedBiliLoginScript from './consume-matched-bili-login.lua' with { type: 'text' };
+import type { BiliRegisterChallenge } from '../domain';
+import consumeMatchedBiliRegisterScript from './consume-matched-bili-register.lua' with { type: 'text' };
 
-export class BiliLoginRedisRepository {
+export class BiliRegisterRedisRepository {
   constructor(
     private readonly redis: RedisClient,
     private readonly ttlSeconds: number,
   ) {}
 
   private key(code: string) {
-    return `bili-login:user:code:${code}`;
+    return `bili-register:user:code:${code}`;
   }
 
-  async create(challenge: BiliLoginChallenge) {
+  async create(challenge: BiliRegisterChallenge) {
     const result = await this.redis.set(this.key(challenge.code), JSON.stringify(challenge), {
       expiration: {
         type: 'EX',
@@ -30,10 +30,10 @@ export class BiliLoginRedisRepository {
 
     if (!raw) return null;
 
-    return JSON.parse(raw) as BiliLoginChallenge;
+    return JSON.parse(raw) as BiliRegisterChallenge;
   }
 
-  async save(challenge: BiliLoginChallenge) {
+  async save(challenge: BiliRegisterChallenge) {
     const ttl = await this.redis.ttl(this.key(challenge.code));
 
     if (ttl <= 0) {
@@ -55,7 +55,7 @@ export class BiliLoginRedisRepository {
 
     if (!challenge) return null;
 
-    const consumed: BiliLoginChallenge = {
+    const consumed: BiliRegisterChallenge = {
       ...challenge,
       status: 'consumed',
       consumedAt: new Date().toISOString(),
@@ -67,13 +67,13 @@ export class BiliLoginRedisRepository {
   }
 
   async consumeMatched(code: string, verifierHash: string) {
-    const raw = await this.redis.eval(consumeMatchedBiliLoginScript, {
+    const raw = await this.redis.eval(consumeMatchedBiliRegisterScript, {
       keys: [this.key(code)],
       arguments: [verifierHash, new Date().toISOString()],
     });
 
     if (!raw || typeof raw !== 'string') return null;
 
-    return JSON.parse(raw) as BiliLoginChallenge;
+    return JSON.parse(raw) as BiliRegisterChallenge;
   }
 }

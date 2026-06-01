@@ -17,7 +17,7 @@ const open = defineModel<boolean>('open', { required: true });
 
 const emit = defineEmits<{
   'update:authMode': [mode: Tabs];
-  authenticated: [user: any];
+  authenticated: [];
 }>();
 
 const loginForm = useTemplateRef<InstanceType<typeof UserLoginForm>>('loginForm');
@@ -28,9 +28,9 @@ const selectedAuthMode = computed({
   set: mode => emit('update:authMode', mode),
 });
 
-function handleAuthenticated(user: any) {
+function handleAuthenticated() {
   open.value = false;
-  emit('authenticated', user);
+  emit('authenticated');
 }
 
 watch(open, isOpen => {

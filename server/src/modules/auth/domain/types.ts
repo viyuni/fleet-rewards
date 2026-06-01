@@ -26,7 +26,7 @@ export interface AuthSession {
   createdAt: string;
 }
 
-export interface BiliLoginChallenge {
+export interface BiliRegisterChallenge {
   status: 'pending' | 'matched' | 'consumed';
   code: string;
   verifierHash: string;

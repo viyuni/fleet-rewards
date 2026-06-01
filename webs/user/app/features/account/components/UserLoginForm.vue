@@ -3,50 +3,28 @@ import { UserLoginSchema } from '@internal/shared/user';
 import { Button } from '@web/ui/components/ui/button';
 import { FormFieldItem, useForm } from '@web/ui/components/ui/form';
 import { Loader2 } from 'lucide-vue-next';
-import { toast } from 'vue-sonner';
+
+import { useLogin } from '../mutations';
 
 const emit = defineEmits<{
-  authenticated: [user: any];
+  authenticated: [];
 }>();
 
-const { $api } = useNuxtApp();
+const loginMutation = useLogin();
 
-function getErrorMessage(error: unknown, fallback = '操作失败，请稍后再试') {
-  if (error instanceof Error) {
-    return error.message;
-  }
-
-  if (error && typeof error === 'object' && 'message' in error) {
-    return String(error.message);
-  }
-
-  return fallback;
-}
-
-const { canSubmit, handleSubmit, isSubmitting, onSubmitSuccess, resetForm } = useForm({
+const { canSubmit, handleSubmit, isLoading, onSubmitSuccess, resetForm } = useForm({
   schema: UserLoginSchema,
   resetOnSuccess: false,
   initialValues: () => ({
     biliUid: '',
     password: '',
   }),
-  async transform(values) {
-    return $api.auth.login.post(values).then(res => res.data);
-  },
+  mutation: loginMutation,
 });
 
-onSubmitSuccess(user => {
-  toast.success('登录成功');
-  emit('authenticated', user);
+onSubmitSuccess(() => {
+  emit('authenticated');
 });
-
-const onSubmit = async (event: Event) => {
-  try {
-    await handleSubmit(event);
-  } catch (error) {
-    toast.error(getErrorMessage(error, '登录失败'));
-  }
-};
 
 defineExpose({
   resetForm,
@@ -54,7 +32,7 @@ defineExpose({
 </script>
 
 <template>
-  <form class="grid gap-3" @submit="onSubmit">
+  <form class="grid gap-3" @submit="handleSubmit">
     <FormFieldItem v-slot="{ componentField }" name="biliUid" label="B 站 UID" required>
       <Input v-bind="componentField" />
     </FormFieldItem>
@@ -65,7 +43,7 @@ defineExpose({
 
     <DialogFooter>
       <Button type="submit" class="w-full" :disabled="!canSubmit">
-        <Loader2 v-if="isSubmitting" class="animate-spin" />
+        <Loader2 v-if="isLoading" class="animate-spin" />
         登录
       </Button>
     </DialogFooter>

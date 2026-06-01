@@ -1,9 +1,10 @@
-import type { UserLoginBody, UserRegisterBody } from '@internal/shared/user';
+import type { UserLoginBody, UserSelfRegisterBody } from '@internal/shared/user';
 
 import type { AuthUseCase as SharedAuthUseCase } from '#modules/auth';
-import type { BiliLoginUseCase } from '#modules/auth';
+import type { BiliRegisterUseCase } from '#modules/auth';
 import type { RewardUseCase } from '#modules/reward';
 import type { UserUseCase } from '#modules/user';
+import { BadRequestError } from '#utils';
 import { InvalidCredentialsError } from '#utils';
 import { PasswordUtil } from '#utils';
 
@@ -11,7 +12,7 @@ export class AuthUseCase {
   constructor(
     private readonly deps: {
       authUseCase: SharedAuthUseCase;
-      biliLoginUseCase?: BiliLoginUseCase;
+      biliRegisterUseCase?: BiliRegisterUseCase;
       rewardUseCase: RewardUseCase;
       userUseCase: UserUseCase;
     },
@@ -42,17 +43,30 @@ export class AuthUseCase {
     };
   }
 
-  async register(input: UserRegisterBody) {
-    const user = await this.deps.userUseCase.create(input);
+  async register(input: UserSelfRegisterBody, verifier: string | undefined) {
+    const challenge = await this.biliRegisterUseCase.consumeChallenge(
+      input.biliRegisterCode,
+      verifier,
+    );
+
+    if (!challenge?.biliUid) {
+      throw new BadRequestError('UID 归属验证已失效，请重新验证');
+    }
+
+    if (challenge.biliUid !== input.biliUid) {
+      throw new BadRequestError('注册 UID 与已验证 UID 不一致');
+    }
+
+    const { biliRegisterCode: _biliRegisterCode, ...userInput } = input;
+    const user = await this.deps.userUseCase.create(userInput);
 
     await this.deps.rewardUseCase.replayRewardBiliGuardByUserId(user.id);
 
     return user;
   }
 
-  async createBiliLoginCode() {
-    const biliLoginUseCase = this.biliLoginUseCase;
-    const { challenge, verifier } = await biliLoginUseCase.createChallenge();
+  async createBiliRegisterCode() {
+    const { challenge, verifier } = await this.biliRegisterUseCase.createChallenge();
 
     return {
       code: challenge.code,
@@ -61,8 +75,8 @@ export class AuthUseCase {
     };
   }
 
-  async getBiliLoginCodeStatus(code: string, verifier: string | undefined) {
-    const challenge = await this.biliLoginUseCase.getOwnedChallenge(code, verifier);
+  async getBiliRegisterCodeStatus(code: string, verifier: string | undefined) {
+    const challenge = await this.biliRegisterUseCase.getOwnedChallenge(code, verifier);
 
     if (!challenge || challenge.status === 'consumed') {
       return {
@@ -89,53 +103,11 @@ export class AuthUseCase {
     };
   }
 
-  async confirmBiliLoginCode(code: string, verifier: string | undefined) {
-    const ownedChallenge = await this.biliLoginUseCase.getOwnedChallenge(code, verifier);
-
-    if (!ownedChallenge || ownedChallenge.status === 'consumed') {
-      return {
-        status: 'expired',
-      };
+  private get biliRegisterUseCase() {
+    if (!this.deps.biliRegisterUseCase) {
+      throw new Error('Bilibili register use case is not configured');
     }
 
-    if (ownedChallenge.status !== 'matched') {
-      return {
-        status: 'pending',
-      };
-    }
-
-    const challenge = await this.biliLoginUseCase.consumeChallenge(code, verifier);
-
-    if (!challenge?.biliUid) {
-      return {
-        status: 'expired',
-      };
-    }
-
-    const user = await this.deps.userUseCase.getAvailableByBiliUid(challenge.biliUid);
-
-    const tokens = await this.deps.authUseCase.createSessionTokenPair({
-      id: user.id,
-      role: 'user',
-    });
-
-    return {
-      status: 'authenticated',
-      user: {
-        id: user.id,
-        biliUid: user.biliUid,
-        username: user.username,
-        status: user.status,
-      },
-      ...tokens,
-    };
-  }
-
-  private get biliLoginUseCase() {
-    if (!this.deps.biliLoginUseCase) {
-      throw new Error('Bilibili login use case is not configured');
-    }
-
-    return this.deps.biliLoginUseCase;
+    return this.deps.biliRegisterUseCase;
   }
 }

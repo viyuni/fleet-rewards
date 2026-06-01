@@ -1,5 +1,6 @@
 import * as v from 'valibot';
 
+import { BiliRegisterCodeParamsSchema } from './auth';
 import { bilibiliUid, emptyable, loginPassword, pageQuery, password, username } from './common';
 
 /**
@@ -26,6 +27,16 @@ export const UserRegisterSchema = v.object({
 });
 
 export type UserRegisterBody = v.InferOutput<typeof UserRegisterSchema>;
+
+/**
+ * 用户自助注册 Schema
+ */
+export const UserSelfRegisterSchema = v.object({
+  ...UserRegisterSchema.entries,
+  biliRegisterCode: BiliRegisterCodeParamsSchema.entries.code,
+});
+
+export type UserSelfRegisterBody = v.InferOutput<typeof UserSelfRegisterSchema>;
 
 /**
  * 用户更新 Schema

@@ -1,13 +1,13 @@
-import { BiliLoginCodeParamsSchema } from '@internal/shared/auth';
-import { UserLoginSchema, UserRegisterSchema } from '@internal/shared/user';
+import { BiliRegisterCodeParamsSchema } from '@internal/shared/auth';
+import { UserLoginSchema, UserSelfRegisterSchema } from '@internal/shared/user';
 import Elysia from 'elysia';
 
 import { appContext } from '#apps/user/context';
 import {
   ACCESS_TOKEN_COOKIE_NAME,
   ACCESS_TOKEN_COOKIE_OPTIONS,
-  BILI_LOGIN_VERIFIER_COOKIE_NAME,
-  BILI_LOGIN_VERIFIER_COOKIE_OPTIONS,
+  BILI_REGISTER_VERIFIER_COOKIE_NAME,
+  BILI_REGISTER_VERIFIER_COOKIE_OPTIONS,
   REFRESH_TOKEN_COOKIE_NAME,
   REFRESH_TOKEN_COOKIE_OPTIONS,
 } from '#modules/auth';
@@ -19,6 +19,18 @@ function getCookieString(value: unknown) {
   return typeof value === 'string' ? value : undefined;
 }
 
+function removeVerifierCookie(cookie: {
+  set: (
+    options: typeof BILI_REGISTER_VERIFIER_COOKIE_OPTIONS & { value: string; maxAge: number },
+  ) => void;
+}) {
+  cookie.set({
+    ...BILI_REGISTER_VERIFIER_COOKIE_OPTIONS,
+    value: '',
+    maxAge: 0,
+  });
+}
+
 export const auth = new Elysia({
   name: 'AuthRoute',
   prefix: '/auth',
@@ -27,10 +39,10 @@ export const auth = new Elysia({
   },
 })
   .use(appContext)
-  .derive(({ authUseCase, biliLoginUseCase, rewardUseCase, userUseCase }) => ({
+  .derive(({ authUseCase, biliRegisterUseCase, rewardUseCase, userUseCase }) => ({
     userAuthUseCase: new AuthUseCase({
       authUseCase,
-      biliLoginUseCase,
+      biliRegisterUseCase,
       rewardUseCase,
       userUseCase,
     }),
@@ -82,23 +94,30 @@ export const auth = new Elysia({
   )
   .post(
     '/register',
-    ({ body, userAuthUseCase }) => {
-      return userAuthUseCase.register(body);
+    async ({ body, cookie, userAuthUseCase }) => {
+      const user = await userAuthUseCase.register(
+        body,
+        getCookieString(cookie[BILI_REGISTER_VERIFIER_COOKIE_NAME]?.value),
+      );
+
+      removeVerifierCookie(cookie[BILI_REGISTER_VERIFIER_COOKIE_NAME]!);
+
+      return user;
     },
     {
-      body: UserRegisterSchema,
+      body: UserSelfRegisterSchema,
       detail: {
         summary: '用户注册',
       },
     },
   )
   .post(
-    '/biliLoginCode',
+    '/biliRegisterCode',
     async ({ cookie, userAuthUseCase }) => {
-      const { verifier, ...result } = await userAuthUseCase.createBiliLoginCode();
+      const { verifier, ...result } = await userAuthUseCase.createBiliRegisterCode();
 
-      cookie[BILI_LOGIN_VERIFIER_COOKIE_NAME]!.set({
-        ...BILI_LOGIN_VERIFIER_COOKIE_OPTIONS,
+      cookie[BILI_REGISTER_VERIFIER_COOKIE_NAME]!.set({
+        ...BILI_REGISTER_VERIFIER_COOKIE_OPTIONS,
         value: verifier,
       });
 
@@ -106,59 +125,22 @@ export const auth = new Elysia({
     },
     {
       detail: {
-        summary: '生成直播间登录码',
+        summary: '生成直播间注册验证码',
       },
     },
   )
   .get(
-    '/biliLoginCode/:code',
+    '/biliRegisterCode/:code',
     ({ cookie, params, userAuthUseCase }) => {
-      return userAuthUseCase.getBiliLoginCodeStatus(
+      return userAuthUseCase.getBiliRegisterCodeStatus(
         params.code,
-        getCookieString(cookie[BILI_LOGIN_VERIFIER_COOKIE_NAME]?.value),
+        getCookieString(cookie[BILI_REGISTER_VERIFIER_COOKIE_NAME]?.value),
       );
     },
     {
-      params: BiliLoginCodeParamsSchema,
+      params: BiliRegisterCodeParamsSchema,
       detail: {
-        summary: '查询直播间登录码状态',
-      },
-    },
-  )
-  .post(
-    '/biliLoginCode/:code/confirm',
-    async ({ params, cookie, userAuthUseCase }) => {
-      const result = await userAuthUseCase.confirmBiliLoginCode(
-        params.code,
-        getCookieString(cookie[BILI_LOGIN_VERIFIER_COOKIE_NAME]?.value),
-      );
-
-      if (result.status === 'expired') {
-        cookie[BILI_LOGIN_VERIFIER_COOKIE_NAME]!.remove();
-      }
-
-      if ('user' in result) {
-        cookie[BILI_LOGIN_VERIFIER_COOKIE_NAME]!.remove();
-
-        cookie[ACCESS_TOKEN_COOKIE_NAME]!.set({
-          ...ACCESS_TOKEN_COOKIE_OPTIONS,
-          value: result.accessToken!,
-        });
-
-        cookie[REFRESH_TOKEN_COOKIE_NAME]!.set({
-          ...REFRESH_TOKEN_COOKIE_OPTIONS,
-          value: result.refreshToken!,
-        });
-
-        return result.user;
-      }
-
-      return result;
-    },
-    {
-      params: BiliLoginCodeParamsSchema,
-      detail: {
-        summary: '确认直播间登录码并登录',
+        summary: '查询直播间注册验证码状态',
       },
     },
   );

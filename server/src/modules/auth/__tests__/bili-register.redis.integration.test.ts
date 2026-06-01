@@ -5,16 +5,16 @@ import { createClient } from 'redis';
 
 import type { RedisClient } from '#redis';
 
-import { BiliLoginRedisRepository } from '../repository';
-import { BiliLoginUseCase } from '../usecase/bili-login.usecase';
+import { BiliRegisterRedisRepository } from '../repository';
+import { BiliRegisterUseCase } from '../usecase/bili-register.usecase';
 
 const testRedisUrl = Bun.env.TEST_REDIS_URL;
 const describeWithRedis = testRedisUrl ? describe : describe.skip;
 const ttlSeconds = 60;
 
 let redis: RedisClient;
-let repo: BiliLoginRedisRepository;
-let useCase: BiliLoginUseCase;
+let repo: BiliRegisterRedisRepository;
+let useCase: BiliRegisterUseCase;
 const createdCodes = new Set<string>();
 
 function hashVerifier(verifier: string) {
@@ -45,9 +45,9 @@ beforeEach(async () => {
   redis = createClient({ url: testRedisUrl });
   await redis.connect();
 
-  repo = new BiliLoginRedisRepository(redis, ttlSeconds);
-  useCase = new BiliLoginUseCase({
-    biliLoginRepo: repo,
+  repo = new BiliRegisterRedisRepository(redis, ttlSeconds);
+  useCase = new BiliRegisterUseCase({
+    biliRegisterRepo: repo,
     ttlSeconds,
   });
 });
@@ -57,7 +57,7 @@ afterEach(async () => {
 
   try {
     for (const code of createdCodes) {
-      await redis.del(`bili-login:user:code:${code}`);
+      await redis.del(`bili-register:user:code:${code}`);
     }
   } finally {
     createdCodes.clear();
@@ -65,8 +65,8 @@ afterEach(async () => {
   }
 });
 
-describeWithRedis('BiliLoginRedisRepository 真实 Redis', () => {
-  it('拒绝错误 verifier 消费，且不会破坏原登录码', async () => {
+describeWithRedis('BiliRegisterRedisRepository 真实 Redis', () => {
+  it('拒绝错误 verifier 消费，且不会破坏原注册码', async () => {
     const { code, verifier } = await createMatchedChallenge();
 
     const stolen = await useCase.consumeChallenge(code, 'stolen-verifier');
@@ -115,7 +115,7 @@ describeWithRedis('BiliLoginRedisRepository 真实 Redis', () => {
     expect(stored?.consumedAt).toBeString();
   });
 
-  it('不能消费未匹配或缺少 B 站身份的登录码', async () => {
+  it('不能消费未匹配或缺少 B 站身份的注册码', async () => {
     const { challenge, verifier } = await useCase.createChallenge();
     createdCodes.add(challenge.code);
 

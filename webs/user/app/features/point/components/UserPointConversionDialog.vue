@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { UserConvertPointSchema } from '@internal/shared/point-conversion';
 import { Button } from '@web/ui/components/ui/button';
-import { FormFieldItem, useForm } from '@web/ui/components/ui/form';
+import { FormFieldItem, usePopoverForm } from '@web/ui/components/ui/form';
 import { Loader2 } from 'lucide-vue-next';
-import { toast } from 'vue-sonner';
+
+import { useConvertPoint } from '../mutations';
 
 const props = defineProps<{
   rules?: any[] | null;
@@ -15,40 +16,26 @@ const emit = defineEmits<{
   converted: [];
 }>();
 
-const { $api } = useNuxtApp();
+const convertPointMutation = useConvertPoint();
 
 function createNonce() {
   return globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`;
 }
 
-function getErrorMessage(error: unknown, fallback = '操作失败，请稍后再试') {
-  if (error instanceof Error) {
-    return error.message;
-  }
-
-  if (error && typeof error === 'object' && 'message' in error) {
-    return String(error.message);
-  }
-
-  return fallback;
-}
-
-const { canSubmit, handleSubmit, isSubmitting, onSubmitSuccess, resetForm, values } = useForm({
+const { canSubmit, handleSubmit, isLoading, onSubmitSuccess, values } = usePopoverForm({
   schema: UserConvertPointSchema,
-  resetOnSuccess: false,
+  open,
   initialValues: () => ({
     ruleId: '',
     fromAmount: 1,
     nonce: createNonce(),
   }),
-  async transform(values) {
-    return $api.pointConversions.convert
-      .post({
-        ruleId: values.ruleId,
-        fromAmount: values.fromAmount,
-        nonce: createNonce(),
-      })
-      .then(res => res.data);
+  mutation: convertPointMutation,
+  transform(values) {
+    return {
+      ...values,
+      nonce: createNonce(),
+    };
   },
 });
 
@@ -75,24 +62,7 @@ const conversionDescription = computed(() => {
 });
 
 onSubmitSuccess(() => {
-  open.value = false;
-  toast.success('积分转换成功');
   emit('converted');
-  resetForm();
-});
-
-const onSubmit = async (event: Event) => {
-  try {
-    await handleSubmit(event);
-  } catch (error) {
-    toast.error(getErrorMessage(error, '转换失败'));
-  }
-};
-
-watch(open, isOpen => {
-  if (!isOpen) {
-    resetForm();
-  }
 });
 </script>
 
@@ -104,7 +74,7 @@ watch(open, isOpen => {
         <DialogDescription>选择规则并输入要转换的来源积分数量。</DialogDescription>
       </DialogHeader>
 
-      <form class="grid gap-3" @submit="onSubmit">
+      <form class="grid gap-3" @submit="handleSubmit">
         <FormFieldItem v-slot="{ componentField }" name="ruleId" label="转换规则" required>
           <NativeSelect v-bind="componentField">
             <NativeSelectOption value="">选择转换规则</NativeSelectOption>
@@ -125,8 +95,8 @@ watch(open, isOpen => {
         </FormFieldItem>
 
         <DialogFooter>
-          <Button type="submit" class="w-full" :disabled="!canSubmit || isSubmitting">
-            <Loader2 v-if="isSubmitting" class="animate-spin" />
+          <Button type="submit" class="w-full" :disabled="!canSubmit">
+            <Loader2 v-if="isLoading" class="animate-spin" />
             确认转换
           </Button>
         </DialogFooter>

@@ -84,7 +84,7 @@ export function createDeps() {
       REDIS_CONNECTION_TIMEOUT_MS: 5000,
       REDIS_IDLE_TIMEOUT_MS: 0,
       REDIS_MAX_RETRIES: 100,
-      BILI_LOGIN_CODE_TTL_SECONDS: 300,
+      BILI_REGISTER_CODE_TTL_SECONDS: 300,
       JWT_SECRET: 'test',
       DATA_SECRET: 'test',
     },

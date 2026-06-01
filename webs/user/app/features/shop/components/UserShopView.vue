@@ -2,14 +2,15 @@
 import { createEventHook } from '@vueuse/core';
 import { LogIn } from 'lucide-vue-next';
 import { v7 } from 'uuid';
-import { toast } from 'vue-sonner';
 
 import UserAccountDropdown from '~/features/account/components/UserAccountDropdown.vue';
 import UserAuthDialog from '~/features/account/components/UserAuthDialog.vue';
 import UserProfileDialog from '~/features/account/components/UserProfileDialog.vue';
+import { useLogout } from '~/features/account/mutations';
 import { userQueryOptions } from '~/features/account/queries';
 import UserOrdersDialog from '~/features/order/components/UserOrdersDialog.vue';
 import UserPurchaseDetailDialog from '~/features/order/components/UserPurchaseDetailDialog.vue';
+import { useCreateOrder } from '~/features/order/mutations';
 import UserPointActions from '~/features/point/components/UserPointActions.vue';
 import UserPointConversionDialog from '~/features/point/components/UserPointConversionDialog.vue';
 import UserPointTransactionsDialog from '~/features/point/components/UserPointTransactionsDialog.vue';
@@ -26,12 +27,14 @@ const transactionsDialogOpen = ref(false);
 const conversionDialogOpen = ref(false);
 const ordersDialogOpen = ref(false);
 const purchaseDetailDialogOpen = ref(false);
-const isLoggingOut = ref(false);
 const purchasedOrderNo = ref<string>();
 const purchasedOrderDetail = ref<string>();
 
 const userChangedHook = createEventHook<void>();
 const { getImageUrl } = useImage();
+const createOrderMutation = useCreateOrder();
+const logoutMutation = useLogout();
+const { isLoading: isLoggingOut } = logoutMutation;
 
 const { data: user, refetch: refreshMe } = useQuery(
   userQueryOptions({
@@ -78,18 +81,6 @@ function createNonce() {
   return v7();
 }
 
-function getErrorMessage(error: unknown, fallback = '操作失败，请稍后再试') {
-  if (error instanceof Error) {
-    return error.message;
-  }
-
-  if (error && typeof error === 'object' && 'message' in error) {
-    return String(error.message);
-  }
-
-  return fallback;
-}
-
 function normalizeDetail(value: unknown) {
   if (typeof value !== 'string') {
     return undefined;
@@ -110,17 +101,12 @@ async function refreshUserData() {
 }
 
 async function logout() {
-  isLoggingOut.value = true;
-
   try {
-    await $api.auth.logout.post().then(res => res.data);
+    await logoutMutation.mutateAsync();
     user.value = null;
-    toast.success('已退出登录');
     await refreshUserData();
-  } catch (error) {
-    toast.error(getErrorMessage(error, '退出失败'));
-  } finally {
-    isLoggingOut.value = false;
+  } catch {
+    // The global mutation handler reports request errors.
   }
 }
 
@@ -133,14 +119,10 @@ async function buyProduct(productId: string) {
   buyingProductId.value = productId;
 
   try {
-    const order = await $api.orders
-      .post({
-        productId,
-        nonce: createNonce(),
-      })
-      .then(res => res.data);
-
-    toast.success(`购买成功，订单号：${order?.orderNo}`);
+    const { data: order } = await createOrderMutation.mutateAsync({
+      productId,
+      nonce: createNonce(),
+    });
 
     const detail = normalizeDetail(order?.detail);
 
@@ -151,8 +133,8 @@ async function buyProduct(productId: string) {
     }
 
     await refreshUserData();
-  } catch (error) {
-    toast.error(getErrorMessage(error, '购买失败，请稍后再试'));
+  } catch {
+    // The global mutation handler reports request errors.
   } finally {
     buyingProductId.value = undefined;
   }

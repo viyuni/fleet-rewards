@@ -4,6 +4,7 @@ import { count, eq } from 'drizzle-orm';
 
 import { AuthUseCase as UserAuthUseCase } from '#apps/user/modules/auth/usecase';
 import { pointTransactions } from '#db/schema';
+import type { BiliRegisterUseCase } from '#modules/auth';
 
 import {
   createDeps,
@@ -433,8 +434,23 @@ describeWithDatabase('奖励发放真实数据库', () => {
     const pointType = await seedPointType(`${prefix}_point`);
     const biliUid = createBiliUid();
     const { authUseCase, rewardUseCase, userUseCase } = createDeps();
+    const biliRegisterCode = 'U-234567';
+    const verifier = 'test-verifier';
     const userAuthUseCase = new UserAuthUseCase({
       authUseCase,
+      biliRegisterUseCase: {
+        consumeChallenge: async (code: string, actualVerifier: string | undefined) =>
+          code === biliRegisterCode && actualVerifier === verifier
+            ? {
+                status: 'matched',
+                code,
+                verifierHash: 'test-verifier-hash',
+                biliUid,
+                createdAt: new Date().toISOString(),
+                expiresAt: new Date(Date.now() + 60_000).toISOString(),
+              }
+            : null,
+      } as unknown as BiliRegisterUseCase,
       rewardUseCase,
       userUseCase,
     });
@@ -446,11 +462,15 @@ describeWithDatabase('奖励发放真实数据库', () => {
     });
 
     await rewardUseCase.rewardBiliGuard(event);
-    const registered = await userAuthUseCase.register({
-      biliUid,
-      username: `${prefix}_user`,
-      password: 'test_password',
-    });
+    const registered = await userAuthUseCase.register(
+      {
+        biliUid,
+        biliRegisterCode,
+        username: `${prefix}_user`,
+        password: 'test_password',
+      },
+      verifier,
+    );
 
     const account = await db.query.pointAccounts.findFirst({
       where: {
