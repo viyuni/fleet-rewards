@@ -35,5 +35,8 @@
     "vue": "catalog:",
     "vue-router": "catalog:",
     "vue-sonner": "catalog:"
+  },
+  "devDependencies": {
+    "rolldown": "catalog:"
   }
 }
